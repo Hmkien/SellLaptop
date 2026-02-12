@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thanh toán | LapTopHub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <style>
+        :root{--brand:#2563eb;--dark:#0f172a;--muted:#6b7280;--bg:#f1f3f7}
+        body{font-family:'Manrope',system-ui,sans-serif;color:var(--dark);background:var(--bg);line-height:1.6;min-height:100vh;display:flex;flex-direction:column}
+        a{text-decoration:none}
+        .navbar{box-shadow:0 10px 30px rgba(15,23,42,.06)}
+        .nav-search{position:relative;width:260px}.nav-search input{border-radius:12px;padding-left:38px;border:1px solid #e5e7eb;background:#f8fafc;height:42px}.nav-search input:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(37,99,235,.12)}.nav-search .search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted)}
+        .nav-icon{position:relative;width:42px;height:42px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;color:var(--dark);font-size:18px;background:#f8fafc;border:1px solid #e5e7eb;transition:all .15s}.nav-icon:hover{background:#eef2ff;color:var(--brand);border-color:var(--brand)}.nav-icon .icon-badge{position:absolute;top:-4px;right:-4px;width:18px;height:18px;border-radius:50%;background:#ef4444;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center}
+        .btn-brand{background:var(--brand);color:#fff;border:none}.btn-brand:hover{background:#1d4ed8;color:#fff}
+        .footer{color:#e2e8f0;background:#0b1223;margin-top:auto}
+
+        /* Steps */
+        .checkout-steps{display:flex;justify-content:center;gap:0;margin-bottom:32px}
+        .step{display:flex;align-items:center;gap:8px;padding:12px 20px;font-size:14px;font-weight:600;color:var(--muted)}
+        .step.active{color:var(--brand)}
+        .step.done{color:#16a34a}
+        .step-num{width:32px;height:32px;border-radius:50%;border:2px solid #e5e7eb;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
+        .step.active .step-num{border-color:var(--brand);background:var(--brand);color:#fff}
+        .step.done .step-num{border-color:#16a34a;background:#16a34a;color:#fff}
+        .step-line{width:40px;height:2px;background:#e5e7eb;align-self:center}
+        .step-line.done{background:#16a34a}
+
+        /* Section card */
+        .section-card{background:#fff;border-radius:16px;border:1px solid #e5e7eb;padding:24px;margin-bottom:16px}
+        .section-card h6{font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+        .section-card h6 i{color:var(--brand)}
+        .section-card .form-control,.section-card .form-select{border-radius:12px;padding:10px 16px;border:1px solid #e5e7eb}
+        .section-card .form-control:focus,.section-card .form-select:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+
+        /* Payment methods */
+        .payment-option{border:2px solid #e5e7eb;border-radius:14px;padding:16px 20px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:12px}
+        .payment-option:hover{border-color:#cbd5e1}
+        .payment-option.selected{border-color:var(--brand);background:#eef2ff}
+        .payment-option input[type="radio"]{accent-color:var(--brand);width:18px;height:18px}
+        .payment-icon{width:40px;height:40px;border-radius:10px;background:#f8fafc;display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--brand)}
+
+        /* Order summary sidebar */
+        .order-summary{background:#fff;border-radius:16px;border:1px solid #e5e7eb;padding:24px;position:sticky;top:100px}
+        .order-summary h6{font-weight:700;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #e5e7eb}
+        .order-item{display:flex;gap:12px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #f1f3f7}
+        .order-item:last-of-type{border-bottom:0;margin-bottom:16px}
+        .order-item img{width:60px;height:60px;border-radius:10px;object-fit:cover;border:1px solid #e5e7eb}
+        .order-item-name{font-weight:600;font-size:13px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+        .order-item-qty{color:var(--muted);font-size:12px}
+        .order-item-price{font-weight:700;font-size:13px;color:var(--brand);white-space:nowrap}
+
+        .summary-row{display:flex;justify-content:space-between;margin-bottom:10px;font-size:14px}
+        .summary-row.total{font-size:18px;font-weight:800;border-top:2px solid #e5e7eb;padding-top:14px;margin-top:14px;margin-bottom:0}
+        .summary-row.total .total-price{color:var(--brand)}
+
+        .btn-place-order{width:100%;padding:14px;border-radius:12px;font-weight:700;font-size:16px;margin-top:16px}
+        .secure-note{text-align:center;color:var(--muted);font-size:12px;margin-top:12px}
+        .secure-note i{color:#16a34a}
+    </style>
+</head>
+<body>
+    <header class="py-3 bg-white">
+        <div class="container d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-2"><div class="badge bg-dark text-white" style="border-radius:50rem">Mới</div><span class="text-muted small">Surface Pro 11 - Hàng sẵn kho, giao 2h</span></div>
+            <div class="d-flex align-items-center gap-3"><a href="#" class="text-muted small"><i class="bi bi-geo-alt"></i> Hệ thống cửa hàng</a><a href="tel:19006868" class="text-muted small"><i class="bi bi-telephone"></i> 1900 6868</a></div>
+        </div>
+    </header>
+    <nav class="navbar navbar-expand-lg bg-white sticky-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="Index.html">LapTopHub</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav"><span class="navbar-toggler-icon"></span></button>
+            <div class="collapse navbar-collapse" id="nav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link" href="Index.html">Trang chủ</a></li>
+                    <li class="nav-item"><a class="nav-link" href="Laptop.html">Laptop</a></li>
+                    <li class="nav-item"><a class="nav-link" href="PhuKien.html">Phụ kiện</a></li>
+                    <li class="nav-item"><a class="nav-link" href="DoiTac.html">Đối tác</a></li>
+                    <li class="nav-item"><a class="nav-link" href="Blog.html">Blog</a></li>
+                </ul>
+                <div class="d-flex align-items-center gap-2">
+                    <div class="nav-search"><i class="bi bi-search search-icon"></i><input type="search" class="form-control" placeholder="Tìm laptop, phụ kiện..."></div>
+                    <a href="GioHang.html" class="nav-icon" title="Giỏ hàng"><i class="bi bi-bag"></i><span class="icon-badge">3</span></a>
+                    <div class="dropdown"><a href="#" class="nav-icon" data-bs-toggle="dropdown" title="Tài khoản"><i class="bi bi-person"></i></a>
+                        <ul class="dropdown-menu dropdown-menu-end"><li><a class="dropdown-item" href="DangNhap.html"><i class="bi bi-box-arrow-in-right me-2"></i>Đăng nhập</a></li><li><a class="dropdown-item" href="TaiKhoan.html"><i class="bi bi-person-circle me-2"></i>Tài khoản</a></li></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Breadcrumb -->
+    <div class="container mt-4">
+        <nav aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="Index.html" class="text-primary">Trang chủ</a></li><li class="breadcrumb-item"><a href="GioHang.html" class="text-primary">Giỏ hàng</a></li><li class="breadcrumb-item active">Thanh toán</li></ol></nav>
+    </div>
+
+    <main class="container mb-5 flex-grow-1">
+        <!-- Steps -->
+        <div class="checkout-steps">
+            <div class="step done"><span class="step-num"><i class="bi bi-check"></i></span> Giỏ hàng</div>
+            <div class="step-line done"></div>
+            <div class="step active"><span class="step-num">2</span> Thanh toán</div>
+            <div class="step-line"></div>
+            <div class="step"><span class="step-num">3</span> Hoàn tất</div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Left: Forms -->
+            <div class="col-lg-7">
+                <!-- Shipping Info -->
+                <div class="section-card">
+                    <h6><i class="bi bi-geo-alt-fill"></i> Thông tin giao hàng</h6>
+                    <form>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold small">Họ và tên</label>
+                                <input class="form-control" placeholder="Nguyễn Văn A" value="Nguyễn Văn A">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold small">Số điện thoại</label>
+                                <input class="form-control" placeholder="0987 654 321" value="0987 654 321">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-semibold small">Email</label>
+                                <input type="email" class="form-control" placeholder="email@example.com" value="nguyenvana@gmail.com">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold small">Tỉnh/Thành phố</label>
+                                <select class="form-select"><option>TP. Hồ Chí Minh</option><option>Hà Nội</option><option>Đà Nẵng</option></select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold small">Quận/Huyện</label>
+                                <select class="form-select"><option>Quận 1</option><option>Quận 3</option><option>Quận 7</option></select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold small">Phường/Xã</label>
+                                <select class="form-select"><option>Phường Bến Nghé</option><option>Phường Bến Thành</option></select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-semibold small">Địa chỉ chi tiết</label>
+                                <input class="form-control" placeholder="Số nhà, tên đường..." value="123 Nguyễn Huệ">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-semibold small">Ghi chú</label>
+                                <textarea class="form-control" rows="2" placeholder="Ghi chú cho đơn hàng (tùy chọn)"></textarea>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Shipping Method -->
+                <div class="section-card">
+                    <h6><i class="bi bi-truck"></i> Phương thức vận chuyển</h6>
+                    <div class="d-flex flex-column gap-2">
+                        <label class="payment-option selected">
+                            <input type="radio" name="shipping" checked>
+                            <div class="payment-icon"><i class="bi bi-lightning-fill"></i></div>
+                            <div class="flex-grow-1">
+                                <div class="fw-semibold">Giao nhanh (2h)</div>
+                                <div class="text-muted small">Nội thành TP.HCM, HN</div>
+                            </div>
+                            <span class="fw-bold text-success">Miễn phí</span>
+                        </label>
+                        <label class="payment-option">
+                            <input type="radio" name="shipping">
+                            <div class="payment-icon"><i class="bi bi-box-seam"></i></div>
+                            <div class="flex-grow-1">
+                                <div class="fw-semibold">Giao tiêu chuẩn (2-4 ngày)</div>
+                                <div class="text-muted small">Toàn quốc</div>
+                            </div>
+                            <span class="fw-bold">30.000₫</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Payment Method -->
+                <div class="section-card">
+                    <h6><i class="bi bi-credit-card-fill"></i> Phương thức thanh toán</h6>
+                    <div class="d-flex flex-column gap-2">
+                        <label class="payment-option selected">
+                            <input type="radio" name="payment" checked>
+                            <div class="payment-icon"><i class="bi bi-cash-stack"></i></div>
+                            <div>
+                                <div class="fw-semibold">Thanh toán khi nhận hàng (COD)</div>
+                                <div class="text-muted small">Thanh toán bằng tiền mặt khi nhận hàng</div>
+                            </div>
+                        </label>
+                        <label class="payment-option">
+                            <input type="radio" name="payment">
+                            <div class="payment-icon"><i class="bi bi-bank"></i></div>
+                            <div>
+                                <div class="fw-semibold">Chuyển khoản ngân hàng</div>
+                                <div class="text-muted small">Chuyển khoản qua tài khoản ngân hàng</div>
+                            </div>
+                        </label>
+                        <label class="payment-option">
+                            <input type="radio" name="payment">
+                            <div class="payment-icon"><i class="bi bi-credit-card"></i></div>
+                            <div>
+                                <div class="fw-semibold">Thẻ tín dụng / Ghi nợ</div>
+                                <div class="text-muted small">Visa, MasterCard, JCB</div>
+                            </div>
+                        </label>
+                        <label class="payment-option">
+                            <input type="radio" name="payment">
+                            <div class="payment-icon"><i class="bi bi-wallet2"></i></div>
+                            <div>
+                                <div class="fw-semibold">Ví điện tử</div>
+                                <div class="text-muted small">MoMo, ZaloPay, VNPay</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Order Summary -->
+            <div class="col-lg-5">
+                <div class="order-summary">
+                    <h6><i class="bi bi-receipt me-2"></i>Đơn hàng của bạn</h6>
+
+                    <div class="order-item">
+                        <img src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=120&q=80" alt="">
+                        <div class="flex-grow-1">
+                            <div class="order-item-name">MacBook Air M3 13 inch</div>
+                            <div class="order-item-qty">Xám · x1</div>
+                        </div>
+                        <div class="order-item-price">28.990.000₫</div>
+                    </div>
+                    <div class="order-item">
+                        <img src="https://images.unsplash.com/photo-1585386959984-a4155224a1ad?auto=format&fit=crop&w=120&q=80" alt="">
+                        <div class="flex-grow-1">
+                            <div class="order-item-name">Chuột Logitech MX Master 3S</div>
+                            <div class="order-item-qty">Đen · x1</div>
+                        </div>
+                        <div class="order-item-price">2.290.000₫</div>
+                    </div>
+                    <div class="order-item">
+                        <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=120&q=80" alt="">
+                        <div class="flex-grow-1">
+                            <div class="order-item-name">Tai nghe chống ồn ANC</div>
+                            <div class="order-item-qty">Trắng · x2</div>
+                        </div>
+                        <div class="order-item-price">2.980.000₫</div>
+                    </div>
+
+                    <div class="summary-row">
+                        <span class="text-muted">Tạm tính</span>
+                        <span class="fw-semibold">34.260.000₫</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="text-muted">Phí vận chuyển</span>
+                        <span class="fw-semibold text-success">Miễn phí</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="text-muted">Giảm giá</span>
+                        <span class="fw-semibold text-danger">-500.000₫</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>Tổng cộng</span>
+                        <span class="total-price">33.760.000₫</span>
+                    </div>
+
+                    <button class="btn btn-brand btn-place-order" onclick="alert('Đặt hàng thành công! Cảm ơn bạn.')">Đặt hàng <i class="bi bi-check-circle ms-1"></i></button>
+                    <div class="secure-note"><i class="bi bi-shield-check me-1"></i>Thanh toán an toàn & bảo mật</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer py-4">
+        <div class="container d-flex flex-column flex-lg-row justify-content-between gap-3">
+            <div><div class="fw-bold text-white mb-2">LapTopHub</div><p class="mb-0 small">Laptop, phụ kiện chính hãng. Giao nhanh, bảo hành chuẩn hãng.</p></div>
+            <div class="text-secondary small d-flex gap-3 flex-wrap"><span>CSKH: 1900 6868</span><span>Email: support@laptophub.vn</span><span>© 2026</span></div>
+        </div>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Payment option selection
+        document.querySelectorAll('.payment-option').forEach(opt => {
+            opt.addEventListener('click', function() {
+                const group = this.closest('.section-card');
+                group.querySelectorAll('.payment-option').forEach(o => o.classList.remove('selected'));
+                this.classList.add('selected');
+                this.querySelector('input[type="radio"]').checked = true;
+            });
+        });
+    </script>
+</body>
+</html>

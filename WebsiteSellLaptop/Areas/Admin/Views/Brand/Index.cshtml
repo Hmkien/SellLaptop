@@ -1,0 +1,120 @@
+@model X.PagedList.IPagedList<Brand>
+
+@{
+    ViewData["Title"] = "Quản lý thương hiệu";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0"><i class="bi bi-briefcase me-2"></i>Quản lý thương hiệu</h4>
+    <a asp-action="Create" class="btn btn-brand"><i class="bi bi-plus-lg me-1"></i>Thêm mới</a>
+</div>
+
+<div class="admin-card mb-4">
+    <form method="get" class="row g-3 align-items-end">
+        <div class="col-md-8">
+            <label class="form-label fw-semibold">Tìm kiếm</label>
+            <input type="text" name="keyword" value="@ViewBag.Keyword" class="form-control" placeholder="Nhập tên thương hiệu...">
+        </div>
+        <div class="col-md-4">
+            <button type="submit" class="btn btn-brand w-100"><i class="bi bi-search me-1"></i>Tìm kiếm</button>
+        </div>
+    </form>
+</div>
+
+<div class="admin-card p-0">
+    <div class="table-responsive">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th width="60">STT</th>
+                    <th>Logo</th>
+                    <th>Tên thương hiệu</th>
+                    <th>Website</th>
+                    <th width="100">Thứ tự</th>
+                    <th width="140">Trạng thái</th>
+                    <th width="130">Ngày tạo</th>
+                    <th width="200">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Count == 0)
+                {
+                    <tr><td colspan="8" class="text-center text-muted py-4">Không có dữ liệu</td></tr>
+                }
+                @for (int i = 0; i < Model.Count; i++)
+                {
+                    var item = Model[i];
+                    var stt = (Model.PageNumber - 1) * Model.PageSize + i + 1;
+                    <tr>
+                        <td class="text-center">@stt</td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(item.LogoUrl))
+                            {
+                                <img src="@item.LogoUrl" alt="@item.Name" style="height: 36px; width: auto; object-fit: contain;">
+                            }
+                        </td>
+                        <td>
+                            <a asp-action="Detail" asp-route-id="@item.Id" class="record-title">@item.Name</a>
+                        </td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(item.Website))
+                            {
+                                <a href="@item.Website" target="_blank" class="text-muted small">@item.Website</a>
+                            }
+                        </td>
+                        <td class="text-center">@item.SortOrder</td>
+                        <td>
+                            @switch (item.Status)
+                            {
+                                case StatusEntity.Approved: <span class="badge-status approved"><i class="bi bi-check-circle me-1"></i>Đã duyệt</span> break;
+                                case StatusEntity.Pending: <span class="badge-status pending"><i class="bi bi-clock me-1"></i>Chờ duyệt</span> break;
+                                case StatusEntity.Rejected: <span class="badge-status rejected"><i class="bi bi-x-circle me-1"></i>Hủy duyệt</span> break;
+                                case StatusEntity.Draft: <span class="badge-status draft"><i class="bi bi-pencil me-1"></i>Nháp</span> break;
+                            }
+                        </td>
+                        <td>@item.Created.ToString("dd/MM/yyyy")</td>
+                        <td>
+                            <div class="d-flex gap-2 align-items-center">
+                                @if (item.Status != StatusEntity.Approved)
+                                {
+                                    <form asp-action="Approve" asp-route-id="@item.Id" method="post" class="d-inline">
+                                        <button type="submit" class="action-icon approve" title="Duyệt"><i class="bi bi-check-circle-fill"></i></button>
+                                    </form>
+                                }
+                                @if (item.Status != StatusEntity.Rejected)
+                                {
+                                    <form asp-action="Reject" asp-route-id="@item.Id" method="post" class="d-inline">
+                                        <button type="submit" class="action-icon reject" title="Hủy duyệt"><i class="bi bi-x-circle-fill"></i></button>
+                                    </form>
+                                }
+                                @if (item.Status == StatusEntity.Rejected)
+                                {
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="action-icon edit" title="Sửa"><i class="bi bi-pencil-square"></i></a>
+                                    <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa?')">
+                                        <button type="submit" class="action-icon delete" title="Xóa"><i class="bi bi-trash3-fill"></i></button>
+                                    </form>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    @if (Model.PageCount > 1)
+    {
+        <div class="admin-pagination">
+            @Html.PagedListPager(Model, page => Url.Action("Index", new { page, keyword = ViewBag.Keyword }), new X.PagedList.Web.Common.PagedListRenderOptions
+            {
+                DisplayLinkToFirstPage = X.PagedList.Web.Common.PagedListDisplayMode.Always,
+                DisplayLinkToLastPage = X.PagedList.Web.Common.PagedListDisplayMode.Always,
+                DisplayLinkToPreviousPage = X.PagedList.Web.Common.PagedListDisplayMode.Always,
+                DisplayLinkToNextPage = X.PagedList.Web.Common.PagedListDisplayMode.Always,
+                UlElementClasses = new[] { "pagination", "mb-0" },
+                LiElementClasses = new[] { "page-item" },
+                PageClasses = new[] { "page-link" },
+                ActiveLiElementClass = "active"
+            })
+        </div>
+    }
+</div>

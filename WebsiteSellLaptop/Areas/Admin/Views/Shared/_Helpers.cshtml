@@ -1,0 +1,11 @@
+@using System.ComponentModel
+@using System.Reflection
+
+@functions {
+    public static string GetEnumDescription(Enum value)
+    {
+        var fi = value.GetType().GetField(value.ToString());
+        var attrs = fi?.GetCustomAttributes(typeof(DescriptionAttribute), false) as DescriptionAttribute[];
+        return attrs?.Length > 0 ? attrs[0].Description : value.ToString();
+    }
+}

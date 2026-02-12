@@ -1,0 +1,43 @@
+@model Brand
+
+@{
+    ViewData["Title"] = "Chi tiết thương hiệu";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0"><i class="bi bi-info-circle me-2"></i>Chi tiết thương hiệu</h4>
+    <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Quay lại</a>
+</div>
+
+<div class="admin-card">
+    <div class="row g-4">
+        @if (!string.IsNullOrEmpty(Model.LogoUrl))
+        {
+            <div class="col-md-3 text-center">
+                <img src="@Model.LogoUrl" alt="@Model.Name" class="img-fluid" style="max-height: 120px; object-fit: contain;">
+            </div>
+        }
+        <div class="col">
+            <table class="table table-borderless">
+                <tr><th width="180">Tên thương hiệu:</th><td class="fw-semibold">@Model.Name</td></tr>
+                <tr><th>Website:</th><td>@(Model.Website ?? "—")</td></tr>
+                <tr><th>Thứ tự:</th><td>@Model.SortOrder</td></tr>
+                <tr>
+                    <th>Trạng thái:</th>
+                    <td>
+                        @switch (Model.Status)
+                        {
+                            case StatusEntity.Approved: <span class="badge-status approved">Đã duyệt</span> break;
+                            case StatusEntity.Pending: <span class="badge-status pending">Chờ duyệt</span> break;
+                            case StatusEntity.Rejected: <span class="badge-status rejected">Hủy duyệt</span> break;
+                            case StatusEntity.Draft: <span class="badge-status draft">Nháp</span> break;
+                        }
+                    </td>
+                </tr>
+                <tr><th>Ngày tạo:</th><td>@Model.Created.ToString("dd/MM/yyyy HH:mm")</td></tr>
+                <tr><th>Cập nhật:</th><td>@Model.LastModified.ToString("dd/MM/yyyy HH:mm")</td></tr>
+                <tr><th>Mô tả:</th><td>@(Model.Description ?? "—")</td></tr>
+            </table>
+        </div>
+    </div>
+</div>

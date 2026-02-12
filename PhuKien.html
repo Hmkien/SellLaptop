@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phụ kiện | LapTopHub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <style>
+        :root{--brand:#2563eb;--dark:#0f172a;--muted:#6b7280;--card:#ffffff;--bg:#f1f3f7}
+        body{font-family:'Manrope',system-ui,sans-serif;color:var(--dark);background:var(--bg);line-height:1.6;min-height:100vh;display:flex;flex-direction:column}
+        a{text-decoration:none}
+        .navbar{box-shadow:0 10px 30px rgba(15,23,42,.06)}
+        .nav-search{position:relative;width:260px}
+        .nav-search input{border-radius:12px;padding-left:38px;border:1px solid #e5e7eb;background:#f8fafc;height:42px}
+        .nav-search input:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+        .nav-search .search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted)}
+        .nav-icon{position:relative;width:42px;height:42px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;color:var(--dark);font-size:18px;background:#f8fafc;border:1px solid #e5e7eb;transition:all .15s}
+        .nav-icon:hover{background:#eef2ff;color:var(--brand);border-color:var(--brand)}
+        .nav-icon .icon-badge{position:absolute;top:-4px;right:-4px;width:18px;height:18px;border-radius:50%;background:#ef4444;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center}
+        .page-header{background:#fff;padding:32px 0;border-bottom:1px solid #e5e7eb}
+        .breadcrumb-item a{color:var(--muted)}.breadcrumb-item.active{color:var(--dark);font-weight:600}
+        .btn-brand{background:var(--brand);color:#fff;border:none}.btn-brand:hover{background:#1d4ed8;color:#fff}
+        .footer{color:#e2e8f0;background:#0b1223;margin-top:auto}
+
+        .filter-wrap{position:sticky;top:100px}
+        .filter-card{background:#fff;border-radius:16px;border:1px solid #e5e7eb;padding:20px;margin-bottom:12px}
+        .filter-card h6{font-size:14px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
+        .filter-card .form-check{margin-bottom:8px}
+        .filter-card .form-check-label{font-size:14px}
+
+        .product-card{background:var(--card);border:1px solid #e5e7eb;border-radius:16px;transition:transform .2s,box-shadow .2s;display:flex;flex-direction:column;height:100%;overflow:hidden;cursor:pointer}
+        .product-card:hover{transform:translateY(-4px);box-shadow:0 16px 48px rgba(15,23,42,.08)}
+        .product-img{width:100%;height:200px;object-fit:cover}
+        .product-body{padding:16px;display:flex;flex-direction:column;flex:1}
+        .product-title{font-weight:600;font-size:14px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:42px;margin-bottom:4px;color:var(--dark)}
+        .product-spec{color:var(--muted);font-size:12px;margin-bottom:8px}
+        .product-meta{margin-top:auto}
+        .price{font-weight:800;color:var(--brand);font-size:16px}
+        .old-price{color:var(--muted);text-decoration:line-through;font-size:13px}
+        .product-badge{position:absolute;top:12px;left:12px;z-index:2;font-size:11px;padding:4px 10px;border-radius:50rem;font-weight:600}
+        .card-wrap{position:relative}
+        .btn-actions{display:flex;gap:6px;margin-top:12px}
+        .btn-buy{background:var(--brand);color:#fff;border:none;border-radius:10px;padding:8px 0;font-weight:600;font-size:13px;flex:1;transition:background .15s}
+        .btn-buy:hover{background:#1d4ed8;color:#fff}
+        .btn-add-cart{background:#f1f3f7;color:var(--dark);border:1px solid #e5e7eb;border-radius:10px;width:42px;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .15s;flex-shrink:0}
+        .btn-add-cart:hover{background:#eef2ff;color:var(--brand);border-color:var(--brand)}
+
+        .custom-pagination{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:32px}
+        .custom-pagination .pg-btn{width:40px;height:40px;border-radius:12px;border:1px solid #e5e7eb;background:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px;color:var(--dark);transition:all .15s;cursor:pointer}
+        .custom-pagination .pg-btn:hover{background:#eef2ff;border-color:var(--brand);color:var(--brand)}
+        .custom-pagination .pg-btn.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+        .custom-pagination .pg-btn.disabled{color:#d1d5db;pointer-events:none;background:#fafafa}
+        .custom-pagination .pg-dots{color:var(--muted);font-size:14px;letter-spacing:2px;padding:0 4px}
+
+        .sort-select{border-radius:12px;border:1px solid #e5e7eb;padding:8px 36px 8px 14px;font-size:14px;background:#fff}
+        .sort-select:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+        .result-count{font-size:14px;color:var(--muted)}
+        .result-count strong{color:var(--dark)}
+    </style>
+</head>
+<body>
+    <header class="py-3 bg-white">
+        <div class="container d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-2">
+                <div class="badge bg-dark text-white" style="border-radius:50rem">Mới</div>
+                <span class="text-muted small">Surface Pro 11 - Hàng sẵn kho, giao 2h</span>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <a href="#" class="text-muted small"><i class="bi bi-geo-alt"></i> Hệ thống cửa hàng</a>
+                <a href="tel:19006868" class="text-muted small"><i class="bi bi-telephone"></i> 1900 6868</a>
+            </div>
+        </div>
+    </header>
+    <nav class="navbar navbar-expand-lg bg-white sticky-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="Index.html">LapTopHub</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav"><span class="navbar-toggler-icon"></span></button>
+            <div class="collapse navbar-collapse" id="nav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link" href="Index.html">Trang chủ</a></li>
+                    <li class="nav-item"><a class="nav-link" href="Laptop.html">Laptop</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="PhuKien.html">Phụ kiện</a></li>
+                    <li class="nav-item"><a class="nav-link" href="DoiTac.html">Đối tác</a></li>
+                    <li class="nav-item"><a class="nav-link" href="Blog.html">Blog</a></li>
+                </ul>
+                <div class="d-flex align-items-center gap-2">
+                    <div class="nav-search"><i class="bi bi-search search-icon"></i><input type="search" class="form-control" placeholder="Tìm laptop, phụ kiện..."></div>
+                    <a href="GioHang.html" class="nav-icon" title="Giỏ hàng"><i class="bi bi-bag"></i><span class="icon-badge">3</span></a>
+                    <div class="dropdown">
+                        <a href="#" class="nav-icon" data-bs-toggle="dropdown" title="Tài khoản"><i class="bi bi-person"></i></a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="DangNhap.html"><i class="bi bi-box-arrow-in-right me-2"></i>Đăng nhập</a></li>
+                            <li><a class="dropdown-item" href="TaiKhoan.html"><i class="bi bi-person-circle me-2"></i>Tài khoản</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="page-header">
+        <div class="container">
+            <nav aria-label="breadcrumb"><ol class="breadcrumb mb-2"><li class="breadcrumb-item"><a href="Index.html">Trang chủ</a></li><li class="breadcrumb-item active">Phụ kiện</li></ol></nav>
+            <h2 class="fw-bold mb-0">Phụ kiện Laptop</h2>
+        </div>
+    </div>
+
+    <main class="container my-4 flex-grow-1">
+        <div class="row g-4">
+            <!-- Sidebar Filter - Sticky -->
+            <div class="col-lg-3">
+                <div class="filter-wrap">
+                    <div class="filter-card">
+                        <h6 class="fw-bold mb-3">Loại phụ kiện</h6>
+                        <div class="form-check"><input class="form-check-input" type="checkbox" id="c1"><label class="form-check-label" for="c1">Chuột</label></div>
+                        <div class="form-check"><input class="form-check-input" type="checkbox" id="c2"><label class="form-check-label" for="c2">Bàn phím</label></div>
+                        <div class="form-check"><input class="form-check-input" type="checkbox" id="c3"><label class="form-check-label" for="c3">Balo / Túi</label></div>
+                        <div class="form-check"><input class="form-check-input" type="checkbox" id="c4"><label class="form-check-label" for="c4">Hub / Docking</label></div>
+                        <div class="form-check"><input class="form-check-input" type="checkbox" id="c5"><label class="form-check-label" for="c5">Đế tản nhiệt</label></div>
+                        <div class="form-check"><input class="form-check-input" type="checkbox" id="c6"><label class="form-check-label" for="c6">Tai nghe</label></div>
+                    </div>
+                    <div class="filter-card">
+                        <h6 class="fw-bold mb-3">Thương hiệu</h6>
+                        <div class="form-check"><input class="form-check-input" type="checkbox" id="b1"><label class="form-check-label" for="b1">Logitech</label></div>
+                        <div class="form-check"><input class="form-check-input" type="checkbox" id="b2"><label class="form-check-label" for="b2">Razer</label></div>
+                        <div class="form-check"><input class="form-check-input" type="checkbox" id="b3"><label class="form-check-label" for="b3">Sony</label></div>
+                        <div class="form-check"><input class="form-check-input" type="checkbox" id="b4"><label class="form-check-label" for="b4">Anker</label></div>
+                    </div>
+                    <div class="filter-card mb-0">
+                        <h6 class="fw-bold mb-3">Mức giá</h6>
+                        <div class="form-check"><input class="form-check-input" type="radio" name="price" id="pp1"><label class="form-check-label" for="pp1">Dưới 500K</label></div>
+                        <div class="form-check"><input class="form-check-input" type="radio" name="price" id="pp2"><label class="form-check-label" for="pp2">500K – 1 triệu</label></div>
+                        <div class="form-check"><input class="form-check-input" type="radio" name="price" id="pp3"><label class="form-check-label" for="pp3">1 – 3 triệu</label></div>
+                        <div class="form-check"><input class="form-check-input" type="radio" name="price" id="pp4"><label class="form-check-label" for="pp4">Trên 3 triệu</label></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product Grid -->
+            <div class="col-lg-9">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="result-count">Hiển thị <strong>1–9</strong> trên <strong>18</strong> sản phẩm</span>
+                    <select class="form-select sort-select" style="width:auto">
+                        <option>Mới nhất</option>
+                        <option>Giá tăng dần</option>
+                        <option>Giá giảm dần</option>
+                    </select>
+                </div>
+                <div class="row g-3">
+                    <!-- Accessory 1 -->
+                    <div class="col-md-4 col-6">
+                        <div class="card-wrap">
+                            <span class="product-badge badge bg-primary">Best Seller</span>
+                            <div class="product-card" onclick="location.href='ChiTietSanPham.html'">
+                                <img src="https://images.unsplash.com/photo-1585386959984-a4155224a1ad?auto=format&fit=crop&w=700&q=80" class="product-img" alt="Chuột">
+                                <div class="product-body">
+                                    <div class="product-title">Chuột không dây Logitech MX Master 3S</div>
+                                    <div class="product-spec">Wireless · 8000 DPI · USB-C · 70 ngày pin</div>
+                                    <div class="product-meta">
+                                        <div class="price">2.290.000₫</div>
+                                        <div class="old-price">2.690.000₫</div>
+                                        <div class="btn-actions" onclick="event.stopPropagation()">
+                                            <button class="btn-buy">Mua ngay</button>
+                                            <button class="btn-add-cart" title="Thêm vào giỏ"><i class="bi bi-bag-plus"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Accessory 2 -->
+                    <div class="col-md-4 col-6">
+                        <div class="card-wrap">
+                            <div class="product-card" onclick="location.href='ChiTietSanPham.html'">
+                                <img src="https://images.unsplash.com/photo-1612810432634-98af5c64d0a3?auto=format&fit=crop&w=700&q=80" class="product-img" alt="Bàn phím">
+                                <div class="product-body">
+                                    <div class="product-title">Bàn phím cơ Low Profile TKL</div>
+                                    <div class="product-spec">Mechanical · Bluetooth · RGB · Hot-swap</div>
+                                    <div class="product-meta">
+                                        <div class="price">1.890.000₫</div>
+                                        <div class="old-price">2.190.000₫</div>
+                                        <div class="btn-actions" onclick="event.stopPropagation()">
+                                            <button class="btn-buy">Mua ngay</button>
+                                            <button class="btn-add-cart" title="Thêm vào giỏ"><i class="bi bi-bag-plus"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Accessory 3 -->
+                    <div class="col-md-4 col-6">
+                        <div class="card-wrap">
+                            <span class="product-badge badge bg-success">Mới</span>
+                            <div class="product-card" onclick="location.href='ChiTietSanPham.html'">
+                                <img src="https://images.unsplash.com/photo-1587831990711-23ca6441447b?auto=format&fit=crop&w=700&q=80" class="product-img" alt="Docking">
+                                <div class="product-body">
+                                    <div class="product-title">USB-C Docking Station 12-in-1</div>
+                                    <div class="product-spec">HDMI 4K · 100W PD · Ethernet · SD Card</div>
+                                    <div class="product-meta">
+                                        <div class="price">2.390.000₫</div>
+                                        <div class="old-price">2.890.000₫</div>
+                                        <div class="btn-actions" onclick="event.stopPropagation()">
+                                            <button class="btn-buy">Mua ngay</button>
+                                            <button class="btn-add-cart" title="Thêm vào giỏ"><i class="bi bi-bag-plus"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Accessory 4 -->
+                    <div class="col-md-4 col-6">
+                        <div class="card-wrap">
+                            <span class="product-badge badge bg-warning text-dark">-24%</span>
+                            <div class="product-card" onclick="location.href='ChiTietSanPham.html'">
+                                <img src="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=700&q=80" class="product-img" alt="Balo">
+                                <div class="product-body">
+                                    <div class="product-title">Balo chống sốc Laptop 15.6" chống nước</div>
+                                    <div class="product-spec">Polyester · Chống nước · Ngăn laptop riêng</div>
+                                    <div class="product-meta">
+                                        <div class="price">790.000₫</div>
+                                        <div class="old-price">990.000₫</div>
+                                        <div class="btn-actions" onclick="event.stopPropagation()">
+                                            <button class="btn-buy">Mua ngay</button>
+                                            <button class="btn-add-cart" title="Thêm vào giỏ"><i class="bi bi-bag-plus"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Accessory 5 -->
+                    <div class="col-md-4 col-6">
+                        <div class="card-wrap">
+                            <span class="product-badge badge bg-dark">Premium</span>
+                            <div class="product-card" onclick="location.href='ChiTietSanPham.html'">
+                                <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=900&q=80" class="product-img" alt="Tai nghe">
+                                <div class="product-body">
+                                    <div class="product-title">Tai nghe chống ồn ANC Bluetooth 5.3</div>
+                                    <div class="product-spec">ANC · 40h pin · LDAC · Multipoint</div>
+                                    <div class="product-meta">
+                                        <div class="price">1.490.000₫</div>
+                                        <div class="old-price">1.890.000₫</div>
+                                        <div class="btn-actions" onclick="event.stopPropagation()">
+                                            <button class="btn-buy">Mua ngay</button>
+                                            <button class="btn-add-cart" title="Thêm vào giỏ"><i class="bi bi-bag-plus"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Accessory 6 -->
+                    <div class="col-md-4 col-6">
+                        <div class="card-wrap">
+                            <div class="product-card" onclick="location.href='ChiTietSanPham.html'">
+                                <img src="https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&w=900&q=80" class="product-img" alt="Đế tản nhiệt">
+                                <div class="product-body">
+                                    <div class="product-title">Đế tản nhiệt Aluminium 2 quạt</div>
+                                    <div class="product-spec">Nhôm CNC · 2 quạt · Chỉnh góc · USB Hub</div>
+                                    <div class="product-meta">
+                                        <div class="price">690.000₫</div>
+                                        <div class="old-price">890.000₫</div>
+                                        <div class="btn-actions" onclick="event.stopPropagation()">
+                                            <button class="btn-buy">Mua ngay</button>
+                                            <button class="btn-add-cart" title="Thêm vào giỏ"><i class="bi bi-bag-plus"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                <div class="custom-pagination">
+                    <button class="pg-btn disabled"><i class="bi bi-chevron-left"></i></button>
+                    <button class="pg-btn active">1</button>
+                    <button class="pg-btn">2</button>
+                    <button class="pg-btn"><i class="bi bi-chevron-right"></i></button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer py-4">
+        <div class="container d-flex flex-column flex-lg-row justify-content-between gap-3">
+            <div><div class="fw-bold text-white mb-2">LapTopHub</div><p class="mb-0 small">Laptop, phụ kiện chính hãng. Giao nhanh, bảo hành chuẩn hãng.</p></div>
+            <div class="text-secondary small d-flex gap-3 flex-wrap"><span>CSKH: 1900 6868</span><span>Email: support@laptophub.vn</span><span>© 2026</span></div>
+        </div>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,39 @@
+@model Banner
+
+@{
+    ViewData["Title"] = "Chi tiết banner";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0"><i class="bi bi-images me-2"></i>Chi tiết banner</h4>
+    <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Quay lại</a>
+</div>
+
+<div class="admin-card">
+    @if (!string.IsNullOrEmpty(Model.ImageUrl))
+    {
+        <div class="mb-4 text-center">
+            <img src="@Model.ImageUrl" alt="@Model.Title" class="img-fluid rounded" style="max-height: 300px; object-fit: cover;">
+        </div>
+    }
+    <table class="table table-borderless">
+        <tr><th width="160">Tiêu đề:</th><td class="fw-semibold">@Model.Title</td></tr>
+        <tr><th>Phụ đề:</th><td>@(Model.SubTitle ?? "—")</td></tr>
+        <tr><th>Link:</th><td>@(Model.LinkUrl ?? "—")</td></tr>
+        <tr><th>Thứ tự:</th><td>@Model.SortOrder</td></tr>
+        <tr>
+            <th>Trạng thái:</th>
+            <td>
+                @switch (Model.Status)
+                {
+                    case StatusEntity.Approved: <span class="badge-status approved">Đã duyệt</span> break;
+                    case StatusEntity.Pending: <span class="badge-status pending">Chờ duyệt</span> break;
+                    case StatusEntity.Rejected: <span class="badge-status rejected">Hủy duyệt</span> break;
+                    case StatusEntity.Draft: <span class="badge-status draft">Nháp</span> break;
+                }
+            </td>
+        </tr>
+        <tr><th>Ngày tạo:</th><td>@Model.Created.ToString("dd/MM/yyyy HH:mm")</td></tr>
+        <tr><th>Cập nhật:</th><td>@Model.LastModified.ToString("dd/MM/yyyy HH:mm")</td></tr>
+    </table>
+</div>

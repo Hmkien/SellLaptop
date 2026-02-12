@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog | LapTopHub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <style>
+        :root{--brand:#2563eb;--dark:#0f172a;--muted:#6b7280;--card:#ffffff;--bg:#f1f3f7}
+        body{font-family:'Manrope',system-ui,sans-serif;color:var(--dark);background:var(--bg);line-height:1.6}
+        a{text-decoration:none}
+        .navbar{box-shadow:0 10px 30px rgba(15,23,42,.06)}
+        .nav-search{position:relative;width:260px}.nav-search input{border-radius:12px;padding-left:38px;border:1px solid #e5e7eb;background:#f8fafc;height:42px}.nav-search input:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(37,99,235,.12)}.nav-search .search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted)}
+        .nav-icon{position:relative;width:42px;height:42px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;color:var(--dark);font-size:18px;background:#f8fafc;border:1px solid #e5e7eb;transition:all .15s}.nav-icon:hover{background:#eef2ff;color:var(--brand);border-color:var(--brand)}.nav-icon .icon-badge{position:absolute;top:-4px;right:-4px;width:18px;height:18px;border-radius:50%;background:#ef4444;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center}
+        .page-header{background:#fff;padding:32px 0;border-bottom:1px solid #e5e7eb}
+        .breadcrumb-item a{color:var(--muted)}.breadcrumb-item.active{color:var(--dark);font-weight:600}
+        .footer{color:#e2e8f0;background:#0b1223}
+        .blog-card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;overflow:hidden;transition:transform .2s,box-shadow .2s}
+        .blog-card:hover{transform:translateY(-4px);box-shadow:0 16px 48px rgba(15,23,42,.08)}
+        .blog-card img{width:100%;height:200px;object-fit:cover}
+        .blog-card .blog-body{padding:16px}
+        .blog-featured{background:#fff;border:1px solid #e5e7eb;border-radius:20px;overflow:hidden}
+        .blog-featured img{width:100%;height:320px;object-fit:cover}
+    </style>
+</head>
+<body>
+    <header class="py-3 bg-white">
+        <div class="container d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-2"><div class="badge bg-dark text-white" style="border-radius:50rem">Mới</div><span class="text-muted small">Surface Pro 11 - Hàng sẵn kho, giao 2h</span></div>
+            <div class="d-flex align-items-center gap-3"><a href="#" class="text-muted small"><i class="bi bi-geo-alt"></i> Hệ thống cửa hàng</a><a href="tel:19006868" class="text-muted small"><i class="bi bi-telephone"></i> 1900 6868</a></div>
+        </div>
+    </header>
+    <nav class="navbar navbar-expand-lg bg-white sticky-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="Index.html">LapTopHub</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav"><span class="navbar-toggler-icon"></span></button>
+            <div class="collapse navbar-collapse" id="nav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link" href="Index.html">Trang chủ</a></li>
+                    <li class="nav-item"><a class="nav-link" href="Laptop.html">Laptop</a></li>
+                    <li class="nav-item"><a class="nav-link" href="PhuKien.html">Phụ kiện</a></li>
+                    <li class="nav-item"><a class="nav-link" href="DoiTac.html">Đối tác</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="Blog.html">Blog</a></li>
+                </ul>
+                <div class="d-flex align-items-center gap-2">
+                    <div class="nav-search"><i class="bi bi-search search-icon"></i><input type="search" class="form-control" placeholder="Tìm laptop, phụ kiện..."></div>
+                    <a href="GioHang.html" class="nav-icon" title="Giỏ hàng"><i class="bi bi-bag"></i><span class="icon-badge">3</span></a>
+                    <div class="dropdown"><a href="#" class="nav-icon" data-bs-toggle="dropdown" title="Tài khoản"><i class="bi bi-person"></i></a>
+                        <ul class="dropdown-menu dropdown-menu-end"><li><a class="dropdown-item" href="DangNhap.html"><i class="bi bi-box-arrow-in-right me-2"></i>Đăng nhập</a></li><li><a class="dropdown-item" href="TaiKhoan.html"><i class="bi bi-person-circle me-2"></i>Tài khoản</a></li><li><a class="dropdown-item" href="TaiKhoan.html#don-hang"><i class="bi bi-receipt me-2"></i>Đơn hàng</a></li><li><hr class="dropdown-divider"></li><li><a class="dropdown-item text-danger" href="#"><i class="bi bi-box-arrow-right me-2"></i>Đăng xuất</a></li></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="page-header">
+        <div class="container">
+            <nav aria-label="breadcrumb"><ol class="breadcrumb mb-2"><li class="breadcrumb-item"><a href="Index.html">Trang chủ</a></li><li class="breadcrumb-item active">Blog</li></ol></nav>
+            <h2 class="fw-bold mb-0">Blog & Tin tức</h2>
+        </div>
+    </div>
+
+    <main class="container my-4">
+        <div class="blog-featured mb-4">
+            <div class="row g-0">
+                <div class="col-lg-6"><img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80" alt="Featured" style="height:100%;min-height:280px;object-fit:cover;width:100%"></div>
+                <div class="col-lg-6 p-4 d-flex flex-column justify-content-center">
+                    <span class="badge bg-primary mb-2" style="width:fit-content">Nổi bật</span>
+                    <h3 class="fw-bold">So sánh MacBook Air M3 vs Dell XPS 14: Ai là vua ultrabook?</h3>
+                    <p class="text-muted">Phân tích chi tiết hiệu năng, màn hình, pin và giá trị tổng thể giữa hai flagship mỏng nhẹ 2025.</p>
+                    <div class="text-muted small"><i class="bi bi-calendar3 me-1"></i> 05/02/2026 &nbsp; <i class="bi bi-clock me-1"></i> 8 phút đọc</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-4"><div class="blog-card h-100"><img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=900&q=80" alt="Blog"><div class="blog-body"><span class="badge bg-dark mb-2">Tư vấn</span><h6 class="fw-semibold">Top laptop 20-25 triệu cho designer</h6><p class="text-muted small">So sánh màn hình, SSD, hiệu năng render.</p><div class="text-muted small"><i class="bi bi-calendar3 me-1"></i> 03/02/2026</div></div></div></div>
+            <div class="col-md-4"><div class="blog-card h-100"><img src="https://images.unsplash.com/photo-1523475472560-d2df97ec485c?auto=format&fit=crop&w=900&q=80" alt="Blog"><div class="blog-body"><span class="badge bg-dark mb-2">Phụ kiện</span><h6 class="fw-semibold">Cách chọn chuột không dây chống ồn</h6><p class="text-muted small">Form cầm, công tắc, độ trễ, pin.</p><div class="text-muted small"><i class="bi bi-calendar3 me-1"></i> 01/02/2026</div></div></div></div>
+            <div class="col-md-4"><div class="blog-card h-100"><img src="https://images.unsplash.com/photo-1451188502541-13943edb6acb?auto=format&fit=crop&w=900&q=80" alt="Blog"><div class="blog-body"><span class="badge bg-dark mb-2">Gaming</span><h6 class="fw-semibold">Checklist tối ưu FPS cho gaming</h6><p class="text-muted small">Driver, profile GPU, tản nhiệt, nguồn.</p><div class="text-muted small"><i class="bi bi-calendar3 me-1"></i> 28/01/2026</div></div></div></div>
+            <div class="col-md-4"><div class="blog-card h-100"><img src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=900&q=80" alt="Blog"><div class="blog-body"><span class="badge bg-dark mb-2">Review</span><h6 class="fw-semibold">Đánh giá ROG Strix G16 sau 3 tháng sử dụng</h6><p class="text-muted small">Tản nhiệt, hiệu năng thực tế, màn hình 240Hz.</p><div class="text-muted small"><i class="bi bi-calendar3 me-1"></i> 25/01/2026</div></div></div></div>
+            <div class="col-md-4"><div class="blog-card h-100"><img src="https://images.unsplash.com/photo-1504691342899-8f2265e1c1af?auto=format&fit=crop&w=900&q=80" alt="Blog"><div class="blog-body"><span class="badge bg-dark mb-2">Thủ thuật</span><h6 class="fw-semibold">5 cách kéo dài tuổi thọ pin laptop</h6><p class="text-muted small">Cài đặt nguồn, brightness, background apps.</p><div class="text-muted small"><i class="bi bi-calendar3 me-1"></i> 20/01/2026</div></div></div></div>
+            <div class="col-md-4"><div class="blog-card h-100"><img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=900&q=80" alt="Blog"><div class="blog-body"><span class="badge bg-dark mb-2">Tin tức</span><h6 class="fw-semibold">Apple ra mắt MacBook Pro M4 – Có gì mới?</h6><p class="text-muted small">Chip M4, màn hình mới, giá bán tại VN.</p><div class="text-muted small"><i class="bi bi-calendar3 me-1"></i> 15/01/2026</div></div></div></div>
+        </div>
+
+        <nav class="mt-4"><ul class="pagination justify-content-center">
+            <li class="page-item disabled"><a class="page-link" href="#">&laquo;</a></li>
+            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+            <li class="page-item"><a class="page-link" href="#">2</a></li>
+            <li class="page-item"><a class="page-link" href="#">&raquo;</a></li>
+        </ul></nav>
+    </main>
+
+    <footer class="footer py-4 mt-5">
+        <div class="container d-flex flex-column flex-lg-row justify-content-between gap-3">
+            <div><div class="fw-bold text-white mb-2">LapTopHub</div><p class="mb-0 small">Laptop, phụ kiện chính hãng. Giao nhanh, bảo hành chuẩn hãng.</p></div>
+            <div class="text-secondary small d-flex gap-3 flex-wrap"><span>CSKH: 1900 6868</span><span>Email: support@laptophub.vn</span><span>© 2026</span></div>
+        </div>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

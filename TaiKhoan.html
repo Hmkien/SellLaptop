@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tài khoản | LapTopHub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <style>
+        :root{--brand:#2563eb;--dark:#0f172a;--muted:#6b7280;--bg:#f1f3f7;--card:#fff}
+        body{font-family:'Manrope',system-ui,sans-serif;color:var(--dark);background:var(--bg);line-height:1.6;min-height:100vh;display:flex;flex-direction:column}
+        a{text-decoration:none}
+        .navbar{box-shadow:0 10px 30px rgba(15,23,42,.06)}
+        .nav-search{position:relative;width:260px}.nav-search input{border-radius:12px;padding-left:38px;border:1px solid #e5e7eb;background:#f8fafc;height:42px}.nav-search input:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(37,99,235,.12)}.nav-search .search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted)}
+        .nav-icon{position:relative;width:42px;height:42px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;color:var(--dark);font-size:18px;background:#f8fafc;border:1px solid #e5e7eb;transition:all .15s}.nav-icon:hover{background:#eef2ff;color:var(--brand);border-color:var(--brand)}.nav-icon .icon-badge{position:absolute;top:-4px;right:-4px;width:18px;height:18px;border-radius:50%;background:#ef4444;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center}
+        .btn-brand{background:var(--brand);color:#fff}.btn-brand:hover{background:#1d4ed8;color:#fff}
+        .footer{color:#e2e8f0;background:#0b1223}
+
+        /* Sidebar */
+        .sidebar{background:#fff;border-radius:16px;border:1px solid #e5e7eb;overflow:hidden}
+        .sidebar .user-info{padding:24px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;gap:14px}
+        .sidebar .avatar{width:56px;height:56px;border-radius:50%;background:#eef2ff;display:flex;align-items:center;justify-content:center;font-size:28px;color:var(--brand)}
+        .sidebar .nav-pills .nav-link{color:var(--dark);padding:12px 24px;border-radius:0;font-weight:500;display:flex;align-items:center;gap:10px;border-left:3px solid transparent}
+        .sidebar .nav-pills .nav-link:hover{background:#f8fafc}
+        .sidebar .nav-pills .nav-link.active{background:#eef2ff;color:var(--brand);border-left-color:var(--brand);font-weight:600}
+        .sidebar .nav-pills .nav-link i{width:20px;text-align:center}
+
+        /* Content cards */
+        .content-card{background:#fff;border-radius:16px;border:1px solid #e5e7eb;padding:28px}
+        .content-card h5{font-weight:700;margin-bottom:20px}
+
+        /* Form */
+        .content-card .form-control,.content-card .form-select{border-radius:12px;padding:10px 16px;border:1px solid #e5e7eb}
+        .content-card .form-control:focus,.content-card .form-select:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+
+        /* Order table */
+        .order-table{width:100%;border-collapse:separate;border-spacing:0}
+        .order-table th{background:#f8fafc;padding:12px 16px;font-weight:600;font-size:14px;color:var(--muted);border-bottom:1px solid #e5e7eb}
+        .order-table td{padding:14px 16px;border-bottom:1px solid #f1f3f7;vertical-align:middle}
+        .order-table tr:last-child td{border-bottom:0}
+
+        /* Status badges */
+        .badge-status{padding:4px 12px;border-radius:50rem;font-size:12px;font-weight:600}
+        .status-success{background:#dcfce7;color:#16a34a}
+        .status-pending{background:#fef3c7;color:#d97706}
+        .status-shipping{background:#dbeafe;color:#2563eb}
+        .status-cancel{background:#fee2e2;color:#dc2626}
+
+        /* Address card */
+        .address-card{background:#f8fafc;border:1px solid #e5e7eb;border-radius:14px;padding:20px;position:relative}
+        .address-card.default{border-color:var(--brand);background:#eef2ff}
+        .address-tag{position:absolute;top:12px;right:12px;font-size:11px;background:var(--brand);color:#fff;padding:2px 10px;border-radius:50rem}
+    </style>
+</head>
+<body>
+    <header class="py-3 bg-white">
+        <div class="container d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-2"><div class="badge bg-dark text-white" style="border-radius:50rem">Mới</div><span class="text-muted small">Surface Pro 11 - Hàng sẵn kho, giao 2h</span></div>
+            <div class="d-flex align-items-center gap-3"><a href="#" class="text-muted small"><i class="bi bi-geo-alt"></i> Hệ thống cửa hàng</a><a href="tel:19006868" class="text-muted small"><i class="bi bi-telephone"></i> 1900 6868</a></div>
+        </div>
+    </header>
+    <nav class="navbar navbar-expand-lg bg-white sticky-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="Index.html">LapTopHub</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav"><span class="navbar-toggler-icon"></span></button>
+            <div class="collapse navbar-collapse" id="nav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link" href="Index.html">Trang chủ</a></li>
+                    <li class="nav-item"><a class="nav-link" href="Laptop.html">Laptop</a></li>
+                    <li class="nav-item"><a class="nav-link" href="PhuKien.html">Phụ kiện</a></li>
+                    <li class="nav-item"><a class="nav-link" href="DoiTac.html">Đối tác</a></li>
+                    <li class="nav-item"><a class="nav-link" href="Blog.html">Blog</a></li>
+                </ul>
+                <div class="d-flex align-items-center gap-2">
+                    <div class="nav-search"><i class="bi bi-search search-icon"></i><input type="search" class="form-control" placeholder="Tìm laptop, phụ kiện..."></div>
+                    <a href="GioHang.html" class="nav-icon" title="Giỏ hàng"><i class="bi bi-bag"></i><span class="icon-badge">3</span></a>
+                    <div class="dropdown"><a href="#" class="nav-icon" data-bs-toggle="dropdown" title="Tài khoản"><i class="bi bi-person"></i></a>
+                        <ul class="dropdown-menu dropdown-menu-end"><li><a class="dropdown-item" href="DangNhap.html"><i class="bi bi-box-arrow-in-right me-2"></i>Đăng nhập</a></li><li><a class="dropdown-item" href="TaiKhoan.html"><i class="bi bi-person-circle me-2"></i>Tài khoản</a></li></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Breadcrumb -->
+    <div class="container mt-4">
+        <nav aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="Index.html" class="text-primary">Trang chủ</a></li><li class="breadcrumb-item active">Tài khoản</li></ol></nav>
+    </div>
+
+    <main class="container mb-5 flex-grow-1">
+        <div class="row g-4">
+            <!-- Sidebar -->
+            <div class="col-lg-3">
+                <div class="sidebar">
+                    <div class="user-info">
+                        <div class="avatar"><i class="bi bi-person-fill"></i></div>
+                        <div>
+                            <div class="fw-bold">Nguyễn Văn A</div>
+                            <div class="text-muted small">nguyenvana@gmail.com</div>
+                        </div>
+                    </div>
+                    <nav class="nav nav-pills flex-column" id="accountTab">
+                        <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#profile"><i class="bi bi-person"></i> Thông tin cá nhân</button>
+                        <button class="nav-link" data-bs-toggle="pill" data-bs-target="#orders"><i class="bi bi-box-seam"></i> Đơn hàng</button>
+                        <button class="nav-link" data-bs-toggle="pill" data-bs-target="#addresses"><i class="bi bi-geo-alt"></i> Địa chỉ</button>
+                        <button class="nav-link" data-bs-toggle="pill" data-bs-target="#wishlist"><i class="bi bi-heart"></i> Yêu thích</button>
+                        <button class="nav-link" data-bs-toggle="pill" data-bs-target="#password"><i class="bi bi-shield-lock"></i> Đổi mật khẩu</button>
+                        <a class="nav-link text-danger" href="DangNhap.html"><i class="bi bi-box-arrow-left"></i> Đăng xuất</a>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- Content -->
+            <div class="col-lg-9">
+                <div class="tab-content">
+                    <!-- Thông tin cá nhân -->
+                    <div class="tab-pane fade show active" id="profile">
+                        <div class="content-card">
+                            <h5><i class="bi bi-person me-2 text-primary"></i>Thông tin cá nhân</h5>
+                            <form>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold">Họ và tên</label>
+                                        <input class="form-control" value="Nguyễn Văn A">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold">Số điện thoại</label>
+                                        <input class="form-control" value="0987 654 321">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold">Email</label>
+                                        <input class="form-control" value="nguyenvana@gmail.com">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold">Ngày sinh</label>
+                                        <input type="date" class="form-control" value="1995-06-15">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold">Giới tính</label>
+                                        <select class="form-select"><option selected>Nam</option><option>Nữ</option><option>Khác</option></select>
+                                    </div>
+                                </div>
+                                <button class="btn btn-brand mt-4 px-4">Lưu thay đổi</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Đơn hàng -->
+                    <div class="tab-pane fade" id="orders">
+                        <div class="content-card">
+                            <h5><i class="bi bi-box-seam me-2 text-primary"></i>Đơn hàng của tôi</h5>
+                            <!-- Filter tabs -->
+                            <div class="d-flex gap-2 flex-wrap mb-4">
+                                <button class="btn btn-sm btn-brand rounded-pill px-3">Tất cả</button>
+                                <button class="btn btn-sm btn-outline-secondary rounded-pill px-3">Chờ xác nhận</button>
+                                <button class="btn btn-sm btn-outline-secondary rounded-pill px-3">Đang giao</button>
+                                <button class="btn btn-sm btn-outline-secondary rounded-pill px-3">Hoàn thành</button>
+                                <button class="btn btn-sm btn-outline-secondary rounded-pill px-3">Đã hủy</button>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="order-table">
+                                    <thead><tr><th>Mã đơn</th><th>Sản phẩm</th><th>Ngày đặt</th><th>Tổng tiền</th><th>Trạng thái</th><th></th></tr></thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="fw-semibold">#DH20241</td>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <img src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=60&h=60&fit=crop" style="width:42px;height:42px;border-radius:8px;object-fit:cover" alt="">
+                                                    <span>MacBook Air M3</span>
+                                                </div>
+                                            </td>
+                                            <td class="text-muted">20/12/2024</td>
+                                            <td class="fw-semibold">27.990.000₫</td>
+                                            <td><span class="badge-status status-success">Hoàn thành</span></td>
+                                            <td><a href="#" class="text-primary small">Chi tiết</a></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-semibold">#DH20240</td>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <img src="https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=60&h=60&fit=crop" style="width:42px;height:42px;border-radius:8px;object-fit:cover" alt="">
+                                                    <span>Dell XPS 15</span>
+                                                </div>
+                                            </td>
+                                            <td class="text-muted">18/12/2024</td>
+                                            <td class="fw-semibold">35.490.000₫</td>
+                                            <td><span class="badge-status status-shipping">Đang giao</span></td>
+                                            <td><a href="#" class="text-primary small">Chi tiết</a></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-semibold">#DH20238</td>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <img src="https://images.unsplash.com/photo-1625842268584-8f3296236761?w=60&h=60&fit=crop" style="width:42px;height:42px;border-radius:8px;object-fit:cover" alt="">
+                                                    <span>Chuột Logitech MX Master 3S</span>
+                                                </div>
+                                            </td>
+                                            <td class="text-muted">10/12/2024</td>
+                                            <td class="fw-semibold">2.290.000₫</td>
+                                            <td><span class="badge-status status-pending">Chờ xác nhận</span></td>
+                                            <td><a href="#" class="text-primary small">Chi tiết</a></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-semibold">#DH20235</td>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <img src="https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=60&h=60&fit=crop" style="width:42px;height:42px;border-radius:8px;object-fit:cover" alt="">
+                                                    <span>ThinkPad X1 Carbon</span>
+                                                </div>
+                                            </td>
+                                            <td class="text-muted">01/12/2024</td>
+                                            <td class="fw-semibold">32.990.000₫</td>
+                                            <td><span class="badge-status status-cancel">Đã hủy</span></td>
+                                            <td><a href="#" class="text-primary small">Chi tiết</a></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Địa chỉ -->
+                    <div class="tab-pane fade" id="addresses">
+                        <div class="content-card">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h5 class="mb-0"><i class="bi bi-geo-alt me-2 text-primary"></i>Sổ địa chỉ</h5>
+                                <button class="btn btn-brand btn-sm px-3"><i class="bi bi-plus-lg me-1"></i>Thêm địa chỉ</button>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="address-card default">
+                                        <span class="address-tag">Mặc định</span>
+                                        <div class="fw-bold mb-1">Nguyễn Văn A</div>
+                                        <div class="small text-muted mb-1">0987 654 321</div>
+                                        <div class="small">123 Nguyễn Huệ, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh</div>
+                                        <div class="mt-3 d-flex gap-2">
+                                            <button class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i> Sửa</button>
+                                            <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> Xóa</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="address-card">
+                                        <div class="fw-bold mb-1">Nguyễn Văn A</div>
+                                        <div class="small text-muted mb-1">0912 345 678</div>
+                                        <div class="small">456 Trần Duy Hưng, Phường Trung Hòa, Quận Cầu Giấy, Hà Nội</div>
+                                        <div class="mt-3 d-flex gap-2">
+                                            <button class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i> Sửa</button>
+                                            <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> Xóa</button>
+                                            <button class="btn btn-sm btn-outline-secondary">Đặt mặc định</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Yêu thích -->
+                    <div class="tab-pane fade" id="wishlist">
+                        <div class="content-card">
+                            <h5><i class="bi bi-heart me-2 text-primary"></i>Sản phẩm yêu thích</h5>
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <div style="background:#f8fafc;border:1px solid #e5e7eb;border-radius:14px;overflow:hidden">
+                                        <img src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400&h=250&fit=crop" style="width:100%;height:160px;object-fit:cover" alt="">
+                                        <div class="p-3">
+                                            <div class="fw-semibold mb-1" style="font-size:14px">MacBook Air M3</div>
+                                            <div class="text-primary fw-bold">27.990.000₫</div>
+                                            <div class="mt-2 d-flex gap-2">
+                                                <a href="ChiTietSanPham.html" class="btn btn-brand btn-sm flex-grow-1"><i class="bi bi-bag-plus me-1"></i>Mua</a>
+                                                <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div style="background:#f8fafc;border:1px solid #e5e7eb;border-radius:14px;overflow:hidden">
+                                        <img src="https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=400&h=250&fit=crop" style="width:100%;height:160px;object-fit:cover" alt="">
+                                        <div class="p-3">
+                                            <div class="fw-semibold mb-1" style="font-size:14px">Dell XPS 15</div>
+                                            <div class="text-primary fw-bold">35.490.000₫</div>
+                                            <div class="mt-2 d-flex gap-2">
+                                                <a href="ChiTietSanPham.html" class="btn btn-brand btn-sm flex-grow-1"><i class="bi bi-bag-plus me-1"></i>Mua</a>
+                                                <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div style="background:#f8fafc;border:1px solid #e5e7eb;border-radius:14px;overflow:hidden">
+                                        <img src="https://images.unsplash.com/photo-1625842268584-8f3296236761?w=400&h=250&fit=crop" style="width:100%;height:160px;object-fit:cover" alt="">
+                                        <div class="p-3">
+                                            <div class="fw-semibold mb-1" style="font-size:14px">Chuột MX Master 3S</div>
+                                            <div class="text-primary fw-bold">2.290.000₫</div>
+                                            <div class="mt-2 d-flex gap-2">
+                                                <a href="ChiTietSanPham.html" class="btn btn-brand btn-sm flex-grow-1"><i class="bi bi-bag-plus me-1"></i>Mua</a>
+                                                <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Đổi mật khẩu -->
+                    <div class="tab-pane fade" id="password">
+                        <div class="content-card">
+                            <h5><i class="bi bi-shield-lock me-2 text-primary"></i>Đổi mật khẩu</h5>
+                            <form style="max-width:480px">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Mật khẩu hiện tại</label>
+                                    <input type="password" class="form-control" placeholder="••••••••">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Mật khẩu mới</label>
+                                    <input type="password" class="form-control" placeholder="••••••••">
+                                    <div class="form-text">Tối thiểu 8 ký tự, bao gồm chữ hoa, chữ thường và số</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Xác nhận mật khẩu mới</label>
+                                    <input type="password" class="form-control" placeholder="••••••••">
+                                </div>
+                                <button class="btn btn-brand px-4">Cập nhật mật khẩu</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer py-4 mt-auto">
+        <div class="container d-flex flex-column flex-lg-row justify-content-between gap-3">
+            <div><div class="fw-bold text-white mb-2">LapTopHub</div><p class="mb-0 small">Laptop, phụ kiện chính hãng. Giao nhanh, bảo hành chuẩn hãng.</p></div>
+            <div class="text-secondary small d-flex gap-3 flex-wrap"><span>CSKH: 1900 6868</span><span>Email: support@laptophub.vn</span><span>© 2026</span></div>
+        </div>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
