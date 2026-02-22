@@ -1,0 +1,538 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|d:\\d\u1EF1 \u00E1n\\websitesellcomputer\\selllaptop\\websiteselllaptop\\authentication_readme.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}",
+      "RelativeMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|solutionrelative:websiteselllaptop\\authentication_readme.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|d:\\d\u1EF1 \u00E1n\\websitesellcomputer\\selllaptop\\websiteselllaptop\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|solutionrelative:websiteselllaptop\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|d:\\d\u1EF1 \u00E1n\\websitesellcomputer\\selllaptop\\websiteselllaptop\\areas\\admin\\views\\banner\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|solutionrelative:websiteselllaptop\\areas\\admin\\views\\banner\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|d:\\d\u1EF1 \u00E1n\\websitesellcomputer\\selllaptop\\websiteselllaptop\\models\\enums\\statusentity.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|solutionrelative:websiteselllaptop\\models\\enums\\statusentity.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|d:\\d\u1EF1 \u00E1n\\websitesellcomputer\\selllaptop\\websiteselllaptop\\websiteselllaptop.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|solutionrelative:websiteselllaptop\\websiteselllaptop.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|d:\\d\u1EF1 \u00E1n\\websitesellcomputer\\selllaptop\\websiteselllaptop\\areas\\admin\\views\\blog\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|solutionrelative:websiteselllaptop\\areas\\admin\\views\\blog\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|d:\\d\u1EF1 \u00E1n\\websitesellcomputer\\selllaptop\\websiteselllaptop\\areas\\admin\\views\\blog\\create.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|solutionrelative:websiteselllaptop\\areas\\admin\\views\\blog\\create.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|d:\\d\u1EF1 \u00E1n\\websitesellcomputer\\selllaptop\\websiteselllaptop\\models\\entities\\baseentity.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|solutionrelative:websiteselllaptop\\models\\entities\\baseentity.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|d:\\d\u1EF1 \u00E1n\\websitesellcomputer\\selllaptop\\websiteselllaptop\\models\\entities\\role.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|solutionrelative:websiteselllaptop\\models\\entities\\role.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|d:\\d\u1EF1 \u00E1n\\websitesellcomputer\\selllaptop\\websiteselllaptop\\data\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|solutionrelative:websiteselllaptop\\data\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|d:\\d\u1EF1 \u00E1n\\websitesellcomputer\\selllaptop\\websiteselllaptop\\areas\\admin\\controllers\\rolecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|solutionrelative:websiteselllaptop\\areas\\admin\\controllers\\rolecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|d:\\d\u1EF1 \u00E1n\\websitesellcomputer\\selllaptop\\websiteselllaptop\\areas\\admin\\views\\role\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|solutionrelative:websiteselllaptop\\areas\\admin\\views\\role\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|d:\\d\u1EF1 \u00E1n\\websitesellcomputer\\selllaptop\\websiteselllaptop\\areas\\admin\\views\\shared\\_layoutadmin.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|solutionrelative:websiteselllaptop\\areas\\admin\\views\\shared\\_layoutadmin.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|d:\\d\u1EF1 \u00E1n\\websitesellcomputer\\selllaptop\\websiteselllaptop\\areas\\admin\\controllers\\brandcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|solutionrelative:websiteselllaptop\\areas\\admin\\controllers\\brandcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|d:\\d\u1EF1 \u00E1n\\websitesellcomputer\\selllaptop\\websiteselllaptop\\areas\\admin\\views\\brand\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|solutionrelative:websiteselllaptop\\areas\\admin\\views\\brand\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|d:\\d\u1EF1 \u00E1n\\websitesellcomputer\\selllaptop\\websiteselllaptop\\areas\\admin\\controllers\\categorycontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|solutionrelative:websiteselllaptop\\areas\\admin\\controllers\\categorycontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|d:\\d\u1EF1 \u00E1n\\websitesellcomputer\\selllaptop\\websiteselllaptop\\areas\\admin\\views\\category\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|solutionrelative:websiteselllaptop\\areas\\admin\\views\\category\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|d:\\d\u1EF1 \u00E1n\\websitesellcomputer\\selllaptop\\websiteselllaptop\\areas\\admin\\controllers\\ordercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|solutionrelative:websiteselllaptop\\areas\\admin\\controllers\\ordercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|d:\\d\u1EF1 \u00E1n\\websitesellcomputer\\selllaptop\\websiteselllaptop\\areas\\admin\\views\\order\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|solutionrelative:websiteselllaptop\\areas\\admin\\views\\order\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|d:\\d\u1EF1 \u00E1n\\websitesellcomputer\\selllaptop\\websiteselllaptop\\areas\\admin\\views\\order\\detail.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|solutionrelative:websiteselllaptop\\areas\\admin\\views\\order\\detail.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|d:\\d\u1EF1 \u00E1n\\websitesellcomputer\\selllaptop\\websiteselllaptop\\areas\\admin\\controllers\\productcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|solutionrelative:websiteselllaptop\\areas\\admin\\controllers\\productcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|d:\\d\u1EF1 \u00E1n\\websitesellcomputer\\selllaptop\\websiteselllaptop\\areas\\admin\\views\\product\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|solutionrelative:websiteselllaptop\\areas\\admin\\views\\product\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|d:\\d\u1EF1 \u00E1n\\websitesellcomputer\\selllaptop\\websiteselllaptop\\areas\\admin\\controllers\\bannercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|solutionrelative:websiteselllaptop\\areas\\admin\\controllers\\bannercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|d:\\d\u1EF1 \u00E1n\\websitesellcomputer\\selllaptop\\websiteselllaptop\\areas\\admin\\views\\partner\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|solutionrelative:websiteselllaptop\\areas\\admin\\views\\partner\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|d:\\d\u1EF1 \u00E1n\\websitesellcomputer\\selllaptop\\websiteselllaptop\\areas\\admin\\controllers\\dashboardcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|solutionrelative:websiteselllaptop\\areas\\admin\\controllers\\dashboardcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|d:\\d\u1EF1 \u00E1n\\websitesellcomputer\\selllaptop\\websiteselllaptop\\areas\\admin\\views\\dashboard\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|solutionrelative:websiteselllaptop\\areas\\admin\\views\\dashboard\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|d:\\d\u1EF1 \u00E1n\\websitesellcomputer\\selllaptop\\websiteselllaptop\\areas\\admin\\controllers\\usercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|solutionrelative:websiteselllaptop\\areas\\admin\\controllers\\usercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|d:\\d\u1EF1 \u00E1n\\websitesellcomputer\\selllaptop\\websiteselllaptop\\areas\\admin\\views\\user\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|solutionrelative:websiteselllaptop\\areas\\admin\\views\\user\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|d:\\d\u1EF1 \u00E1n\\websitesellcomputer\\selllaptop\\websiteselllaptop\\areas\\admin\\views\\user\\detail.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|solutionrelative:websiteselllaptop\\areas\\admin\\views\\user\\detail.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|d:\\d\u1EF1 \u00E1n\\websitesellcomputer\\selllaptop\\websiteselllaptop\\admin_guide.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}",
+      "RelativeMoniker": "D:0:0:{6D027BF9-B829-F8F5-48FE-278FA880D88A}|WebsiteSellLaptop\\WebsiteSellLaptop.csproj|solutionrelative:websiteselllaptop\\admin_guide.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 5,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{40ea2e6b-2121-4bb8-a43e-c83c04b51041}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 28,
+              "Title": "Detail.cshtml",
+              "DocumentMoniker": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Areas\\Admin\\Views\\User\\Detail.cshtml",
+              "RelativeDocumentMoniker": "WebsiteSellLaptop\\Areas\\Admin\\Views\\User\\Detail.cshtml",
+              "ToolTip": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Areas\\Admin\\Views\\User\\Detail.cshtml",
+              "RelativeToolTip": "WebsiteSellLaptop\\Areas\\Admin\\Views\\User\\Detail.cshtml",
+              "ViewState": "AgIAAHUAAAAAAAAAAIBJwK4AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-02-20T08:28:59.878Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 27,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Areas\\Admin\\Views\\User\\Index.cshtml",
+              "RelativeDocumentMoniker": "WebsiteSellLaptop\\Areas\\Admin\\Views\\User\\Index.cshtml",
+              "ToolTip": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Areas\\Admin\\Views\\User\\Index.cshtml",
+              "RelativeToolTip": "WebsiteSellLaptop\\Areas\\Admin\\Views\\User\\Index.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAANsAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-02-20T08:28:27.157Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 26,
+              "Title": "UserController.cs",
+              "DocumentMoniker": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Areas\\Admin\\Controllers\\UserController.cs",
+              "RelativeDocumentMoniker": "WebsiteSellLaptop\\Areas\\Admin\\Controllers\\UserController.cs",
+              "ToolTip": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Areas\\Admin\\Controllers\\UserController.cs",
+              "RelativeToolTip": "WebsiteSellLaptop\\Areas\\Admin\\Controllers\\UserController.cs",
+              "ViewState": "AgIAAEUAAAAAAAAAAABBwIAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-20T08:26:24.672Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "AUTHENTICATION_README.md",
+              "DocumentMoniker": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\AUTHENTICATION_README.md",
+              "RelativeDocumentMoniker": "WebsiteSellLaptop\\AUTHENTICATION_README.md",
+              "ToolTip": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\AUTHENTICATION_README.md",
+              "RelativeToolTip": "WebsiteSellLaptop\\AUTHENTICATION_README.md",
+              "ViewState": "AgIAAE4AAAAAAAAAAAAgwFEAAAAnAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2026-02-20T08:17:13.051Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 29,
+              "Title": "ADMIN_GUIDE.md",
+              "DocumentMoniker": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\ADMIN_GUIDE.md",
+              "RelativeDocumentMoniker": "WebsiteSellLaptop\\ADMIN_GUIDE.md",
+              "ToolTip": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\ADMIN_GUIDE.md",
+              "RelativeToolTip": "WebsiteSellLaptop\\ADMIN_GUIDE.md",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACMBAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2026-02-20T08:39:25.845Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 24,
+              "Title": "DashboardController.cs",
+              "DocumentMoniker": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Areas\\Admin\\Controllers\\DashboardController.cs",
+              "RelativeDocumentMoniker": "WebsiteSellLaptop\\Areas\\Admin\\Controllers\\DashboardController.cs",
+              "ToolTip": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Areas\\Admin\\Controllers\\DashboardController.cs",
+              "RelativeToolTip": "WebsiteSellLaptop\\Areas\\Admin\\Controllers\\DashboardController.cs",
+              "ViewState": "AgIAAB8AAAAAAAAAAABBwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-20T08:25:26.408Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 25,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Areas\\Admin\\Views\\Dashboard\\Index.cshtml",
+              "RelativeDocumentMoniker": "WebsiteSellLaptop\\Areas\\Admin\\Views\\Dashboard\\Index.cshtml",
+              "ToolTip": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Areas\\Admin\\Views\\Dashboard\\Index.cshtml",
+              "RelativeToolTip": "WebsiteSellLaptop\\Areas\\Admin\\Views\\Dashboard\\Index.cshtml",
+              "ViewState": "AgIAAJkAAAAAAAAAAIBJwAEAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-02-20T08:26:05.723Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Program.cs",
+              "DocumentMoniker": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Program.cs",
+              "RelativeDocumentMoniker": "WebsiteSellLaptop\\Program.cs",
+              "ToolTip": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Program.cs",
+              "RelativeToolTip": "WebsiteSellLaptop\\Program.cs",
+              "ViewState": "AgIAAAcAAAAAAAAAAAAYwAkAAAAZAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-20T07:24:27.035Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 23,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Areas\\Admin\\Views\\Partner\\Index.cshtml",
+              "RelativeDocumentMoniker": "WebsiteSellLaptop\\Areas\\Admin\\Views\\Partner\\Index.cshtml",
+              "ToolTip": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Areas\\Admin\\Views\\Partner\\Index.cshtml",
+              "RelativeToolTip": "WebsiteSellLaptop\\Areas\\Admin\\Views\\Partner\\Index.cshtml",
+              "ViewState": "AgIAAEoAAAAAAAAAAIBJwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-02-20T07:20:46.926Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 22,
+              "Title": "BannerController.cs",
+              "DocumentMoniker": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Areas\\Admin\\Controllers\\BannerController.cs",
+              "RelativeDocumentMoniker": "WebsiteSellLaptop\\Areas\\Admin\\Controllers\\BannerController.cs",
+              "ToolTip": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Areas\\Admin\\Controllers\\BannerController.cs",
+              "RelativeToolTip": "WebsiteSellLaptop\\Areas\\Admin\\Controllers\\BannerController.cs",
+              "ViewState": "AgIAAAEAAAAAAAAAAIBJwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-20T06:55:09.078Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "WebsiteSellLaptop",
+              "DocumentMoniker": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\WebsiteSellLaptop.csproj",
+              "RelativeDocumentMoniker": "WebsiteSellLaptop\\WebsiteSellLaptop.csproj",
+              "ToolTip": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\WebsiteSellLaptop.csproj",
+              "RelativeToolTip": "WebsiteSellLaptop\\WebsiteSellLaptop.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAANAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-02-20T06:54:59.025Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Areas\\Admin\\Views\\Banner\\Index.cshtml",
+              "RelativeDocumentMoniker": "WebsiteSellLaptop\\Areas\\Admin\\Views\\Banner\\Index.cshtml",
+              "ToolTip": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Areas\\Admin\\Views\\Banner\\Index.cshtml",
+              "RelativeToolTip": "WebsiteSellLaptop\\Areas\\Admin\\Views\\Banner\\Index.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-02-20T06:48:49.022Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "StatusEntity.cs",
+              "DocumentMoniker": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Models\\Enums\\StatusEntity.cs",
+              "RelativeDocumentMoniker": "WebsiteSellLaptop\\Models\\Enums\\StatusEntity.cs",
+              "ToolTip": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Models\\Enums\\StatusEntity.cs",
+              "RelativeToolTip": "WebsiteSellLaptop\\Models\\Enums\\StatusEntity.cs",
+              "ViewState": "AgIAAAQAAAAAAAAAAAAjwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-20T06:43:31.886Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Areas\\Admin\\Views\\Category\\Index.cshtml",
+              "RelativeDocumentMoniker": "WebsiteSellLaptop\\Areas\\Admin\\Views\\Category\\Index.cshtml",
+              "ToolTip": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Areas\\Admin\\Views\\Category\\Index.cshtml",
+              "RelativeToolTip": "WebsiteSellLaptop\\Areas\\Admin\\Views\\Category\\Index.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAIBJwAIAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-02-20T06:51:02.167Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "CategoryController.cs",
+              "DocumentMoniker": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Areas\\Admin\\Controllers\\CategoryController.cs",
+              "RelativeDocumentMoniker": "WebsiteSellLaptop\\Areas\\Admin\\Controllers\\CategoryController.cs",
+              "ToolTip": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Areas\\Admin\\Controllers\\CategoryController.cs",
+              "RelativeToolTip": "WebsiteSellLaptop\\Areas\\Admin\\Controllers\\CategoryController.cs",
+              "ViewState": "AgIAAAQAAAAAAAAAAIBJwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-20T06:49:35.898Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Areas\\Admin\\Views\\Blog\\Index.cshtml",
+              "RelativeDocumentMoniker": "WebsiteSellLaptop\\Areas\\Admin\\Views\\Blog\\Index.cshtml",
+              "ToolTip": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Areas\\Admin\\Views\\Blog\\Index.cshtml",
+              "RelativeToolTip": "WebsiteSellLaptop\\Areas\\Admin\\Views\\Blog\\Index.cshtml",
+              "ViewState": "AgIAAFkAAAAAAAAAAAAUwA8AAAAtAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-02-20T06:49:02.262Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 21,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Areas\\Admin\\Views\\Product\\Index.cshtml",
+              "RelativeDocumentMoniker": "WebsiteSellLaptop\\Areas\\Admin\\Views\\Product\\Index.cshtml",
+              "ToolTip": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Areas\\Admin\\Views\\Product\\Index.cshtml",
+              "RelativeToolTip": "WebsiteSellLaptop\\Areas\\Admin\\Views\\Product\\Index.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAIBJwAIAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-02-20T06:54:39.037Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 20,
+              "Title": "ProductController.cs",
+              "DocumentMoniker": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Areas\\Admin\\Controllers\\ProductController.cs",
+              "RelativeDocumentMoniker": "WebsiteSellLaptop\\Areas\\Admin\\Controllers\\ProductController.cs",
+              "ToolTip": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Areas\\Admin\\Controllers\\ProductController.cs",
+              "RelativeToolTip": "WebsiteSellLaptop\\Areas\\Admin\\Controllers\\ProductController.cs",
+              "ViewState": "AgIAAAUAAAAAAAAAAIBJwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-20T06:53:34.467Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
+              "Title": "Detail.cshtml",
+              "DocumentMoniker": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Areas\\Admin\\Views\\Order\\Detail.cshtml",
+              "RelativeDocumentMoniker": "WebsiteSellLaptop\\Areas\\Admin\\Views\\Order\\Detail.cshtml",
+              "ToolTip": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Areas\\Admin\\Views\\Order\\Detail.cshtml",
+              "RelativeToolTip": "WebsiteSellLaptop\\Areas\\Admin\\Views\\Order\\Detail.cshtml",
+              "ViewState": "AgIAADkAAAAAAAAAAABRwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-02-20T06:52:57.841Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Areas\\Admin\\Views\\Order\\Index.cshtml",
+              "RelativeDocumentMoniker": "WebsiteSellLaptop\\Areas\\Admin\\Views\\Order\\Index.cshtml",
+              "ToolTip": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Areas\\Admin\\Views\\Order\\Index.cshtml",
+              "RelativeToolTip": "WebsiteSellLaptop\\Areas\\Admin\\Views\\Order\\Index.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAIBJwAIAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-02-20T06:52:36.177Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "OrderController.cs",
+              "DocumentMoniker": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Areas\\Admin\\Controllers\\OrderController.cs",
+              "RelativeDocumentMoniker": "WebsiteSellLaptop\\Areas\\Admin\\Controllers\\OrderController.cs",
+              "ToolTip": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Areas\\Admin\\Controllers\\OrderController.cs",
+              "RelativeToolTip": "WebsiteSellLaptop\\Areas\\Admin\\Controllers\\OrderController.cs",
+              "ViewState": "AgIAAAQAAAAAAAAAAIBJwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-20T06:51:40.877Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "Create.cshtml",
+              "DocumentMoniker": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Areas\\Admin\\Views\\Blog\\Create.cshtml",
+              "RelativeDocumentMoniker": "WebsiteSellLaptop\\Areas\\Admin\\Views\\Blog\\Create.cshtml",
+              "ToolTip": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Areas\\Admin\\Views\\Blog\\Create.cshtml",
+              "RelativeToolTip": "WebsiteSellLaptop\\Areas\\Admin\\Views\\Blog\\Create.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-02-20T06:49:01.339Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "AppDbContext.cs",
+              "DocumentMoniker": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Data\\AppDbContext.cs",
+              "RelativeDocumentMoniker": "WebsiteSellLaptop\\Data\\AppDbContext.cs",
+              "ToolTip": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Data\\AppDbContext.cs",
+              "RelativeToolTip": "WebsiteSellLaptop\\Data\\AppDbContext.cs",
+              "ViewState": "AgIAADEAAAAAAAAAAABBwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-20T06:43:50.971Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "Role.cs",
+              "DocumentMoniker": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Models\\Entities\\Role.cs",
+              "RelativeDocumentMoniker": "WebsiteSellLaptop\\Models\\Entities\\Role.cs",
+              "ToolTip": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Models\\Entities\\Role.cs",
+              "RelativeToolTip": "WebsiteSellLaptop\\Models\\Entities\\Role.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-20T06:43:38.304Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "BaseEntity.cs",
+              "DocumentMoniker": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Models\\Entities\\BaseEntity.cs",
+              "RelativeDocumentMoniker": "WebsiteSellLaptop\\Models\\Entities\\BaseEntity.cs",
+              "ToolTip": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Models\\Entities\\BaseEntity.cs",
+              "RelativeToolTip": "WebsiteSellLaptop\\Models\\Entities\\BaseEntity.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAuwA4AAAA6AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-20T06:43:18.14Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Areas\\Admin\\Views\\Brand\\Index.cshtml",
+              "RelativeDocumentMoniker": "WebsiteSellLaptop\\Areas\\Admin\\Views\\Brand\\Index.cshtml",
+              "ToolTip": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Areas\\Admin\\Views\\Brand\\Index.cshtml",
+              "RelativeToolTip": "WebsiteSellLaptop\\Areas\\Admin\\Views\\Brand\\Index.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAIBJwAIAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-02-20T06:48:05.094Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "BrandController.cs",
+              "DocumentMoniker": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Areas\\Admin\\Controllers\\BrandController.cs",
+              "RelativeDocumentMoniker": "WebsiteSellLaptop\\Areas\\Admin\\Controllers\\BrandController.cs",
+              "ToolTip": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Areas\\Admin\\Controllers\\BrandController.cs",
+              "RelativeToolTip": "WebsiteSellLaptop\\Areas\\Admin\\Controllers\\BrandController.cs",
+              "ViewState": "AgIAAAQAAAAAAAAAAIBJwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-20T06:46:35.754Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "_LayoutAdmin.cshtml",
+              "DocumentMoniker": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Areas\\Admin\\Views\\Shared\\_LayoutAdmin.cshtml",
+              "RelativeDocumentMoniker": "WebsiteSellLaptop\\Areas\\Admin\\Views\\Shared\\_LayoutAdmin.cshtml",
+              "ToolTip": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Areas\\Admin\\Views\\Shared\\_LayoutAdmin.cshtml",
+              "RelativeToolTip": "WebsiteSellLaptop\\Areas\\Admin\\Views\\Shared\\_LayoutAdmin.cshtml",
+              "ViewState": "AgIAAO4AAAAAAAAAAIBJwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-02-20T06:45:44.378Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Areas\\Admin\\Views\\Role\\Index.cshtml",
+              "RelativeDocumentMoniker": "WebsiteSellLaptop\\Areas\\Admin\\Views\\Role\\Index.cshtml",
+              "ToolTip": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Areas\\Admin\\Views\\Role\\Index.cshtml",
+              "RelativeToolTip": "WebsiteSellLaptop\\Areas\\Admin\\Views\\Role\\Index.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAFYCAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-02-20T06:45:34.254Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "RoleController.cs",
+              "DocumentMoniker": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Areas\\Admin\\Controllers\\RoleController.cs",
+              "RelativeDocumentMoniker": "WebsiteSellLaptop\\Areas\\Admin\\Controllers\\RoleController.cs",
+              "ToolTip": "D:\\D\u1EF1 \u00E1n\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\Areas\\Admin\\Controllers\\RoleController.cs",
+              "RelativeToolTip": "WebsiteSellLaptop\\Areas\\Admin\\Controllers\\RoleController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAP0AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-20T06:44:20.072Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

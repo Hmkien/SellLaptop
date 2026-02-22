@@ -1,19 +1,28 @@
-@model X.PagedList.IPagedList<Brand>
+@model List<Brand>
+@using WebsiteSellLaptop.Models.Enums
 
 @{
     ViewData["Title"] = "Quản lý thương hiệu";
+    var currentPage = ViewBag.CurrentPage ?? 1;
+    var totalPages = ViewBag.TotalPages ?? 1;
+    var totalItems = ViewBag.TotalItems ?? 0;
+    var pageSize = ViewBag.PageSize ?? 10;
+    var keyword = ViewBag.Keyword as string;
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="fw-bold mb-0"><i class="bi bi-briefcase me-2"></i>Quản lý thương hiệu</h4>
-    <a asp-action="Create" class="btn btn-brand"><i class="bi bi-plus-lg me-1"></i>Thêm mới</a>
+    <button type="button" class="btn btn-brand" data-bs-toggle="modal" data-bs-target="#createModal">
+        <i class="bi bi-plus-lg me-1"></i>Thêm mới
+    </button>
 </div>
 
+<!-- Search Form -->
 <div class="admin-card mb-4">
-    <form method="get" class="row g-3 align-items-end">
+    <form method="get" class="row g-3 align-items-end p-3">
         <div class="col-md-8">
             <label class="form-label fw-semibold">Tìm kiếm</label>
-            <input type="text" name="keyword" value="@ViewBag.Keyword" class="form-control" placeholder="Nhập tên thương hiệu...">
+            <input type="text" name="keyword" value="@keyword" class="form-control" placeholder="Nhập mã hoặc tên thương hiệu...">
         </div>
         <div class="col-md-4">
             <button type="submit" class="btn btn-brand w-100"><i class="bi bi-search me-1"></i>Tìm kiếm</button>
@@ -21,12 +30,14 @@
     </form>
 </div>
 
+<!-- Data Table -->
 <div class="admin-card p-0">
     <div class="table-responsive">
         <table class="admin-table">
             <thead>
                 <tr>
                     <th width="60">STT</th>
+                    <th width="100">Mã</th>
                     <th>Logo</th>
                     <th>Tên thương hiệu</th>
                     <th>Website</th>
@@ -37,84 +48,528 @@
                 </tr>
             </thead>
             <tbody>
-                @if (Model.Count == 0)
+                @if (Model == null || Model.Count == 0)
                 {
-                    <tr><td colspan="8" class="text-center text-muted py-4">Không có dữ liệu</td></tr>
+                    <tr><td colspan="9" class="text-center text-muted py-4">Không có dữ liệu</td></tr>
                 }
-                @for (int i = 0; i < Model.Count; i++)
+                else
                 {
-                    var item = Model[i];
-                    var stt = (Model.PageNumber - 1) * Model.PageSize + i + 1;
-                    <tr>
-                        <td class="text-center">@stt</td>
-                        <td>
-                            @if (!string.IsNullOrEmpty(item.LogoUrl))
-                            {
-                                <img src="@item.LogoUrl" alt="@item.Name" style="height: 36px; width: auto; object-fit: contain;">
-                            }
-                        </td>
-                        <td>
-                            <a asp-action="Detail" asp-route-id="@item.Id" class="record-title">@item.Name</a>
-                        </td>
-                        <td>
-                            @if (!string.IsNullOrEmpty(item.Website))
-                            {
-                                <a href="@item.Website" target="_blank" class="text-muted small">@item.Website</a>
-                            }
-                        </td>
-                        <td class="text-center">@item.SortOrder</td>
-                        <td>
-                            @switch (item.Status)
-                            {
-                                case StatusEntity.Approved: <span class="badge-status approved"><i class="bi bi-check-circle me-1"></i>Đã duyệt</span> break;
-                                case StatusEntity.Pending: <span class="badge-status pending"><i class="bi bi-clock me-1"></i>Chờ duyệt</span> break;
-                                case StatusEntity.Rejected: <span class="badge-status rejected"><i class="bi bi-x-circle me-1"></i>Hủy duyệt</span> break;
-                                case StatusEntity.Draft: <span class="badge-status draft"><i class="bi bi-pencil me-1"></i>Nháp</span> break;
-                            }
-                        </td>
-                        <td>@item.Created.ToString("dd/MM/yyyy")</td>
-                        <td>
-                            <div class="d-flex gap-2 align-items-center">
-                                @if (item.Status != StatusEntity.Approved)
+                    var sttBase = (currentPage - 1) * pageSize;
+                    @for (int i = 0; i < Model.Count; i++)
+                    {
+                        var item = Model[i];
+                        var stt = sttBase + i + 1;
+                        <tr>
+                            <td class="text-center">@stt</td>
+                            <td>
+                                <a href="javascript:void(0)" onclick="showDetail('@item.Id')" class="text-primary fw-semibold">@item.Code</a>
+                            </td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(item.LogoUrl))
                                 {
-                                    <form asp-action="Approve" asp-route-id="@item.Id" method="post" class="d-inline">
-                                        <button type="submit" class="action-icon approve" title="Duyệt"><i class="bi bi-check-circle-fill"></i></button>
-                                    </form>
+                                    <img src="@item.LogoUrl" alt="@item.Name" style="height: 36px; width: auto; object-fit: contain;">
                                 }
-                                @if (item.Status != StatusEntity.Rejected)
+                            </td>
+                            <td>
+                                <a href="javascript:void(0)" onclick="showDetail('@item.Id')" class="text-primary fw-semibold">@item.Name</a>
+                            </td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(item.Website))
                                 {
-                                    <form asp-action="Reject" asp-route-id="@item.Id" method="post" class="d-inline">
-                                        <button type="submit" class="action-icon reject" title="Hủy duyệt"><i class="bi bi-x-circle-fill"></i></button>
-                                    </form>
+                                    <a href="@item.Website" target="_blank" class="text-muted small">@item.Website</a>
                                 }
-                                @if (item.Status == StatusEntity.Rejected)
+                            </td>
+                            <td class="text-center">@item.SortOrder</td>
+                            <td>
+                                @switch (item.Status)
                                 {
-                                    <a asp-action="Edit" asp-route-id="@item.Id" class="action-icon edit" title="Sửa"><i class="bi bi-pencil-square"></i></a>
-                                    <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa?')">
-                                        <button type="submit" class="action-icon delete" title="Xóa"><i class="bi bi-trash3-fill"></i></button>
-                                    </form>
+                                    case StatusEntity.Approved: <span class="badge-status approved"><i class="bi bi-check-circle me-1"></i>Đã duyệt</span> break;
+                                    case StatusEntity.Pending: <span class="badge-status pending"><i class="bi bi-clock me-1"></i>Chờ duyệt</span> break;
+                                    case StatusEntity.Rejected: <span class="badge-status rejected"><i class="bi bi-x-circle me-1"></i>Hủy duyệt</span> break;
+                                    case StatusEntity.Draft: <span class="badge-status draft"><i class="bi bi-pencil me-1"></i>Nháp</span> break;
                                 }
-                            </div>
-                        </td>
-                    </tr>
+                            </td>
+                            <td>@item.Created.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                <div class="d-flex gap-1 align-items-center">
+                                    @if (item.Status == StatusEntity.Approved)
+                                    {
+                                        <!-- Đã duyệt: Chỉ hiển thị nút Hủy duyệt -->
+                                        <button type="button" class="action-icon action-reject" title="Hủy duyệt" onclick="confirmReject('@item.Id', '@item.Name')">
+                                            <i class="bi bi-x-circle-fill"></i>
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <!-- Chưa duyệt: Hiển thị các nút chức năng -->
+                                        <button type="button" class="action-icon action-approve" title="Duyệt" onclick="confirmApprove('@item.Id', '@item.Name')">
+                                            <i class="bi bi-check-circle-fill"></i>
+                                        </button>
+                                        <button type="button" class="action-icon action-edit" title="Sửa" onclick="openEditModal('@item.Id')">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </button>
+                                        <button type="button" class="action-icon action-delete" title="Xóa" onclick="confirmDelete('@item.Id', '@item.Name')">
+                                            <i class="bi bi-trash3-fill"></i>
+                                        </button>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
                 }
             </tbody>
         </table>
     </div>
-    @if (Model.PageCount > 1)
+
+    <!-- Pagination -->
+    @if (totalPages > 1)
     {
         <div class="admin-pagination">
-            @Html.PagedListPager(Model, page => Url.Action("Index", new { page, keyword = ViewBag.Keyword }), new X.PagedList.Web.Common.PagedListRenderOptions
-            {
-                DisplayLinkToFirstPage = X.PagedList.Web.Common.PagedListDisplayMode.Always,
-                DisplayLinkToLastPage = X.PagedList.Web.Common.PagedListDisplayMode.Always,
-                DisplayLinkToPreviousPage = X.PagedList.Web.Common.PagedListDisplayMode.Always,
-                DisplayLinkToNextPage = X.PagedList.Web.Common.PagedListDisplayMode.Always,
-                UlElementClasses = new[] { "pagination", "mb-0" },
-                LiElementClasses = new[] { "page-item" },
-                PageClasses = new[] { "page-link" },
-                ActiveLiElementClass = "active"
-            })
+            <div class="pg-info">
+                Hiển thị @(((currentPage - 1) * pageSize) + 1) - @Math.Min(currentPage * pageSize, totalItems) / @totalItems bản ghi
+            </div>
+            <div class="pg-list">
+                @if (currentPage > 1)
+                {
+                    <a href="@Url.Action("Index", new { page = 1, keyword })">«</a>
+                    <a href="@Url.Action("Index", new { page = currentPage - 1, keyword })">‹</a>
+                }
+                else
+                {
+                    <span class="disabled">«</span>
+                    <span class="disabled">‹</span>
+                }
+
+                @{
+                    var start = Math.Max(1, currentPage - 2);
+                    var end = Math.Min(totalPages, currentPage + 2);
+                }
+                @for (int p = start; p <= end; p++)
+                {
+                    if (p == currentPage)
+                    {
+                        <span class="active">@p</span>
+                    }
+                    else
+                    {
+                        <a href="@Url.Action("Index", new { page = p, keyword })">@p</a>
+                    }
+                }
+
+                @if (currentPage < totalPages)
+                {
+                    <a href="@Url.Action("Index", new { page = currentPage + 1, keyword })">›</a>
+                    <a href="@Url.Action("Index", new { page = totalPages, keyword })">»</a>
+                }
+                else
+                {
+                    <span class="disabled">›</span>
+                    <span class="disabled">»</span>
+                }
+            </div>
         </div>
     }
 </div>
+
+<!-- Modal Thêm mới -->
+<div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form id="createForm">
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createModalLabel"><i class="bi bi-plus-circle me-2"></i>Thêm mới thương hiệu</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Mã thương hiệu <span class="text-danger">*</span></label>
+                            <input type="text" name="Code" class="form-control" required maxlength="50" placeholder="VD: DELL, ASUS...">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Tên thương hiệu <span class="text-danger">*</span></label>
+                            <input type="text" name="Name" class="form-control" required maxlength="200" placeholder="Nhập tên thương hiệu">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Logo URL</label>
+                            <input type="text" name="LogoUrl" class="form-control" maxlength="500" placeholder="https://...">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Website</label>
+                            <input type="text" name="Website" class="form-control" maxlength="500" placeholder="https://...">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Thứ tự</label>
+                            <input type="number" name="SortOrder" class="form-control" value="0" min="0">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Mô tả</label>
+                            <textarea name="Description" class="form-control" rows="3" placeholder="Nhập mô tả thương hiệu"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-brand">Thêm mới</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Sửa -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form id="editForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="Id" id="editId">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editModalLabel"><i class="bi bi-pencil-square me-2"></i>Sửa thương hiệu</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Mã thương hiệu <span class="text-danger">*</span></label>
+                            <input type="text" name="Code" id="editCode" class="form-control" required maxlength="50">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Tên thương hiệu <span class="text-danger">*</span></label>
+                            <input type="text" name="Name" id="editName" class="form-control" required maxlength="200">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Logo URL</label>
+                            <input type="text" name="LogoUrl" id="editLogoUrl" class="form-control" maxlength="500">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Website</label>
+                            <input type="text" name="Website" id="editWebsite" class="form-control" maxlength="500">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Thứ tự</label>
+                            <input type="number" name="SortOrder" id="editSortOrder" class="form-control" min="0">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Mô tả</label>
+                            <textarea name="Description" id="editDescription" class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-brand">Cập nhật</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Xem chi tiết -->
+<div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="detailModalLabel"><i class="bi bi-info-circle me-2"></i>Chi tiết thương hiệu</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-3" id="detailLogoContainer"></div>
+                <table class="table table-bordered">
+                    <tr><th width="150">Mã</th><td id="detailCode"></td></tr>
+                    <tr><th>Tên thương hiệu</th><td id="detailName"></td></tr>
+                    <tr><th>Website</th><td id="detailWebsite"></td></tr>
+                    <tr><th>Mô tả</th><td id="detailDescription"></td></tr>
+                    <tr><th>Thứ tự</th><td id="detailSortOrder"></td></tr>
+                    <tr><th>Trạng thái</th><td id="detailStatus"></td></tr>
+                    <tr><th>Ngày tạo</th><td id="detailCreated"></td></tr>
+                    <tr><th>Cập nhật lần cuối</th><td id="detailLastModified"></td></tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Xác nhận xóa -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteModalLabel"><i class="bi bi-exclamation-triangle me-2"></i>Xác nhận xóa</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn xóa thương hiệu <strong id="deleteItemName"></strong>?</p>
+                <p class="text-muted small mb-0">Hành động này không thể hoàn tác.</p>
+            </div>
+            <div class="modal-footer">
+                <input type="hidden" id="deleteItemId">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-danger" onclick="doDelete()">Xóa</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Xác nhận duyệt -->
+<div class="modal fade" id="approveModal" tabindex="-1" aria-labelledby="approveModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="approveModalLabel"><i class="bi bi-check-circle me-2"></i>Xác nhận duyệt</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn duyệt thương hiệu <strong id="approveItemName"></strong>?</p>
+            </div>
+            <div class="modal-footer">
+                <input type="hidden" id="approveItemId">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-success" onclick="doApprove()">Duyệt</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Xác nhận hủy duyệt -->
+<div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title" id="rejectModalLabel"><i class="bi bi-x-circle me-2"></i>Xác nhận hủy duyệt</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn hủy duyệt thương hiệu <strong id="rejectItemName"></strong>?</p>
+            </div>
+            <div class="modal-footer">
+                <input type="hidden" id="rejectItemId">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-warning" onclick="doReject()">Hủy duyệt</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast thông báo -->
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+    <div id="toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <i class="bi me-2" id="toastIcon"></i>
+            <strong class="me-auto" id="toastTitle">Thông báo</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body" id="toastMessage"></div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    const baseUrl = '@Url.Action("Index", "Brand", new { area = "Admin" })'.replace('/Index', '');
+    const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+    // Toast
+    function showToast(message, type = 'success') {
+        const toast = document.getElementById('toast');
+        const toastIcon = document.getElementById('toastIcon');
+        const toastTitle = document.getElementById('toastTitle');
+        const toastMessage = document.getElementById('toastMessage');
+
+        toast.classList.remove('bg-success', 'bg-danger', 'bg-warning', 'text-white');
+        toastIcon.classList.remove('bi-check-circle-fill', 'bi-x-circle-fill', 'bi-exclamation-triangle-fill');
+
+        if (type === 'success') {
+            toast.classList.add('bg-success', 'text-white');
+            toastIcon.classList.add('bi-check-circle-fill');
+            toastTitle.textContent = 'Thành công';
+        } else if (type === 'error') {
+            toast.classList.add('bg-danger', 'text-white');
+            toastIcon.classList.add('bi-x-circle-fill');
+            toastTitle.textContent = 'Lỗi';
+        } else {
+            toast.classList.add('bg-warning');
+            toastIcon.classList.add('bi-exclamation-triangle-fill');
+            toastTitle.textContent = 'Cảnh báo';
+        }
+
+        toastMessage.textContent = message;
+        const bsToast = new bootstrap.Toast(toast);
+        bsToast.show();
+    }
+
+    // Create
+    document.getElementById('createForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+
+        const response = await fetch(`${baseUrl}/Create`, {
+            method: 'POST',
+            body: formData
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            showToast(result.message, 'success');
+            bootstrap.Modal.getInstance(document.getElementById('createModal')).hide();
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showToast(result.message, 'error');
+        }
+    });
+
+    // Edit Modal
+    async function openEditModal(id) {
+        const response = await fetch(`${baseUrl}/GetById?id=${id}`);
+        const result = await response.json();
+
+        if (result.success) {
+            document.getElementById('editId').value = result.data.id;
+            document.getElementById('editCode').value = result.data.code;
+            document.getElementById('editName').value = result.data.name;
+            document.getElementById('editLogoUrl').value = result.data.logoUrl || '';
+            document.getElementById('editWebsite').value = result.data.website || '';
+            document.getElementById('editSortOrder').value = result.data.sortOrder;
+            document.getElementById('editDescription').value = result.data.description || '';
+
+            new bootstrap.Modal(document.getElementById('editModal')).show();
+        } else {
+            showToast(result.message, 'error');
+        }
+    }
+
+    // Edit Submit
+    document.getElementById('editForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+
+        const response = await fetch(`${baseUrl}/Edit`, {
+            method: 'POST',
+            body: formData
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            showToast(result.message, 'success');
+            bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showToast(result.message, 'error');
+        }
+    });
+
+    // Detail Modal
+    async function showDetail(id) {
+        const response = await fetch(`${baseUrl}/GetById?id=${id}`);
+        const result = await response.json();
+
+        if (result.success) {
+            const logoContainer = document.getElementById('detailLogoContainer');
+            if (result.data.logoUrl) {
+                logoContainer.innerHTML = `<img src="${result.data.logoUrl}" alt="${result.data.name}" style="max-height: 80px;">`;
+            } else {
+                logoContainer.innerHTML = '';
+            }
+            document.getElementById('detailCode').textContent = result.data.code;
+            document.getElementById('detailName').textContent = result.data.name;
+            document.getElementById('detailWebsite').innerHTML = result.data.website ? `<a href="${result.data.website}" target="_blank">${result.data.website}</a>` : '-';
+            document.getElementById('detailDescription').textContent = result.data.description || '-';
+            document.getElementById('detailSortOrder').textContent = result.data.sortOrder;
+            document.getElementById('detailStatus').textContent = result.data.statusName;
+            document.getElementById('detailCreated').textContent = result.data.created;
+            document.getElementById('detailLastModified').textContent = result.data.lastModified;
+
+            new bootstrap.Modal(document.getElementById('detailModal')).show();
+        } else {
+            showToast(result.message, 'error');
+        }
+    }
+
+    // Delete
+    function confirmDelete(id, name) {
+        document.getElementById('deleteItemId').value = id;
+        document.getElementById('deleteItemName').textContent = name;
+        new bootstrap.Modal(document.getElementById('deleteModal')).show();
+    }
+
+    async function doDelete() {
+        const id = document.getElementById('deleteItemId').value;
+        const formData = new FormData();
+        formData.append('id', id);
+        formData.append('__RequestVerificationToken', token);
+
+        const response = await fetch(`${baseUrl}/Delete`, {
+            method: 'POST',
+            body: formData
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            showToast(result.message, 'success');
+            bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showToast(result.message, 'error');
+        }
+    }
+
+    // Approve
+    function confirmApprove(id, name) {
+        document.getElementById('approveItemId').value = id;
+        document.getElementById('approveItemName').textContent = name;
+        new bootstrap.Modal(document.getElementById('approveModal')).show();
+    }
+
+    async function doApprove() {
+        const id = document.getElementById('approveItemId').value;
+        const formData = new FormData();
+        formData.append('id', id);
+        formData.append('__RequestVerificationToken', token);
+
+        const response = await fetch(`${baseUrl}/Approve`, {
+            method: 'POST',
+            body: formData
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            showToast(result.message, 'success');
+            bootstrap.Modal.getInstance(document.getElementById('approveModal')).hide();
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showToast(result.message, 'error');
+        }
+    }
+
+    // Reject
+    function confirmReject(id, name) {
+        document.getElementById('rejectItemId').value = id;
+        document.getElementById('rejectItemName').textContent = name;
+        new bootstrap.Modal(document.getElementById('rejectModal')).show();
+    }
+
+    async function doReject() {
+        const id = document.getElementById('rejectItemId').value;
+        const formData = new FormData();
+        formData.append('id', id);
+        formData.append('__RequestVerificationToken', token);
+
+        const response = await fetch(`${baseUrl}/Reject`, {
+            method: 'POST',
+            body: formData
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            showToast(result.message, 'success');
+            bootstrap.Modal.getInstance(document.getElementById('rejectModal')).hide();
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showToast(result.message, 'error');
+        }
+    }
+</script>
+}

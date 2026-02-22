@@ -16,6 +16,16 @@ namespace WebsiteSellLaptop.Models.Enums
         Draft = 5
     }
 
+    public enum UserRole
+    {
+        [Description("Quản trị viên")]
+        Admin = 1,
+        [Description("Nhân viên bán hàng")]
+        Staff = 2,
+        [Description("Khách hàng")]
+        Customer = 3
+    }
+
     public enum OrderStatus
     {
         [Description("Chờ xác nhận")]

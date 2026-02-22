@@ -1,0 +1,219 @@
+@model List<AppUser>
+@{
+    ViewData["Title"] = "Quản lý người dùng";
+    var currentPage = ViewBag.CurrentPage ?? 1;
+    var totalPages = ViewBag.TotalPages ?? 1;
+    var totalItems = ViewBag.TotalItems ?? 0;
+    var pageSize = ViewBag.PageSize ?? 15;
+    var keyword = ViewBag.Keyword as string;
+    var usersWithRoles = ViewBag.UsersWithRoles as List<(AppUser User, string Role)> ?? new List<(AppUser User, string Role)>();
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0"><i class="bi bi-people-fill me-2"></i>Quản lý người dùng</h4>
+</div>
+
+<div class="admin-card mb-4">
+    <form method="get" class="row g-3 align-items-end p-3">
+        <div class="col-md-10">
+            <label class="form-label fw-semibold">Tìm kiếm</label>
+            <input type="text" name="keyword" value="@keyword" class="form-control" placeholder="Nhập tên, email hoặc số điện thoại...">
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-brand w-100"><i class="bi bi-search me-1"></i>Tìm kiếm</button>
+        </div>
+    </form>
+</div>
+
+<div class="admin-card p-0">
+    <div class="table-responsive">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th width="50">STT</th>
+                    <th>Họ tên</th>
+                    <th>Email</th>
+                    <th>Số điện thoại</th>
+                    <th>Vai trò</th>
+                    <th width="120">Trạng thái</th>
+                    <th width="120">Ngày tạo</th>
+                    <th width="150">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (usersWithRoles.Count == 0)
+                {
+                    <tr><td colspan="8" class="text-center text-muted py-4">Không có dữ liệu</td></tr>
+                }
+                else
+                {
+                    var sttBase = (currentPage - 1) * pageSize;
+                    @for (int i = 0; i < usersWithRoles.Count; i++)
+                    {
+                        var item = usersWithRoles[i];
+                        var user = item.User;
+                        var role = item.Role;
+                        var stt = sttBase + i + 1;
+                        var isLocked = user.LockoutEnd != null && user.LockoutEnd > DateTimeOffset.Now;
+                        <tr>
+                            <td class="text-center">@stt</td>
+                            <td>
+                                <a asp-action="Detail" asp-route-id="@user.Id" class="record-title">@user.FullName</a>
+                            </td>
+                            <td>@user.Email</td>
+                            <td>@(user.PhoneNumber ?? "—")</td>
+                            <td>
+                                @if (role == "Admin")
+                                {
+                                    <span class="badge-status" style="background:#fef3c7;color:#d97706"><i class="bi bi-star-fill me-1"></i>Admin</span>
+                                }
+                                else
+                                {
+                                    <span class="badge-status" style="background:#e0f2fe;color:#0284c7"><i class="bi bi-person-fill me-1"></i>User</span>
+                                }
+                            </td>
+                            <td>
+                                @if (isLocked)
+                                {
+                                    <span class="badge-status badge-rejected"><i class="bi bi-lock-fill me-1"></i>Đã khóa</span>
+                                }
+                                else
+                                {
+                                    <span class="badge-status badge-approved"><i class="bi bi-unlock-fill me-1"></i>Hoạt động</span>
+                                }
+                            </td>
+                            <td class="small">@user.Created.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                <div class="d-flex gap-1">
+                                    <a asp-action="Detail" asp-route-id="@user.Id" class="action-icon action-edit" title="Chi tiết">
+                                        <i class="bi bi-eye-fill"></i>
+                                    </a>
+                                    @if (role != "Admin")
+                                    {
+                                        <button type="button" class="action-icon @(isLocked ? "action-approve" : "action-reject")" 
+                                                title="@(isLocked ? "Mở khóa" : "Khóa")" 
+                                                onclick="toggleLockout('@user.Id', '@user.FullName', @(isLocked ? "true" : "false"))">
+                                            <i class="bi bi-@(isLocked ? "unlock" : "lock")-fill"></i>
+                                        </button>
+                                        <button type="button" class="action-icon action-delete" title="Xóa" onclick="confirmDelete('@user.Id', '@user.FullName')">
+                                            <i class="bi bi-trash3-fill"></i>
+                                        </button>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+    @if (totalPages > 1)
+    {
+        <div class="admin-pagination">
+            <div class="pg-info">Hiển thị @(((currentPage - 1) * pageSize) + 1) - @Math.Min(currentPage * pageSize, totalItems) / @totalItems bản ghi</div>
+            <div class="pg-list">
+                @if (currentPage > 1) { <a href="@Url.Action("Index", new { page = 1, keyword })">«</a> <a href="@Url.Action("Index", new { page = currentPage - 1, keyword })">‹</a> } else { <span class="disabled">«</span> <span class="disabled">‹</span> }
+                @{ var start = Math.Max(1, currentPage - 2); var end = Math.Min(totalPages, currentPage + 2); }
+                @for (int p = start; p <= end; p++) { if (p == currentPage) { <span class="active">@p</span> } else { <a href="@Url.Action("Index", new { page = p, keyword })">@p</a> } }
+                @if (currentPage < totalPages) { <a href="@Url.Action("Index", new { page = currentPage + 1, keyword })">›</a> <a href="@Url.Action("Index", new { page = totalPages, keyword })">»</a> } else { <span class="disabled">›</span> <span class="disabled">»</span> }
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Modals -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="bi bi-exclamation-triangle me-2"></i>Xác nhận xóa</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn xóa người dùng <strong id="deleteItemName"></strong>?</p>
+                <p class="text-danger small mb-0"><i class="bi bi-exclamation-circle me-1"></i>Hành động này không thể hoàn tác!</p>
+            </div>
+            <div class="modal-footer">
+                <input type="hidden" id="deleteItemId">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-danger" onclick="doDelete()">Xóa</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+    <div id="toast" class="toast" role="alert">
+        <div class="toast-header">
+            <i class="bi me-2" id="toastIcon"></i>
+            <strong class="me-auto" id="toastTitle">Thông báo</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+        </div>
+        <div class="toast-body" id="toastMessage"></div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    const baseUrl = '@Url.Action("Index", "User", new { area = "Admin" })'.replace('/Index', '');
+    
+    function showToast(message, type = 'success') {
+        const toast = document.getElementById('toast');
+        toast.classList.remove('bg-success', 'bg-danger', 'text-white');
+        document.getElementById('toastIcon').classList.remove('bi-check-circle-fill', 'bi-x-circle-fill');
+        
+        if (type === 'success') {
+            toast.classList.add('bg-success', 'text-white');
+            document.getElementById('toastIcon').classList.add('bi-check-circle-fill');
+            document.getElementById('toastTitle').textContent = 'Thành công';
+        } else {
+            toast.classList.add('bg-danger', 'text-white');
+            document.getElementById('toastIcon').classList.add('bi-x-circle-fill');
+            document.getElementById('toastTitle').textContent = 'Lỗi';
+        }
+        
+        document.getElementById('toastMessage').textContent = message;
+        new bootstrap.Toast(toast).show();
+    }
+
+    function confirmDelete(id, name) {
+        document.getElementById('deleteItemId').value = id;
+        document.getElementById('deleteItemName').textContent = name;
+        new bootstrap.Modal(document.getElementById('deleteModal')).show();
+    }
+
+    async function doDelete() {
+        const formData = new FormData();
+        formData.append('id', document.getElementById('deleteItemId').value);
+        formData.append('__RequestVerificationToken', '@Html.AntiForgeryToken()'.match(/value="([^"]+)"/)?.[1] || '');
+        
+        const r = await fetch(`${baseUrl}/Delete`, { method: 'POST', body: formData });
+        const result = await r.json();
+        
+        showToast(result.message, result.success ? 'success' : 'error');
+        
+        if (result.success) {
+            bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+            setTimeout(() => location.reload(), 1000);
+        }
+    }
+
+    async function toggleLockout(id, name, isLocked) {
+        const action = isLocked ? 'mở khóa' : 'khóa';
+        if (!confirm(`Bạn có chắc chắn muốn ${action} tài khoản "${name}"?`)) return;
+        
+        const formData = new FormData();
+        formData.append('id', id);
+        formData.append('__RequestVerificationToken', '@Html.AntiForgeryToken()'.match(/value="([^"]+)"/)?.[1] || '');
+        
+        const r = await fetch(`${baseUrl}/ToggleLockout`, { method: 'POST', body: formData });
+        const result = await r.json();
+        
+        showToast(result.message, result.success ? 'success' : 'error');
+        
+        if (result.success) {
+            setTimeout(() => location.reload(), 1000);
+        }
+    }
+</script>
+}

@@ -1,0 +1,44 @@
+﻿using System.ComponentModel;
+
+namespace WebsiteSellLaptop.Models.Enums
+{
+    public enum StatusEntity
+    {
+        [Description("Đã duyệt")]
+        Approved = 1,
+        [Description("Hủy duyệt")]
+        Rejected = 2,
+        [Description("Đang chờ duyệt")]
+        Pending = 3,
+        [Description("Đã xóa")]
+        Deleted = 4,
+        [Description("Nháp")]
+        Draft = 5
+    }
+
+    public enum OrderStatus
+    {
+        [Description("Chờ xác nhận")]
+        Pending = 1,
+        [Description("Đã xác nhận")]
+        Confirmed = 2,
+        [Description("Đang giao")]
+        Shipping = 3,
+        [Description("Hoàn thành")]
+        Completed = 4,
+        [Description("Đã hủy")]
+        Cancelled = 5
+    }
+
+    public enum PaymentMethod
+    {
+        [Description("Thanh toán khi nhận hàng")]
+        COD = 1,
+        [Description("Chuyển khoản ngân hàng")]
+        BankTransfer = 2,
+        [Description("Thẻ tín dụng")]
+        CreditCard = 3,
+        [Description("Ví điện tử")]
+        EWallet = 4
+    }
+}

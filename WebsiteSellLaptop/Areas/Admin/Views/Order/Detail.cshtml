@@ -57,11 +57,11 @@
                         }
                     </tbody>
                     <tfoot>
-                        @if (Model.DiscountAmount > 0)
+                        @if (Model.DiscountAmount.HasValue && Model.DiscountAmount > 0)
                         {
                             <tr>
                                 <td colspan="4" class="text-end fw-semibold">Giảm giá:</td>
-                                <td class="text-end text-success fw-semibold">-@Model.DiscountAmount.ToString("N0")đ</td>
+                                <td class="text-end text-success fw-semibold">-@Model.DiscountAmount.Value.ToString("N0")đ</td>
                             </tr>
                         }
                         <tr>

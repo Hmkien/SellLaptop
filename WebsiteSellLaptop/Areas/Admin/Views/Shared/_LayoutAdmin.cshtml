@@ -235,6 +235,12 @@
             </a>
 
             <div class="menu-label">Hệ thống</div>
+            <a href="@Url.Action("Index", "User", new { area = "Admin" })" class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "User" ? "active" : "")">
+                <i class="bi bi-people-fill"></i> Người dùng
+            </a>
+            <a href="@Url.Action("Index", "Role", new { area = "Admin" })" class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Role" ? "active" : "")">
+                <i class="bi bi-person-badge-fill"></i> Vai trò
+            </a>
             <a href="@Url.Action("Index", "Partner", new { area = "Admin" })" class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Partner" ? "active" : "")">
                 <i class="bi bi-building"></i> Đối tác
             </a>

@@ -19,6 +19,7 @@ namespace WebsiteSellLaptop.Data
         public DbSet<Banner> Banners { get; set; }
         public DbSet<Contact> Contacts { get; set; }
         public DbSet<Coupon> Coupons { get; set; }
+        public DbSet<Role> AppRoles { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -26,6 +27,26 @@ namespace WebsiteSellLaptop.Data
 
             // Rename Identity tables
             builder.Entity<AppUser>(e => e.ToTable("Users"));
+
+            // Role code unique
+            builder.Entity<Role>()
+                .HasIndex(r => r.Code)
+                .IsUnique();
+
+            // Brand code unique
+            builder.Entity<Brand>()
+                .HasIndex(b => b.Code)
+                .IsUnique();
+
+            // Category code unique
+            builder.Entity<Category>()
+                .HasIndex(c => c.Code)
+                .IsUnique();
+
+            // Product code unique
+            builder.Entity<Product>()
+                .HasIndex(p => p.Code)
+                .IsUnique();
 
             // Order code unique
             builder.Entity<Order>()

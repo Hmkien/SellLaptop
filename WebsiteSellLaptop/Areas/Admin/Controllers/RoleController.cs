@@ -1,0 +1,253 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using WebsiteSellLaptop.Data;
+using WebsiteSellLaptop.Models.Entities;
+using WebsiteSellLaptop.Models.Enums;
+
+namespace WebsiteSellLaptop.Areas.Admin.Controllers
+{
+    [Area("Admin")]
+    [Authorize(Roles = "Admin")]
+    public class RoleController : Controller
+    {
+        private readonly AppDbContext _context;
+        public RoleController(AppDbContext context) => _context = context;
+
+        #region Index - Danh sách
+        public async Task<IActionResult> Index(int page = 1, string? keyword = null, int pageSize = 10)
+        {
+            var query = _context.AppRoles.Where(x => x.Status != StatusEntity.Deleted).AsQueryable();
+            
+            if (!string.IsNullOrEmpty(keyword))
+            {
+                keyword = keyword.Trim().ToLower();
+                query = query.Where(x => x.Name.ToLower().Contains(keyword) || x.Code.ToLower().Contains(keyword));
+            }
+
+            var totalItems = await query.CountAsync();
+            var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+            page = Math.Max(1, Math.Min(page, Math.Max(1, totalPages)));
+
+            var data = await query
+                .OrderByDescending(x => x.Created)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            ViewBag.Keyword = keyword;
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.TotalItems = totalItems;
+            ViewBag.PageSize = pageSize;
+
+            return View(data);
+        }
+        #endregion
+
+        #region GetById - Lấy chi tiết để hiển thị modal
+        [HttpGet]
+        public async Task<IActionResult> GetById(Guid id)
+        {
+            var item = await _context.AppRoles.FindAsync(id);
+            if (item == null)
+                return Json(new { success = false, message = "Không tìm thấy dữ liệu" });
+
+            return Json(new
+            {
+                success = true,
+                data = new
+                {
+                    item.Id,
+                    item.Code,
+                    item.Name,
+                    item.Description,
+                    item.RoleType,
+                    RoleTypeName = GetEnumDescription(item.RoleType),
+                    item.SortOrder,
+                    item.Status,
+                    StatusName = GetEnumDescription(item.Status),
+                    Created = item.Created.ToString("dd/MM/yyyy HH:mm"),
+                    LastModified = item.LastModified.ToString("dd/MM/yyyy HH:mm")
+                }
+            });
+        }
+        #endregion
+
+        #region Create - Thêm mới
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create([FromForm] Role model)
+        {
+            if (string.IsNullOrWhiteSpace(model.Code))
+                return Json(new { success = false, message = "Mã vai trò không được để trống" });
+
+            if (string.IsNullOrWhiteSpace(model.Name))
+                return Json(new { success = false, message = "Tên vai trò không được để trống" });
+
+            // Kiểm tra trùng mã
+            var codeExists = await _context.AppRoles
+                .AnyAsync(x => x.Code.ToLower() == model.Code.Trim().ToLower() && x.Status != StatusEntity.Deleted);
+            if (codeExists)
+                return Json(new { success = false, message = "Mã vai trò đã tồn tại" });
+
+            var entity = new Role
+            {
+                Code = model.Code.Trim(),
+                Name = model.Name.Trim(),
+                Description = model.Description?.Trim(),
+                RoleType = model.RoleType,
+                SortOrder = model.SortOrder,
+                Status = StatusEntity.Pending,
+                CreatedBy = User.Identity?.Name
+            };
+
+            _context.AppRoles.Add(entity);
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, message = "Thêm mới thành công" });
+        }
+        #endregion
+
+        #region Edit - Cập nhật
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit([FromForm] Role model)
+        {
+            var item = await _context.AppRoles.FindAsync(model.Id);
+            if (item == null)
+                return Json(new { success = false, message = "Không tìm thấy dữ liệu" });
+
+            if (item.Status == StatusEntity.Approved)
+                return Json(new { success = false, message = "Không thể sửa bản ghi đã duyệt" });
+
+            if (string.IsNullOrWhiteSpace(model.Code))
+                return Json(new { success = false, message = "Mã vai trò không được để trống" });
+
+            if (string.IsNullOrWhiteSpace(model.Name))
+                return Json(new { success = false, message = "Tên vai trò không được để trống" });
+
+            // Kiểm tra trùng mã (loại trừ bản ghi hiện tại)
+            var codeExists = await _context.AppRoles
+                .AnyAsync(x => x.Code.ToLower() == model.Code.Trim().ToLower() 
+                            && x.Id != model.Id 
+                            && x.Status != StatusEntity.Deleted);
+            if (codeExists)
+                return Json(new { success = false, message = "Mã vai trò đã tồn tại" });
+
+            item.Code = model.Code.Trim();
+            item.Name = model.Name.Trim();
+            item.Description = model.Description?.Trim();
+            item.RoleType = model.RoleType;
+            item.SortOrder = model.SortOrder;
+            item.LastModified = DateTime.Now;
+            item.ModifiedBy = User.Identity?.Name;
+
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, message = "Cập nhật thành công" });
+        }
+        #endregion
+
+        #region Approve - Duyệt
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Approve(Guid id)
+        {
+            var item = await _context.AppRoles.FindAsync(id);
+            if (item == null)
+                return Json(new { success = false, message = "Không tìm thấy dữ liệu" });
+
+            item.Status = StatusEntity.Approved;
+            item.LastModified = DateTime.Now;
+            item.ModifiedBy = User.Identity?.Name;
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, message = "Duyệt thành công" });
+        }
+        #endregion
+
+        #region Reject - Hủy duyệt
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Reject(Guid id)
+        {
+            var item = await _context.AppRoles.FindAsync(id);
+            if (item == null)
+                return Json(new { success = false, message = "Không tìm thấy dữ liệu" });
+
+            item.Status = StatusEntity.Rejected;
+            item.LastModified = DateTime.Now;
+            item.ModifiedBy = User.Identity?.Name;
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, message = "Hủy duyệt thành công" });
+        }
+        #endregion
+
+        #region Delete - Xóa mềm
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            var item = await _context.AppRoles.FindAsync(id);
+            if (item == null)
+                return Json(new { success = false, message = "Không tìm thấy dữ liệu" });
+
+            if (item.Status == StatusEntity.Approved)
+                return Json(new { success = false, message = "Không thể xóa bản ghi đã duyệt" });
+
+            item.Status = StatusEntity.Deleted;
+            item.LastModified = DateTime.Now;
+            item.ModifiedBy = User.Identity?.Name;
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, message = "Xóa thành công" });
+        }
+        #endregion
+
+        #region SyncFromEnum - Đồng bộ vai trò từ enum
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SyncFromEnum()
+        {
+            var enumValues = Enum.GetValues<UserRole>();
+            int added = 0;
+
+            foreach (var roleType in enumValues)
+            {
+                var exists = await _context.AppRoles.AnyAsync(x => x.RoleType == roleType && x.Status != StatusEntity.Deleted);
+                if (!exists)
+                {
+                    var role = new Role
+                    {
+                        Code = roleType.ToString().ToUpper(),
+                        Name = GetEnumDescription(roleType),
+                        RoleType = roleType,
+                        SortOrder = (int)roleType,
+                        Status = StatusEntity.Approved,
+                        CreatedBy = User.Identity?.Name
+                    };
+                    _context.AppRoles.Add(role);
+                    added++;
+                }
+            }
+
+            if (added > 0)
+                await _context.SaveChangesAsync();
+
+            return Json(new { success = true, message = $"Đồng bộ thành công {added} vai trò" });
+        }
+        #endregion
+
+        #region Helper - Lấy Description từ enum
+        private static string GetEnumDescription(Enum value)
+        {
+            var field = value.GetType().GetField(value.ToString());
+            var attr = field?.GetCustomAttributes(typeof(System.ComponentModel.DescriptionAttribute), false)
+                            .FirstOrDefault() as System.ComponentModel.DescriptionAttribute;
+            return attr?.Description ?? value.ToString();
+        }
+        #endregion
+    }
+}

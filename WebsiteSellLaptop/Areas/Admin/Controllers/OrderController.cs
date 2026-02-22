@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using WebsiteSellLaptop.Data;
 using WebsiteSellLaptop.Models.Entities;
 using WebsiteSellLaptop.Models.Enums;
-using X.PagedList.Extensions;
 
 namespace WebsiteSellLaptop.Areas.Admin.Controllers
 {
@@ -15,13 +14,28 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
         private readonly AppDbContext _context;
         public OrderController(AppDbContext context) => _context = context;
 
-        public IActionResult Index(int page = 1, string? keyword = null)
+        public async Task<IActionResult> Index(int page = 1, string? keyword = null, int pageSize = 10)
         {
             var query = _context.Orders.Include(o => o.User).Where(x => x.Status != StatusEntity.Deleted).AsQueryable();
             if (!string.IsNullOrEmpty(keyword))
-                query = query.Where(x => x.OrderCode.Contains(keyword) || x.FullName.Contains(keyword));
+            {
+                keyword = keyword.Trim().ToLower();
+                query = query.Where(x => x.OrderCode.ToLower().Contains(keyword) || x.FullName.ToLower().Contains(keyword));
+            }
+
+            var totalItems = await query.CountAsync();
+            var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+            page = Math.Max(1, Math.Min(page, Math.Max(1, totalPages)));
+
+            var data = await query.OrderByDescending(x => x.Created).Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+
             ViewBag.Keyword = keyword;
-            return View(query.OrderByDescending(x => x.Created).ToPagedList(page, 10));
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.TotalItems = totalItems;
+            ViewBag.PageSize = pageSize;
+
+            return View(data);
         }
 
         public async Task<IActionResult> Detail(Guid id)
@@ -31,8 +45,42 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
             return View(item);
         }
 
-        [HttpPost] public async Task<IActionResult> Approve(Guid id) { var i = await _context.Orders.FindAsync(id); if (i == null) return NotFound(); i.Status = StatusEntity.Approved; i.LastModified = DateTime.Now; await _context.SaveChangesAsync(); return RedirectToAction(nameof(Index)); }
-        [HttpPost] public async Task<IActionResult> Reject(Guid id) { var i = await _context.Orders.FindAsync(id); if (i == null) return NotFound(); i.Status = StatusEntity.Rejected; i.LastModified = DateTime.Now; await _context.SaveChangesAsync(); return RedirectToAction(nameof(Index)); }
-        [HttpPost] public async Task<IActionResult> Delete(Guid id) { var i = await _context.Orders.FindAsync(id); if (i == null) return NotFound(); i.Status = StatusEntity.Deleted; i.LastModified = DateTime.Now; await _context.SaveChangesAsync(); return RedirectToAction(nameof(Index)); }
+        [HttpPost, ValidateAntiForgeryToken]
+        public async Task<IActionResult> Approve(Guid id)
+        {
+            var item = await _context.Orders.FindAsync(id);
+            if (item == null) return Json(new { success = false, message = "Không tìm thấy đơn hàng" });
+            item.Status = StatusEntity.Approved;
+            item.LastModified = DateTime.Now;
+            item.ModifiedBy = User.Identity?.Name;
+            await _context.SaveChangesAsync();
+            return Json(new { success = true, message = "Duyệt thành công" });
+        }
+
+        [HttpPost, ValidateAntiForgeryToken]
+        public async Task<IActionResult> Reject(Guid id)
+        {
+            var item = await _context.Orders.FindAsync(id);
+            if (item == null) return Json(new { success = false, message = "Không tìm thấy đơn hàng" });
+            item.Status = StatusEntity.Rejected;
+            item.LastModified = DateTime.Now;
+            item.ModifiedBy = User.Identity?.Name;
+            await _context.SaveChangesAsync();
+            return Json(new { success = true, message = "Hủy duyệt thành công" });
+        }
+
+        [HttpPost, ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            var item = await _context.Orders.FindAsync(id);
+            if (item == null) return Json(new { success = false, message = "Không tìm thấy đơn hàng" });
+            if (item.Status == StatusEntity.Approved)
+                return Json(new { success = false, message = "Không thể xóa đơn hàng đã duyệt" });
+            item.Status = StatusEntity.Deleted;
+            item.LastModified = DateTime.Now;
+            item.ModifiedBy = User.Identity?.Name;
+            await _context.SaveChangesAsync();
+            return Json(new { success = true, message = "Xóa thành công" });
+        }
     }
 }

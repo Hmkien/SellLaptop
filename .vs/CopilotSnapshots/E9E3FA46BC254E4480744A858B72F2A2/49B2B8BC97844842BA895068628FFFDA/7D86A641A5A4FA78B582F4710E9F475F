@@ -1,0 +1,132 @@
+﻿@model Order
+
+@{
+    ViewData["Title"] = "Chi tiết đơn hàng";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0"><i class="bi bi-bag-check me-2"></i>Chi tiết đơn hàng #@Model.OrderCode</h4>
+    <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Quay lại</a>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-8">
+        <div class="admin-card">
+            <h6 class="fw-bold mb-3"><i class="bi bi-person me-1"></i>Thông tin khách hàng</h6>
+            <table class="table table-borderless mb-0">
+                <tr><th width="160">Họ tên:</th><td class="fw-semibold">@Model.FullName</td></tr>
+                <tr><th>Email:</th><td>@Model.Email</td></tr>
+                <tr><th>Điện thoại:</th><td>@Model.Phone</td></tr>
+                <tr><th>Địa chỉ:</th><td>@Model.Address</td></tr>
+                @if (!string.IsNullOrEmpty(Model.Note))
+                {
+                    <tr><th>Ghi chú:</th><td>@Model.Note</td></tr>
+                }
+            </table>
+        </div>
+
+        <div class="admin-card mt-3 p-0">
+            <div class="p-3 border-bottom">
+                <h6 class="fw-bold mb-0"><i class="bi bi-cart me-1"></i>Sản phẩm đặt hàng</h6>
+            </div>
+            <div class="table-responsive">
+                <table class="admin-table mb-0">
+                    <thead>
+                        <tr>
+                            <th width="60">STT</th>
+                            <th>Sản phẩm</th>
+                            <th class="text-end">Đơn giá</th>
+                            <th class="text-center" width="80">SL</th>
+                            <th class="text-end">Thành tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.OrderDetails != null)
+                        {
+                            int stt = 1;
+                            @foreach (var d in Model.OrderDetails)
+                            {
+                                <tr>
+                                    <td class="text-center">@(stt++)</td>
+                                    <td class="fw-semibold">@(d.Product?.Name ?? "—")</td>
+                                    <td class="text-end">@d.UnitPrice.ToString("N0")đ</td>
+                                    <td class="text-center">@d.Quantity</td>
+                                    <td class="text-end fw-semibold">@d.TotalPrice.ToString("N0")đ</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                    <tfoot>
+                        @if (Model.DiscountAmount > 0)
+                        {
+                            <tr>
+                                <td colspan="4" class="text-end fw-semibold">Giảm giá:</td>
+                                <td class="text-end text-success fw-semibold">-@Model.DiscountAmount.ToString("N0")đ</td>
+                            </tr>
+                        }
+                        <tr>
+                            <td colspan="4" class="text-end fw-bold fs-5">Tổng cộng:</td>
+                            <td class="text-end fw-bold fs-5 text-danger">@Model.TotalAmount.ToString("N0")đ</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="admin-card">
+            <h6 class="fw-bold mb-3"><i class="bi bi-info-circle me-1"></i>Thông tin đơn hàng</h6>
+            <table class="table table-borderless mb-0">
+                <tr><th>Mã đơn:</th><td class="fw-bold">#@Model.OrderCode</td></tr>
+                <tr>
+                    <th>Trạng thái:</th>
+                    <td>
+                        @switch (Model.Status)
+                        {
+                            case StatusEntity.Approved: <span class="badge-status approved">Đã duyệt</span> break;
+                            case StatusEntity.Pending: <span class="badge-status pending">Chờ duyệt</span> break;
+                            case StatusEntity.Rejected: <span class="badge-status rejected">Hủy duyệt</span> break;
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <th>Thanh toán:</th>
+                    <td>
+                        @switch (Model.PaymentMethod)
+                        {
+                            case PaymentMethod.COD: <text>COD</text> break;
+                            case PaymentMethod.BankTransfer: <text>Chuyển khoản</text> break;
+                            case PaymentMethod.CreditCard: <text>Thẻ tín dụng</text> break;
+                            case PaymentMethod.EWallet: <text>Ví điện tử</text> break;
+                        }
+                    </td>
+                </tr>
+                @if (!string.IsNullOrEmpty(Model.CouponCode))
+                {
+                    <tr><th>Mã giảm giá:</th><td><code>@Model.CouponCode</code></td></tr>
+                }
+                <tr><th>Ngày tạo:</th><td>@Model.Created.ToString("dd/MM/yyyy HH:mm")</td></tr>
+                <tr><th>Cập nhật:</th><td>@Model.LastModified.ToString("dd/MM/yyyy HH:mm")</td></tr>
+            </table>
+        </div>
+
+        <div class="admin-card mt-3">
+            <h6 class="fw-bold mb-3">Thao tác</h6>
+            <div class="d-grid gap-2">
+                @if (Model.Status != StatusEntity.Approved)
+                {
+                    <form asp-action="Approve" asp-route-id="@Model.Id" method="post">
+                        <button type="submit" class="btn btn-success w-100"><i class="bi bi-check-circle me-1"></i>Duyệt đơn hàng</button>
+                    </form>
+                }
+                @if (Model.Status != StatusEntity.Rejected)
+                {
+                    <form asp-action="Reject" asp-route-id="@Model.Id" method="post">
+                        <button type="submit" class="btn btn-danger w-100"><i class="bi bi-x-circle me-1"></i>Hủy đơn hàng</button>
+                    </form>
+                }
+            </div>
+        </div>
+    </div>
+</div>

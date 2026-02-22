@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using WebsiteSellLaptop.Data;
 using WebsiteSellLaptop.Models.Entities;
 using WebsiteSellLaptop.Models.Enums;
-using X.PagedList.Extensions;
 
 namespace WebsiteSellLaptop.Areas.Admin.Controllers
 {
@@ -16,14 +15,28 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
         private readonly AppDbContext _context;
         public ProductController(AppDbContext context) => _context = context;
 
-        public IActionResult Index(int page = 1, string? keyword = null)
+        public async Task<IActionResult> Index(int page = 1, string? keyword = null, int pageSize = 10)
         {
             var query = _context.Products.Include(p => p.Category).Include(p => p.Brand)
                 .Where(x => x.Status != StatusEntity.Deleted).AsQueryable();
             if (!string.IsNullOrEmpty(keyword))
-                query = query.Where(x => x.Name.Contains(keyword));
+            {
+                keyword = keyword.Trim().ToLower();
+                query = query.Where(x => x.Name.ToLower().Contains(keyword) || x.Code.ToLower().Contains(keyword));
+            }
+
+            var totalItems = await query.CountAsync();
+            var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+            page = Math.Max(1, Math.Min(page, Math.Max(1, totalPages)));
+
+            var data = await query.OrderByDescending(x => x.Created).Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+
             ViewBag.Keyword = keyword;
-            var data = query.OrderByDescending(x => x.Created).ToPagedList(page, 10);
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.TotalItems = totalItems;
+            ViewBag.PageSize = pageSize;
+
             return View(data);
         }
 
@@ -43,7 +56,14 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
         public async Task<IActionResult> Create(Product model)
         {
             if (!ModelState.IsValid) { LoadDropdowns(); return View(model); }
+
+            // Check duplicate code
+            var codeExists = await _context.Products.AnyAsync(x => x.Code.ToLower() == model.Code.Trim().ToLower() && x.Status != StatusEntity.Deleted);
+            if (codeExists) { ModelState.AddModelError("Code", "Mã sản phẩm đã tồn tại"); LoadDropdowns(); return View(model); }
+
+            model.Code = model.Code.Trim();
             model.Slug = model.Name.ToLower().Replace(" ", "-");
+            model.CreatedBy = User.Identity?.Name;
             _context.Products.Add(model);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
@@ -70,6 +90,14 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
             if (!ModelState.IsValid) { LoadDropdowns(); return View(model); }
             var item = await _context.Products.FindAsync(model.Id);
             if (item == null) return NotFound();
+
+            if (item.Status == StatusEntity.Approved) { ModelState.AddModelError("", "Không thể sửa sản phẩm đã duyệt"); LoadDropdowns(); return View(model); }
+
+            // Check duplicate code
+            var codeExists = await _context.Products.AnyAsync(x => x.Code.ToLower() == model.Code.Trim().ToLower() && x.Id != model.Id && x.Status != StatusEntity.Deleted);
+            if (codeExists) { ModelState.AddModelError("Code", "Mã sản phẩm đã tồn tại"); LoadDropdowns(); return View(model); }
+
+            item.Code = model.Code.Trim();
             item.Name = model.Name; item.ShortDescription = model.ShortDescription; item.Description = model.Description;
             item.Price = model.Price; item.DiscountPrice = model.DiscountPrice; item.StockQuantity = model.StockQuantity;
             item.ThumbnailUrl = model.ThumbnailUrl; item.CPU = model.CPU; item.RAM = model.RAM;
@@ -78,12 +106,46 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
             item.IsFeatured = model.IsFeatured; item.CategoryId = model.CategoryId; item.BrandId = model.BrandId;
             item.Slug = model.Name.ToLower().Replace(" ", "-");
             item.LastModified = DateTime.Now;
+            item.ModifiedBy = User.Identity?.Name;
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        [HttpPost] public async Task<IActionResult> Approve(Guid id) { var i = await _context.Products.FindAsync(id); if (i == null) return NotFound(); i.Status = StatusEntity.Approved; i.LastModified = DateTime.Now; await _context.SaveChangesAsync(); return RedirectToAction(nameof(Index)); }
-        [HttpPost] public async Task<IActionResult> Reject(Guid id) { var i = await _context.Products.FindAsync(id); if (i == null) return NotFound(); i.Status = StatusEntity.Rejected; i.LastModified = DateTime.Now; await _context.SaveChangesAsync(); return RedirectToAction(nameof(Index)); }
-        [HttpPost] public async Task<IActionResult> Delete(Guid id) { var i = await _context.Products.FindAsync(id); if (i == null) return NotFound(); i.Status = StatusEntity.Deleted; i.LastModified = DateTime.Now; await _context.SaveChangesAsync(); return RedirectToAction(nameof(Index)); }
+        [HttpPost, ValidateAntiForgeryToken]
+        public async Task<IActionResult> Approve(Guid id)
+        {
+            var item = await _context.Products.FindAsync(id);
+            if (item == null) return Json(new { success = false, message = "Không tìm thấy sản phẩm" });
+            item.Status = StatusEntity.Approved;
+            item.LastModified = DateTime.Now;
+            item.ModifiedBy = User.Identity?.Name;
+            await _context.SaveChangesAsync();
+            return Json(new { success = true, message = "Duyệt thành công" });
+        }
+
+        [HttpPost, ValidateAntiForgeryToken]
+        public async Task<IActionResult> Reject(Guid id)
+        {
+            var item = await _context.Products.FindAsync(id);
+            if (item == null) return Json(new { success = false, message = "Không tìm thấy sản phẩm" });
+            item.Status = StatusEntity.Rejected;
+            item.LastModified = DateTime.Now;
+            item.ModifiedBy = User.Identity?.Name;
+            await _context.SaveChangesAsync();
+            return Json(new { success = true, message = "Hủy duyệt thành công" });
+        }
+
+        [HttpPost, ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            var item = await _context.Products.FindAsync(id);
+            if (item == null) return Json(new { success = false, message = "Không tìm thấy sản phẩm" });
+            if (item.Status == StatusEntity.Approved) return Json(new { success = false, message = "Không thể xóa sản phẩm đã duyệt" });
+            item.Status = StatusEntity.Deleted;
+            item.LastModified = DateTime.Now;
+            item.ModifiedBy = User.Identity?.Name;
+            await _context.SaveChangesAsync();
+            return Json(new { success = true, message = "Xóa thành công" });
+        }
     }
 }

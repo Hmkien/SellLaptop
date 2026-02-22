@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using WebsiteSellLaptop.Data;
 using WebsiteSellLaptop.Models.Entities;
 using WebsiteSellLaptop.Models.Enums;
-using X.PagedList.Extensions;
 
 namespace WebsiteSellLaptop.Areas.Admin.Controllers
 {
@@ -15,88 +14,208 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
         private readonly AppDbContext _context;
         public BrandController(AppDbContext context) => _context = context;
 
-        public IActionResult Index(int page = 1, string? keyword = null)
+        #region Index - Danh sách
+        public async Task<IActionResult> Index(int page = 1, string? keyword = null, int pageSize = 10)
         {
             var query = _context.Brands.Where(x => x.Status != StatusEntity.Deleted).AsQueryable();
+
             if (!string.IsNullOrEmpty(keyword))
-                query = query.Where(x => x.Name.Contains(keyword));
+            {
+                keyword = keyword.Trim().ToLower();
+                query = query.Where(x => x.Name.ToLower().Contains(keyword) || x.Code.ToLower().Contains(keyword));
+            }
+
+            var totalItems = await query.CountAsync();
+            var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+            page = Math.Max(1, Math.Min(page, Math.Max(1, totalPages)));
+
+            var data = await query
+                .OrderByDescending(x => x.Created)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
             ViewBag.Keyword = keyword;
-            var data = query.OrderByDescending(x => x.Created).ToPagedList(page, 10);
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.TotalItems = totalItems;
+            ViewBag.PageSize = pageSize;
+
             return View(data);
         }
+        #endregion
 
-        public IActionResult Create() => View(new Brand());
-
-        [HttpPost, ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Brand model)
+        #region GetById - Lấy chi tiết để hiển thị modal
+        [HttpGet]
+        public async Task<IActionResult> GetById(Guid id)
         {
-            if (!ModelState.IsValid) return View(model);
-            _context.Brands.Add(model);
+            var item = await _context.Brands.FindAsync(id);
+            if (item == null)
+                return Json(new { success = false, message = "Không tìm thấy dữ liệu" });
+
+            return Json(new
+            {
+                success = true,
+                data = new
+                {
+                    item.Id,
+                    item.Code,
+                    item.Name,
+                    item.Description,
+                    item.LogoUrl,
+                    item.Website,
+                    item.SortOrder,
+                    item.Status,
+                    StatusName = GetEnumDescription(item.Status),
+                    Created = item.Created.ToString("dd/MM/yyyy HH:mm"),
+                    LastModified = item.LastModified.ToString("dd/MM/yyyy HH:mm")
+                }
+            });
+        }
+        #endregion
+
+        #region Create - Thêm mới
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create([FromForm] Brand model)
+        {
+            if (string.IsNullOrWhiteSpace(model.Code))
+                return Json(new { success = false, message = "Mã thương hiệu không được để trống" });
+
+            if (string.IsNullOrWhiteSpace(model.Name))
+                return Json(new { success = false, message = "Tên thương hiệu không được để trống" });
+
+            // Kiểm tra trùng mã
+            var codeExists = await _context.Brands
+                .AnyAsync(x => x.Code.ToLower() == model.Code.Trim().ToLower() && x.Status != StatusEntity.Deleted);
+            if (codeExists)
+                return Json(new { success = false, message = "Mã thương hiệu đã tồn tại" });
+
+            var entity = new Brand
+            {
+                Code = model.Code.Trim(),
+                Name = model.Name.Trim(),
+                Description = model.Description?.Trim(),
+                LogoUrl = model.LogoUrl?.Trim(),
+                Website = model.Website?.Trim(),
+                SortOrder = model.SortOrder,
+                Status = StatusEntity.Pending,
+                CreatedBy = User.Identity?.Name
+            };
+
+            _context.Brands.Add(entity);
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
 
-        public async Task<IActionResult> Detail(Guid id)
-        {
-            var item = await _context.Brands.FindAsync(id);
-            if (item == null) return NotFound();
-            return View(item);
+            return Json(new { success = true, message = "Thêm mới thành công" });
         }
+        #endregion
 
-        public async Task<IActionResult> Edit(Guid id)
+        #region Edit - Cập nhật
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit([FromForm] Brand model)
         {
-            var item = await _context.Brands.FindAsync(id);
-            if (item == null) return NotFound();
-            return View(item);
-        }
-
-        [HttpPost, ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Brand model)
-        {
-            if (!ModelState.IsValid) return View(model);
             var item = await _context.Brands.FindAsync(model.Id);
-            if (item == null) return NotFound();
-            item.Name = model.Name;
-            item.Description = model.Description;
-            item.LogoUrl = model.LogoUrl;
-            item.Website = model.Website;
+            if (item == null)
+                return Json(new { success = false, message = "Không tìm thấy dữ liệu" });
+
+            if (item.Status == StatusEntity.Approved)
+                return Json(new { success = false, message = "Không thể sửa bản ghi đã duyệt" });
+
+            if (string.IsNullOrWhiteSpace(model.Code))
+                return Json(new { success = false, message = "Mã thương hiệu không được để trống" });
+
+            if (string.IsNullOrWhiteSpace(model.Name))
+                return Json(new { success = false, message = "Tên thương hiệu không được để trống" });
+
+            // Kiểm tra trùng mã (loại trừ bản ghi hiện tại)
+            var codeExists = await _context.Brands
+                .AnyAsync(x => x.Code.ToLower() == model.Code.Trim().ToLower()
+                            && x.Id != model.Id
+                            && x.Status != StatusEntity.Deleted);
+            if (codeExists)
+                return Json(new { success = false, message = "Mã thương hiệu đã tồn tại" });
+
+            item.Code = model.Code.Trim();
+            item.Name = model.Name.Trim();
+            item.Description = model.Description?.Trim();
+            item.LogoUrl = model.LogoUrl?.Trim();
+            item.Website = model.Website?.Trim();
             item.SortOrder = model.SortOrder;
             item.LastModified = DateTime.Now;
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
+            item.ModifiedBy = User.Identity?.Name;
 
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, message = "Cập nhật thành công" });
+        }
+        #endregion
+
+        #region Approve - Duyệt
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Approve(Guid id)
         {
             var item = await _context.Brands.FindAsync(id);
-            if (item == null) return NotFound();
+            if (item == null)
+                return Json(new { success = false, message = "Không tìm thấy dữ liệu" });
+
             item.Status = StatusEntity.Approved;
             item.LastModified = DateTime.Now;
+            item.ModifiedBy = User.Identity?.Name;
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
 
+            return Json(new { success = true, message = "Duyệt thành công" });
+        }
+        #endregion
+
+        #region Reject - Hủy duyệt
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Reject(Guid id)
         {
             var item = await _context.Brands.FindAsync(id);
-            if (item == null) return NotFound();
+            if (item == null)
+                return Json(new { success = false, message = "Không tìm thấy dữ liệu" });
+
             item.Status = StatusEntity.Rejected;
             item.LastModified = DateTime.Now;
+            item.ModifiedBy = User.Identity?.Name;
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
 
+            return Json(new { success = true, message = "Hủy duyệt thành công" });
+        }
+        #endregion
+
+        #region Delete - Xóa mềm
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(Guid id)
         {
             var item = await _context.Brands.FindAsync(id);
-            if (item == null) return NotFound();
+            if (item == null)
+                return Json(new { success = false, message = "Không tìm thấy dữ liệu" });
+
+            if (item.Status == StatusEntity.Approved)
+                return Json(new { success = false, message = "Không thể xóa bản ghi đã duyệt" });
+
             item.Status = StatusEntity.Deleted;
             item.LastModified = DateTime.Now;
+            item.ModifiedBy = User.Identity?.Name;
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+
+            return Json(new { success = true, message = "Xóa thành công" });
         }
+        #endregion
+
+        #region Helper - Lấy Description từ enum
+        private static string GetEnumDescription(Enum value)
+        {
+            var field = value.GetType().GetField(value.ToString());
+            var attr = field?.GetCustomAttributes(typeof(System.ComponentModel.DescriptionAttribute), false)
+                            .FirstOrDefault() as System.ComponentModel.DescriptionAttribute;
+            return attr?.Description ?? value.ToString();
+        }
+        #endregion
     }
 }

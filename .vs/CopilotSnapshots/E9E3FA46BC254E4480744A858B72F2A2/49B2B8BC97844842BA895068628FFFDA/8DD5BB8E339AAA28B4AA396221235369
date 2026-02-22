@@ -1,0 +1,184 @@
+﻿@model List<Order>
+@using WebsiteSellLaptop.Models.Enums
+
+@{
+    ViewData["Title"] = "Quản lý đơn hàng";
+    var currentPage = ViewBag.CurrentPage ?? 1;
+    var totalPages = ViewBag.TotalPages ?? 1;
+    var totalItems = ViewBag.TotalItems ?? 0;
+    var pageSize = ViewBag.PageSize ?? 10;
+    var keyword = ViewBag.Keyword as string;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0"><i class="bi bi-bag-check me-2"></i>Quản lý đơn hàng</h4>
+</div>
+
+<div class="admin-card mb-4">
+    <form method="get" class="row g-3 align-items-end p-3">
+        <div class="col-md-8">
+            <label class="form-label fw-semibold">Tìm kiếm</label>
+            <input type="text" name="keyword" value="@keyword" class="form-control" placeholder="Mã đơn hàng hoặc tên khách...">
+        </div>
+        <div class="col-md-4">
+            <button type="submit" class="btn btn-brand w-100"><i class="bi bi-search me-1"></i>Tìm kiếm</button>
+        </div>
+    </form>
+</div>
+
+<div class="admin-card p-0">
+    <div class="table-responsive">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th width="60">STT</th>
+                    <th>Mã đơn</th>
+                    <th>Khách hàng</th>
+                    <th>Tổng tiền</th>
+                    <th>Thanh toán</th>
+                    <th width="130">Trạng thái</th>
+                    <th width="120">Ngày tạo</th>
+                    <th width="180">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model == null || Model.Count == 0)
+                {
+                    <tr><td colspan="8" class="text-center text-muted py-4">Không có dữ liệu</td></tr>
+                }
+                else
+                {
+                    var sttBase = (currentPage - 1) * pageSize;
+                    @for (int i = 0; i < Model.Count; i++)
+                    {
+                        var item = Model[i];
+                        var stt = sttBase + i + 1;
+                        <tr>
+                            <td class="text-center">@stt</td>
+                            <td>
+                                <a asp-action="Detail" asp-route-id="@item.Id" class="text-primary fw-bold">#@item.OrderCode</a>
+                            </td>
+                            <td>
+                                <strong>@item.FullName</strong>
+                                <div class="text-muted small">@item.Phone</div>
+                            </td>
+                            <td class="fw-semibold text-danger">@item.TotalAmount.ToString("N0")đ</td>
+                            <td>
+                                @switch (item.PaymentMethod)
+                                {
+                                    case PaymentMethod.COD: <span class="badge bg-info bg-opacity-10 text-info">COD</span> break;
+                                    case PaymentMethod.BankTransfer: <span class="badge bg-primary bg-opacity-10 text-primary">Chuyển khoản</span> break;
+                                    case PaymentMethod.CreditCard: <span class="badge bg-warning bg-opacity-10 text-warning">Thẻ tín dụng</span> break;
+                                    case PaymentMethod.EWallet: <span class="badge bg-success bg-opacity-10 text-success">Ví điện tử</span> break;
+                                }
+                            </td>
+                            <td>
+                                @switch (item.Status)
+                                {
+                                    case StatusEntity.Approved: <span class="badge-status approved"><i class="bi bi-check-circle me-1"></i>Đã duyệt</span> break;
+                                    case StatusEntity.Pending: <span class="badge-status pending"><i class="bi bi-clock me-1"></i>Chờ duyệt</span> break;
+                                    case StatusEntity.Rejected: <span class="badge-status rejected"><i class="bi bi-x-circle me-1"></i>Hủy duyệt</span> break;
+                                }
+                            </td>
+                            <td>@item.Created.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                <div class="d-flex gap-1 align-items-center">
+                                    @if (item.Status == StatusEntity.Approved)
+                                    {
+                                        <button type="button" class="action-icon action-reject" title="Hủy duyệt" onclick="confirmReject('@item.Id', '#@item.OrderCode')">
+                                            <i class="bi bi-x-circle-fill"></i>
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button type="button" class="action-icon action-approve" title="Duyệt" onclick="confirmApprove('@item.Id', '#@item.OrderCode')">
+                                            <i class="bi bi-check-circle-fill"></i>
+                                        </button>
+                                        <button type="button" class="action-icon action-delete" title="Xóa" onclick="confirmDelete('@item.Id', '#@item.OrderCode')">
+                                            <i class="bi bi-trash3-fill"></i>
+                                        </button>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (totalPages > 1)
+    {
+        <div class="admin-pagination">
+            <div class="pg-info">
+                Hiển thị @(((currentPage - 1) * pageSize) + 1) - @Math.Min(currentPage * pageSize, totalItems) / @totalItems bản ghi
+            </div>
+            <div class="pg-list">
+                @if (currentPage > 1)
+                {
+                    <a href="@Url.Action("Index", new { page = 1, keyword })">«</a>
+                    <a href="@Url.Action("Index", new { page = currentPage - 1, keyword })">‹</a>
+                }
+                else
+                {
+                    <span class="disabled">«</span>
+                    <span class="disabled">‹</span>
+                }
+
+                @{
+                    var start = Math.Max(1, currentPage - 2);
+                    var end = Math.Min(totalPages, currentPage + 2);
+                }
+                @for (int p = start; p <= end; p++)
+                {
+                    if (p == currentPage)
+                    {
+                        <span class="active">@p</span>
+                    }
+                    else
+                    {
+                        <a href="@Url.Action("Index", new { page = p, keyword })">@p</a>
+                    }
+                }
+
+                @if (currentPage < totalPages)
+                {
+                    <a href="@Url.Action("Index", new { page = currentPage + 1, keyword })">›</a>
+                    <a href="@Url.Action("Index", new { page = totalPages, keyword })">»</a>
+                }
+                else
+                {
+                    <span class="disabled">›</span>
+                    <span class="disabled">»</span>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Modals -->
+<div class="modal fade" id="deleteModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-danger text-white"><h5 class="modal-title"><i class="bi bi-exclamation-triangle me-2"></i>Xác nhận xóa</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><p>Bạn có chắc chắn muốn xóa đơn hàng <strong id="deleteItemName"></strong>?</p></div><div class="modal-footer"><input type="hidden" id="deleteItemId"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button><button type="button" class="btn btn-danger" onclick="doDelete()">Xóa</button></div></div></div></div>
+<div class="modal fade" id="approveModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-success text-white"><h5 class="modal-title"><i class="bi bi-check-circle me-2"></i>Xác nhận duyệt</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><p>Bạn có chắc chắn muốn duyệt đơn hàng <strong id="approveItemName"></strong>?</p></div><div class="modal-footer"><input type="hidden" id="approveItemId"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button><button type="button" class="btn btn-success" onclick="doApprove()">Duyệt</button></div></div></div></div>
+<div class="modal fade" id="rejectModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-warning text-dark"><h5 class="modal-title"><i class="bi bi-x-circle me-2"></i>Xác nhận hủy duyệt</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><p>Bạn có chắc chắn muốn hủy duyệt đơn hàng <strong id="rejectItemName"></strong>?</p></div><div class="modal-footer"><input type="hidden" id="rejectItemId"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button><button type="button" class="btn btn-warning" onclick="doReject()">Hủy duyệt</button></div></div></div></div>
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;"><div id="toast" class="toast" role="alert"><div class="toast-header"><i class="bi me-2" id="toastIcon"></i><strong class="me-auto" id="toastTitle">Thông báo</strong><button type="button" class="btn-close" data-bs-dismiss="toast"></button></div><div class="toast-body" id="toastMessage"></div></div></div>
+
+@section Scripts {
+<script>
+    const baseUrl = '@Url.Action("Index", "Order", new { area = "Admin" })'.replace('/Index', '');
+    function showToast(message, type = 'success') {
+        const toast = document.getElementById('toast');
+        toast.classList.remove('bg-success', 'bg-danger', 'bg-warning', 'text-white');
+        document.getElementById('toastIcon').classList.remove('bi-check-circle-fill', 'bi-x-circle-fill');
+        if (type === 'success') { toast.classList.add('bg-success', 'text-white'); document.getElementById('toastIcon').classList.add('bi-check-circle-fill'); document.getElementById('toastTitle').textContent = 'Thành công'; }
+        else { toast.classList.add('bg-danger', 'text-white'); document.getElementById('toastIcon').classList.add('bi-x-circle-fill'); document.getElementById('toastTitle').textContent = 'Lỗi'; }
+        document.getElementById('toastMessage').textContent = message;
+        new bootstrap.Toast(toast).show();
+    }
+    function confirmDelete(id, name) { document.getElementById('deleteItemId').value = id; document.getElementById('deleteItemName').textContent = name; new bootstrap.Modal(document.getElementById('deleteModal')).show(); }
+    function confirmApprove(id, name) { document.getElementById('approveItemId').value = id; document.getElementById('approveItemName').textContent = name; new bootstrap.Modal(document.getElementById('approveModal')).show(); }
+    function confirmReject(id, name) { document.getElementById('rejectItemId').value = id; document.getElementById('rejectItemName').textContent = name; new bootstrap.Modal(document.getElementById('rejectModal')).show(); }
+    async function doDelete() { const formData = new FormData(); formData.append('id', document.getElementById('deleteItemId').value); formData.append('__RequestVerificationToken', '@Html.AntiForgeryToken()'.match(/value="([^"]+)"/)?.[1] || ''); const r = await fetch(`${baseUrl}/Delete`, { method: 'POST', body: formData }); const result = await r.json(); showToast(result.message, result.success ? 'success' : 'error'); if (result.success) { bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide(); setTimeout(() => location.reload(), 1000); } }
+    async function doApprove() { const formData = new FormData(); formData.append('id', document.getElementById('approveItemId').value); formData.append('__RequestVerificationToken', '@Html.AntiForgeryToken()'.match(/value="([^"]+)"/)?.[1] || ''); const r = await fetch(`${baseUrl}/Approve`, { method: 'POST', body: formData }); const result = await r.json(); showToast(result.message, result.success ? 'success' : 'error'); if (result.success) { bootstrap.Modal.getInstance(document.getElementById('approveModal')).hide(); setTimeout(() => location.reload(), 1000); } }
+    async function doReject() { const formData = new FormData(); formData.append('id', document.getElementById('rejectItemId').value); formData.append('__RequestVerificationToken', '@Html.AntiForgeryToken()'.match(/value="([^"]+)"/)?.[1] || ''); const r = await fetch(`${baseUrl}/Reject`, { method: 'POST', body: formData }); const result = await r.json(); showToast(result.message, result.success ? 'success' : 'error'); if (result.success) { bootstrap.Modal.getInstance(document.getElementById('rejectModal')).hide(); setTimeout(() => location.reload(), 1000); } }
+</script>
+}
