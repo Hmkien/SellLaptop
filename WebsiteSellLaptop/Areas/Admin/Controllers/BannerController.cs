@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using WebsiteSellLaptop.Data;
 using WebsiteSellLaptop.Models.Entities;
 using WebsiteSellLaptop.Models.Enums;
+using WebsiteSellLaptop.Services;
 
 namespace WebsiteSellLaptop.Areas.Admin.Controllers
 {
@@ -12,7 +13,13 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
     public class BannerController : Controller
     {
         private readonly AppDbContext _context;
-        public BannerController(AppDbContext context) => _context = context;
+        private readonly IFileUploadService _fileUpload;
+
+        public BannerController(AppDbContext context, IFileUploadService fileUpload)
+        {
+            _context = context;
+            _fileUpload = fileUpload;
+        }
 
         public async Task<IActionResult> Index(int page = 1, string? keyword = null, int pageSize = 10)
         {
@@ -41,11 +48,26 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
         public IActionResult Create() => View(new Banner());
 
         [HttpPost, ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Banner model)
+        public async Task<IActionResult> Create(Banner model, IFormFile? imageFile)
         {
             if (!ModelState.IsValid) return View(model);
             var codeExists = await _context.Banners.AnyAsync(x => x.Code.ToLower() == model.Code.Trim().ToLower() && x.Status != StatusEntity.Deleted);
             if (codeExists) { ModelState.AddModelError("Code", "Mã banner đã tồn tại"); return View(model); }
+
+            // Upload image if provided
+            if (imageFile != null)
+            {
+                try
+                {
+                    model.ImageUrl = await _fileUpload.UploadImageAsync(imageFile, "uploads/banners");
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError("", ex.Message);
+                    return View(model);
+                }
+            }
+
             model.Code = model.Code.Trim();
             model.CreatedBy = User.Identity?.Name;
             _context.Banners.Add(model);

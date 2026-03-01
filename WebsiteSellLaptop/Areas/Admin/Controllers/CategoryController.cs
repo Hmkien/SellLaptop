@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using WebsiteSellLaptop.Data;
 using WebsiteSellLaptop.Models.Entities;
 using WebsiteSellLaptop.Models.Enums;
+using WebsiteSellLaptop.Services;
 
 namespace WebsiteSellLaptop.Areas.Admin.Controllers
 {
@@ -12,7 +13,13 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
     public class CategoryController : Controller
     {
         private readonly AppDbContext _context;
-        public CategoryController(AppDbContext context) => _context = context;
+        private readonly IFileUploadService _fileUpload;
+
+        public CategoryController(AppDbContext context, IFileUploadService fileUpload)
+        {
+            _context = context;
+            _fileUpload = fileUpload;
+        }
 
         #region Index - Danh sách
         public async Task<IActionResult> Index(int page = 1, string? keyword = null, int pageSize = 10)
@@ -77,7 +84,7 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
         #region Create - Thêm mới
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([FromForm] Category model)
+        public async Task<IActionResult> Create([FromForm] Category model, IFormFile? imageFile)
         {
             if (string.IsNullOrWhiteSpace(model.Code))
                 return Json(new { success = false, message = "Mã danh mục không được để trống" });
@@ -85,35 +92,73 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
             if (string.IsNullOrWhiteSpace(model.Name))
                 return Json(new { success = false, message = "Tên danh mục không được để trống" });
 
-            // Kiểm tra trùng mã
+            // Chuẩn hóa Code
+            var normalizedCode = model.Code.Trim().ToUpper();
+
+            // Kiểm tra trùng mã - dùng ToUpper để so sánh không phân biệt hoa thường
             var codeExists = await _context.Categories
-                .AnyAsync(x => x.Code.ToLower() == model.Code.Trim().ToLower() && x.Status != StatusEntity.Deleted);
+                .AnyAsync(x => x.Code.ToUpper() == normalizedCode && x.Status != StatusEntity.Deleted);
+
             if (codeExists)
-                return Json(new { success = false, message = "Mã danh mục đã tồn tại" });
+                return Json(new { success = false, message = $"Mã danh mục '{normalizedCode}' đã tồn tại trong hệ thống" });
+
+            // Upload image if provided
+            string? imageUrl = null;
+            if (imageFile != null)
+            {
+                try
+                {
+                    imageUrl = await _fileUpload.UploadImageAsync(imageFile, "uploads/categories");
+                }
+                catch (Exception ex)
+                {
+                    return Json(new { success = false, message = $"Lỗi upload ảnh: {ex.Message}" });
+                }
+            }
 
             var entity = new Category
             {
-                Code = model.Code.Trim(),
+                Code = normalizedCode, // Lưu Code đã chuẩn hóa
                 Name = model.Name.Trim(),
                 Description = model.Description?.Trim(),
                 Slug = model.Name.Trim().ToLower().Replace(" ", "-"),
-                ImageUrl = model.ImageUrl?.Trim(),
+                ImageUrl = imageUrl ?? model.ImageUrl?.Trim(),
                 SortOrder = model.SortOrder,
                 Status = StatusEntity.Pending,
                 CreatedBy = User.Identity?.Name
             };
 
-            _context.Categories.Add(entity);
-            await _context.SaveChangesAsync();
+            try
+            {
+                _context.Categories.Add(entity);
+                await _context.SaveChangesAsync();
+                return Json(new { success = true, message = "Thêm mới danh mục thành công" });
+            }
+            catch (DbUpdateException ex)
+            {
+                // Bắt lỗi duplicate key từ database
+                if (ex.InnerException?.Message.Contains("duplicate key") == true)
+                {
+                    // Xóa ảnh đã upload nếu có lỗi
+                    if (!string.IsNullOrEmpty(imageUrl))
+                        _fileUpload.DeleteImage(imageUrl);
 
-            return Json(new { success = true, message = "Thêm mới thành công" });
+                    return Json(new { success = false, message = $"Mã danh mục '{normalizedCode}' đã tồn tại. Vui lòng chọn mã khác." });
+                }
+
+                // Xóa ảnh đã upload nếu có lỗi khác
+                if (!string.IsNullOrEmpty(imageUrl))
+                    _fileUpload.DeleteImage(imageUrl);
+
+                return Json(new { success = false, message = $"Lỗi lưu dữ liệu: {ex.InnerException?.Message ?? ex.Message}" });
+            }
         }
         #endregion
 
         #region Edit - Cập nhật
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit([FromForm] Category model)
+        public async Task<IActionResult> Edit([FromForm] Category model, IFormFile? imageFile)
         {
             var item = await _context.Categories.FindAsync(model.Id);
             if (item == null)
@@ -128,26 +173,68 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
             if (string.IsNullOrWhiteSpace(model.Name))
                 return Json(new { success = false, message = "Tên danh mục không được để trống" });
 
+            // Chuẩn hóa Code
+            var normalizedCode = model.Code.Trim().ToUpper();
+
             // Kiểm tra trùng mã (loại trừ bản ghi hiện tại)
             var codeExists = await _context.Categories
-                .AnyAsync(x => x.Code.ToLower() == model.Code.Trim().ToLower()
+                .AnyAsync(x => x.Code.ToUpper() == normalizedCode
                             && x.Id != model.Id
                             && x.Status != StatusEntity.Deleted);
-            if (codeExists)
-                return Json(new { success = false, message = "Mã danh mục đã tồn tại" });
 
-            item.Code = model.Code.Trim();
+            if (codeExists)
+                return Json(new { success = false, message = $"Mã danh mục '{normalizedCode}' đã tồn tại trong hệ thống" });
+
+            string? newImageUrl = null;
+
+            // Upload new image if provided
+            if (imageFile != null)
+            {
+                try
+                {
+                    newImageUrl = await _fileUpload.UploadImageAsync(imageFile, "uploads/categories");
+
+                    // Delete old image only after successful upload
+                    if (!string.IsNullOrEmpty(item.ImageUrl))
+                        _fileUpload.DeleteImage(item.ImageUrl);
+
+                    item.ImageUrl = newImageUrl;
+                }
+                catch (Exception ex)
+                {
+                    return Json(new { success = false, message = $"Lỗi upload ảnh: {ex.Message}" });
+                }
+            }
+
+            item.Code = normalizedCode;
             item.Name = model.Name.Trim();
             item.Description = model.Description?.Trim();
             item.Slug = model.Name.Trim().ToLower().Replace(" ", "-");
-            item.ImageUrl = model.ImageUrl?.Trim();
+
+            // Chỉ update ImageUrl nếu không upload file mới
+            if (imageFile == null && !string.IsNullOrEmpty(model.ImageUrl))
+                item.ImageUrl = model.ImageUrl.Trim();
+
             item.SortOrder = model.SortOrder;
             item.LastModified = DateTime.Now;
             item.ModifiedBy = User.Identity?.Name;
 
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+                return Json(new { success = true, message = "Cập nhật danh mục thành công" });
+            }
+            catch (DbUpdateException ex)
+            {
+                // Rollback: xóa ảnh mới upload nếu có lỗi
+                if (!string.IsNullOrEmpty(newImageUrl))
+                    _fileUpload.DeleteImage(newImageUrl);
 
-            return Json(new { success = true, message = "Cập nhật thành công" });
+                if (ex.InnerException?.Message.Contains("duplicate key") == true)
+                    return Json(new { success = false, message = $"Mã danh mục '{normalizedCode}' đã tồn tại. Vui lòng chọn mã khác." });
+
+                return Json(new { success = false, message = $"Lỗi lưu dữ liệu: {ex.InnerException?.Message ?? ex.Message}" });
+            }
         }
         #endregion
 
@@ -187,24 +274,51 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
         }
         #endregion
 
-        #region Delete - Xóa mềm
+        #region Delete - Xóa vĩnh viễn
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(Guid id)
         {
             var item = await _context.Categories.FindAsync(id);
             if (item == null)
-                return Json(new { success = false, message = "Không tìm thấy dữ liệu" });
+                return Json(new { success = false, message = "Không tìm thấy danh mục" });
 
-            if (item.Status == StatusEntity.Approved)
-                return Json(new { success = false, message = "Không thể xóa bản ghi đã duyệt" });
+            // Kiểm tra xem có sản phẩm nào thuộc danh mục này không
+            var hasProducts = await _context.Products
+                .AnyAsync(p => p.CategoryId == id && p.Status != StatusEntity.Deleted);
 
-            item.Status = StatusEntity.Deleted;
-            item.LastModified = DateTime.Now;
-            item.ModifiedBy = User.Identity?.Name;
-            await _context.SaveChangesAsync();
+            if (hasProducts)
+            {
+                var productCount = await _context.Products
+                    .CountAsync(p => p.CategoryId == id && p.Status != StatusEntity.Deleted);
 
-            return Json(new { success = true, message = "Xóa thành công" });
+                return Json(new { 
+                    success = false, 
+                    message = $"Không thể xóa danh mục '{item.Name}' vì đang có {productCount} sản phẩm. Vui lòng xóa hoặc chuyển sản phẩm sang danh mục khác trước." 
+                });
+            }
+
+            try
+            {
+                // Xóa ảnh nếu có
+                if (!string.IsNullOrEmpty(item.ImageUrl))
+                {
+                    _fileUpload.DeleteImage(item.ImageUrl);
+                }
+
+                // Xóa vĩnh viễn khỏi database
+                _context.Categories.Remove(item);
+                await _context.SaveChangesAsync();
+
+                return Json(new { success = true, message = $"Đã xóa danh mục '{item.Name}' vĩnh viễn khỏi hệ thống" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { 
+                    success = false, 
+                    message = $"Lỗi khi xóa: {ex.InnerException?.Message ?? ex.Message}" 
+                });
+            }
         }
         #endregion
 

@@ -12,20 +12,18 @@
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="fw-bold mb-0"><i class="bi bi-grid me-2"></i>Quản lý danh mục</h4>
-    <button type="button" class="btn btn-brand" data-bs-toggle="modal" data-bs-target="#createModal">
-        <i class="bi bi-plus-lg me-1"></i>Thêm mới
-    </button>
+    <i class="bi bi-plus-circle-fill" style="font-size:32px;color:var(--brand);cursor:pointer" data-bs-toggle="modal" data-bs-target="#createModal" title="Thêm mới"></i>
 </div>
 
 <!-- Search Form -->
 <div class="admin-card mb-4">
     <form method="get" class="row g-3 align-items-end p-3">
-        <div class="col-md-8">
+        <div class="col-md-11">
             <label class="form-label fw-semibold">Tìm kiếm</label>
             <input type="text" name="keyword" value="@keyword" class="form-control" placeholder="Nhập mã hoặc tên danh mục...">
         </div>
-        <div class="col-md-4">
-            <button type="submit" class="btn btn-brand w-100"><i class="bi bi-search me-1"></i>Tìm kiếm</button>
+        <div class="col-md-1 text-center">
+            <i class="bi bi-search" style="font-size:24px;color:var(--brand);cursor:pointer" onclick="this.closest('form').submit()" title="Tìm kiếm"></i>
         </div>
     </form>
 </div>
@@ -37,18 +35,19 @@
             <thead>
                 <tr>
                     <th width="60">STT</th>
+                    <th width="80">Ảnh</th>
                     <th width="100">Mã</th>
                     <th>Tên danh mục</th>
                     <th width="100">Thứ tự</th>
                     <th width="140">Trạng thái</th>
                     <th width="130">Ngày tạo</th>
-                    <th width="200">Thao tác</th>
+                    <th width="150">Thao tác</th>
                 </tr>
             </thead>
             <tbody>
                 @if (Model == null || Model.Count == 0)
                 {
-                    <tr><td colspan="7" class="text-center text-muted py-4">Không có dữ liệu</td></tr>
+                    <tr><td colspan="8" class="text-center text-muted py-4">Không có dữ liệu</td></tr>
                 }
                 else
                 {
@@ -59,6 +58,18 @@
                         var stt = sttBase + i + 1;
                         <tr>
                             <td class="text-center">@stt</td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(item.ImageUrl))
+                                {
+                                    <img src="@item.ImageUrl" alt="@item.Name" style="width:50px;height:50px;object-fit:cover;border-radius:8px;border:1px solid #e5e7eb" />
+                                }
+                                else
+                                {
+                                    <div style="width:50px;height:50px;background:#f1f3f7;border-radius:8px;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb">
+                                        <i class="bi bi-image text-muted"></i>
+                                    </div>
+                                }
+                            </td>
                             <td>
                                 <a href="javascript:void(0)" onclick="showDetail('@item.Id')" class="text-primary fw-semibold">@item.Code</a>
                             </td>
@@ -96,10 +107,10 @@
                                         <button type="button" class="action-icon action-edit" title="Sửa" onclick="openEditModal('@item.Id')">
                                             <i class="bi bi-pencil-square"></i>
                                         </button>
-                                        <button type="button" class="action-icon action-delete" title="Xóa" onclick="confirmDelete('@item.Id', '@item.Name')">
-                                            <i class="bi bi-trash3-fill"></i>
-                                        </button>
                                     }
+                                    <button type="button" class="action-icon action-delete" title="Xóa vĩnh viễn" onclick="confirmDelete('@item.Id', '@item.Name')">
+                                        <i class="bi bi-trash3-fill"></i>
+                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -173,29 +184,43 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Mã danh mục <span class="text-danger">*</span></label>
-                            <input type="text" name="Code" class="form-control" required maxlength="50" placeholder="VD: LAPTOP, PC...">
+                            <input type="text" name="Code" class="form-control" required maxlength="50" placeholder="VD: LAPTOP, GAMING..." style="text-transform:uppercase">
+                            <small class="text-muted">Mã sẽ tự động viết hoa</small>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Tên danh mục <span class="text-danger">*</span></label>
                             <input type="text" name="Name" class="form-control" required maxlength="200" placeholder="Nhập tên danh mục">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Ảnh URL</label>
-                            <input type="text" name="ImageUrl" class="form-control" placeholder="https://...">
-                        </div>
-                        <div class="col-md-6">
                             <label class="form-label fw-semibold">Thứ tự</label>
                             <input type="number" name="SortOrder" class="form-control" value="0" min="0">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Ảnh URL (Tùy chọn)</label>
+                            <input type="text" name="ImageUrl" class="form-control" placeholder="https://...">
                         </div>
                         <div class="col-12">
                             <label class="form-label fw-semibold">Mô tả</label>
                             <textarea name="Description" class="form-control" rows="3" placeholder="Nhập mô tả danh mục"></textarea>
                         </div>
+
+                        <!-- Upload ảnh ở cuối form -->
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Hoặc tải ảnh từ máy tính</label>
+                            <input type="file" id="createImageFile" name="imageFile" accept="image/*" class="d-none" onchange="previewCreateImage(this)">
+                            <div class="file-upload-area" style="padding:30px" onclick="document.getElementById('createImageFile').click()">
+                                <div id="createImagePreview">
+                                    <i class="bi bi-cloud-upload" style="font-size:36px;color:var(--brand)"></i>
+                                    <p class="mb-1 fw-semibold mt-2">Click để tải ảnh lên</p>
+                                    <p class="text-muted small mb-0">JPG, PNG, GIF, WEBP (Max 5MB)</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                    <button type="submit" class="btn btn-brand">Thêm mới</button>
+                    <button type="submit" class="btn btn-brand">Lưu</button>
                 </div>
             </form>
         </div>
@@ -217,29 +242,50 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Mã danh mục <span class="text-danger">*</span></label>
-                            <input type="text" name="Code" id="editCode" class="form-control" required maxlength="50">
+                            <input type="text" name="Code" id="editCode" class="form-control" required maxlength="50" style="text-transform:uppercase">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Tên danh mục <span class="text-danger">*</span></label>
                             <input type="text" name="Name" id="editName" class="form-control" required maxlength="200">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Ảnh URL</label>
-                            <input type="text" name="ImageUrl" id="editImageUrl" class="form-control">
-                        </div>
-                        <div class="col-md-6">
                             <label class="form-label fw-semibold">Thứ tự</label>
                             <input type="number" name="SortOrder" id="editSortOrder" class="form-control" min="0">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Ảnh URL (Tùy chọn)</label>
+                            <input type="text" name="ImageUrl" id="editImageUrl" class="form-control">
                         </div>
                         <div class="col-12">
                             <label class="form-label fw-semibold">Mô tả</label>
                             <textarea name="Description" id="editDescription" class="form-control" rows="3"></textarea>
                         </div>
+
+                        <!-- Current Image -->
+                        <div class="col-12" id="editCurrentImageContainer" style="display:none">
+                            <label class="form-label fw-semibold">Ảnh hiện tại</label>
+                            <div class="mb-2">
+                                <img id="editCurrentImage" src="" style="max-height:120px;border-radius:8px;border:1px solid #e5e7eb">
+                            </div>
+                        </div>
+
+                        <!-- Upload ảnh mới -->
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Thay đổi ảnh</label>
+                            <input type="file" id="editImageFile" name="imageFile" accept="image/*" class="d-none" onchange="previewEditImage(this)">
+                            <div class="file-upload-area" style="padding:30px" onclick="document.getElementById('editImageFile').click()">
+                                <div id="editImagePreview">
+                                    <i class="bi bi-cloud-upload" style="font-size:36px;color:var(--brand)"></i>
+                                    <p class="mb-1 fw-semibold mt-2">Click để tải ảnh mới</p>
+                                    <p class="text-muted small mb-0">JPG, PNG, GIF, WEBP (Max 5MB)</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                    <button type="submit" class="btn btn-brand">Cập nhật</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Huỷ</button>
+                    <button type="submit" class="btn btn-brand">Lưu</button>
                 </div>
             </form>
         </div>
@@ -255,11 +301,17 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
+                <!-- Ảnh danh mục -->
+                <div class="mb-3 text-center" id="detailImageContainer" style="display:none">
+                    <img id="detailImage" src="" alt="Category Image" style="max-width:100%;max-height:200px;border-radius:12px;border:1px solid #e5e7eb;object-fit:cover">
+                </div>
+
                 <table class="table table-bordered">
                     <tr><th width="150">Mã</th><td id="detailCode"></td></tr>
                     <tr><th>Tên danh mục</th><td id="detailName"></td></tr>
                     <tr><th>Slug</th><td id="detailSlug"></td></tr>
                     <tr><th>Mô tả</th><td id="detailDescription"></td></tr>
+                    <tr><th>Ảnh URL</th><td id="detailImageUrl" class="small text-muted"></td></tr>
                     <tr><th>Thứ tự</th><td id="detailSortOrder"></td></tr>
                     <tr><th>Trạng thái</th><td id="detailStatus"></td></tr>
                     <tr><th>Ngày tạo</th><td id="detailCreated"></td></tr>
@@ -267,7 +319,9 @@
                 </table>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                  Đóng
+                </button>
             </div>
         </div>
     </div>
@@ -277,18 +331,29 @@
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title" id="deleteModalLabel"><i class="bi bi-exclamation-triangle me-2"></i>Xác nhận xóa</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel"><i class="bi bi-exclamation-triangle text-danger me-2"></i>Xác nhận xóa vĩnh viễn</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
+                <div class="alert alert-danger mb-3">
+                    <i class="bi bi-exclamation-circle me-2"></i>
+                    <strong>Cảnh báo:</strong> Hành động này sẽ xóa vĩnh viễn dữ liệu khỏi hệ thống!
+                </div>
                 <p>Bạn có chắc chắn muốn xóa danh mục <strong id="deleteItemName"></strong>?</p>
-                <p class="text-muted small mb-0">Hành động này không thể hoàn tác.</p>
+                <p class="text-muted small mb-0">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Nếu danh mục có sản phẩm, bạn sẽ không thể xóa.
+                </p>
             </div>
             <div class="modal-footer">
                 <input type="hidden" id="deleteItemId">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                <button type="button" class="btn btn-danger" onclick="doDelete()">Xóa</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+                <button type="button" class="btn btn-danger" onclick="doDelete()">
+                    <i class="bi bi-trash3-fill"></i>
+                </button>
             </div>
         </div>
     </div>
@@ -298,17 +363,21 @@
 <div class="modal fade" id="approveModal" tabindex="-1" aria-labelledby="approveModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header bg-success text-white">
-                <h5 class="modal-title" id="approveModalLabel"><i class="bi bi-check-circle me-2"></i>Xác nhận duyệt</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-header">
+                <h5 class="modal-title" id="approveModalLabel"><i class="bi bi-check-circle text-success me-2"></i>Xác nhận duyệt</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <p>Bạn có chắc chắn muốn duyệt danh mục <strong id="approveItemName"></strong>?</p>
             </div>
             <div class="modal-footer">
                 <input type="hidden" id="approveItemId">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                <button type="button" class="btn btn-success" onclick="doApprove()">Duyệt</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+                <button type="button" class="btn btn-success" onclick="doApprove()">
+                    <i class="bi bi-check-circle-fill"></i>
+                </button>
             </div>
         </div>
     </div>
@@ -318,8 +387,8 @@
 <div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header bg-warning text-dark">
-                <h5 class="modal-title" id="rejectModalLabel"><i class="bi bi-x-circle me-2"></i>Xác nhận hủy duyệt</h5>
+            <div class="modal-header">
+                <h5 class="modal-title" id="rejectModalLabel"><i class="bi bi-x-circle text-warning me-2"></i>Xác nhận hủy duyệt</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -327,8 +396,12 @@
             </div>
             <div class="modal-footer">
                 <input type="hidden" id="rejectItemId">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                <button type="button" class="btn btn-warning" onclick="doReject()">Hủy duyệt</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+                <button type="button" class="btn btn-warning" onclick="doReject()">
+                    <i class="bi bi-x-circle-fill"></i>
+                </button>
             </div>
         </div>
     </div>
@@ -350,6 +423,61 @@
 <script>
     const baseUrl = '@Url.Action("Index", "Category", new { area = "Admin" })'.replace('/Index', '');
     const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+    // Image Preview Functions
+    function previewCreateImage(input) {
+        const preview = document.getElementById('createImagePreview');
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.innerHTML = `
+                    <div class="preview-container">
+                        <img src="${e.target.result}" class="preview-img" style="max-height:150px">
+                        <button type="button" class="preview-remove" onclick="removeCreateImage()">
+                            <i class="bi bi-x"></i>
+                        </button>
+                    </div>
+                `;
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function removeCreateImage() {
+        document.getElementById('createImageFile').value = '';
+        document.getElementById('createImagePreview').innerHTML = `
+            <i class="bi bi-cloud-upload" style="font-size:36px;color:var(--brand)"></i>
+            <p class="mb-1 fw-semibold mt-2">Click để tải ảnh lên</p>
+            <p class="text-muted small mb-0">JPG, PNG, GIF (Max 5MB)</p>
+        `;
+    }
+
+    function previewEditImage(input) {
+        const preview = document.getElementById('editImagePreview');
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.innerHTML = `
+                    <div class="preview-container">
+                        <img src="${e.target.result}" class="preview-img" style="max-height:150px">
+                        <button type="button" class="preview-remove" onclick="removeEditImage()">
+                            <i class="bi bi-x"></i>
+                        </button>
+                    </div>
+                `;
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function removeEditImage() {
+        document.getElementById('editImageFile').value = '';
+        document.getElementById('editImagePreview').innerHTML = `
+            <i class="bi bi-cloud-upload" style="font-size:36px;color:var(--brand)"></i>
+            <p class="mb-1 fw-semibold mt-2">Click để tải ảnh mới</p>
+            <p class="text-muted small mb-0">JPG, PNG, GIF (Max 5MB)</p>
+        `;
+    }
 
     function showToast(message, type = 'success') {
         const toast = document.getElementById('toast');
@@ -410,6 +538,18 @@
             document.getElementById('editSortOrder').value = result.data.sortOrder;
             document.getElementById('editDescription').value = result.data.description || '';
 
+            // Show current image if exists
+            if (result.data.imageUrl) {
+                document.getElementById('editCurrentImage').src = result.data.imageUrl;
+                document.getElementById('editCurrentImageContainer').style.display = 'block';
+            } else {
+                document.getElementById('editCurrentImageContainer').style.display = 'none';
+            }
+
+            // Reset file input and preview
+            document.getElementById('editImageFile').value = '';
+            removeEditImage();
+
             new bootstrap.Modal(document.getElementById('editModal')).show();
         } else {
             showToast(result.message, 'error');
@@ -444,10 +584,19 @@
             document.getElementById('detailName').textContent = result.data.name;
             document.getElementById('detailSlug').textContent = result.data.slug || '-';
             document.getElementById('detailDescription').textContent = result.data.description || '-';
+            document.getElementById('detailImageUrl').textContent = result.data.imageUrl || '-';
             document.getElementById('detailSortOrder').textContent = result.data.sortOrder;
             document.getElementById('detailStatus').textContent = result.data.statusName;
             document.getElementById('detailCreated').textContent = result.data.created;
             document.getElementById('detailLastModified').textContent = result.data.lastModified;
+
+            // Hiển thị ảnh nếu có
+            if (result.data.imageUrl) {
+                document.getElementById('detailImage').src = result.data.imageUrl;
+                document.getElementById('detailImageContainer').style.display = 'block';
+            } else {
+                document.getElementById('detailImageContainer').style.display = 'none';
+            }
 
             new bootstrap.Modal(document.getElementById('detailModal')).show();
         } else {

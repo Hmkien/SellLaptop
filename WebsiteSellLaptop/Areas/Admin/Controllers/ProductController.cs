@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using WebsiteSellLaptop.Data;
 using WebsiteSellLaptop.Models.Entities;
 using WebsiteSellLaptop.Models.Enums;
+using WebsiteSellLaptop.Services;
 
 namespace WebsiteSellLaptop.Areas.Admin.Controllers
 {
@@ -13,7 +14,13 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
     public class ProductController : Controller
     {
         private readonly AppDbContext _context;
-        public ProductController(AppDbContext context) => _context = context;
+        private readonly IFileUploadService _fileUpload;
+
+        public ProductController(AppDbContext context, IFileUploadService fileUpload)
+        {
+            _context = context;
+            _fileUpload = fileUpload;
+        }
 
         public async Task<IActionResult> Index(int page = 1, string? keyword = null, int pageSize = 10)
         {
@@ -53,13 +60,28 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
         }
 
         [HttpPost, ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Product model)
+        public async Task<IActionResult> Create(Product model, IFormFile? thumbnailFile)
         {
             if (!ModelState.IsValid) { LoadDropdowns(); return View(model); }
 
             // Check duplicate code
             var codeExists = await _context.Products.AnyAsync(x => x.Code.ToLower() == model.Code.Trim().ToLower() && x.Status != StatusEntity.Deleted);
             if (codeExists) { ModelState.AddModelError("Code", "Mã sản phẩm đã tồn tại"); LoadDropdowns(); return View(model); }
+
+            // Upload thumbnail
+            if (thumbnailFile != null)
+            {
+                try
+                {
+                    model.ThumbnailUrl = await _fileUpload.UploadImageAsync(thumbnailFile, "uploads/products");
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError("", ex.Message);
+                    LoadDropdowns();
+                    return View(model);
+                }
+            }
 
             model.Code = model.Code.Trim();
             model.Slug = model.Name.ToLower().Replace(" ", "-");

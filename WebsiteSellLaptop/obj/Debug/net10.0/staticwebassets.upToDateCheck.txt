@@ -61,6 +61,8 @@ wwwroot\lib\jquery\dist\jquery.slim.js
 wwwroot\lib\jquery\dist\jquery.slim.min.js
 wwwroot\lib\jquery\dist\jquery.slim.min.map
 wwwroot\lib\jquery\LICENSE.txt
+wwwroot\uploads\categories\b0596df6-2303-4347-92d8-4e4c076bc1f6.jpg
+wwwroot\uploads\categories\b4bd90b0-0685-4dec-be2b-b68f03817f27.jpg
 D:\Dự án\WebsiteSellComputer\SellLaptop\WebsiteSellLaptop\wwwroot\css\site.css
 D:\Dự án\WebsiteSellComputer\SellLaptop\WebsiteSellLaptop\wwwroot\favicon.ico
 D:\Dự án\WebsiteSellComputer\SellLaptop\WebsiteSellLaptop\wwwroot\js\site.js

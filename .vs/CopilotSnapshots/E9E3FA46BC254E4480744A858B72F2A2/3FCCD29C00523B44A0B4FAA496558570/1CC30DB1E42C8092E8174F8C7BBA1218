@@ -1,0 +1,133 @@
+﻿@model Banner
+
+@{
+    ViewData["Title"] = "Thêm banner";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0"><i class="bi bi-plus-circle me-2"></i>Thêm banner mới</h4>
+    <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Quay lại</a>
+</div>
+
+<div class="admin-card">
+    <form asp-action="Create" method="post">
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+        <div class="row g-3">
+            <div class="col-md-6"><label asp-for="Title" class="form-label fw-semibold">Tiêu đề <span class="text-danger">*</span></label><input asp-for="Title" class="form-control" placeholder="Nhập tiêu đề"><span asp-validation-for="Title" class="text-danger"></span></div>
+            <div class="col-md-6"><label asp-for="SubTitle" class="form-label fw-semibold">Phụ đề</label><input asp-for="SubTitle" class="form-control" placeholder="Nhập phụ đề"></div>
+            <div class="col-md-6"><label asp-for="ImageUrl" class="form-label fw-semibold">Ảnh (URL)</label><input asp-for="ImageUrl" class="form-control" placeholder="Nhập link ảnh"></div>
+            <div class="col-md-3"><label asp-for="LinkUrl" class="form-label fw-semibold">Link</label><input asp-for="LinkUrl" class="form-control" placeholder="https://..."></div>
+            <div class="col-md-3"><label asp-for="SortOrder" class="form-label fw-semibold">Thứ tự</label><input asp-for="SortOrder" class="form-control" type="number"></div>
+        </div>
+        @model Banner
+
+        @{
+            ViewData["Title"] = "Thêm banner";
+        }
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold mb-0"><i class="bi bi-plus-circle me-2"></i>Thêm banner mới</h4>
+            <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Quay lại</a>
+        </div>
+
+        <div class="admin-card p-4">
+            <form asp-action="Create" method="post" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <!-- Image Upload Section -->
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Ảnh banner <span class="text-danger">*</span></label>
+                    <input type="file" id="bannerFile" name="imageFile" accept="image/*" class="d-none" onchange="previewBannerImage(this)">
+                    <div class="file-upload-area" onclick="document.getElementById('bannerFile').click()">
+                        <div id="bannerPreview">
+                            <i class="bi bi-cloud-upload" style="font-size:48px;color:var(--brand)"></i>
+                            <p class="mb-1 fw-semibold mt-3" style="font-size:16px">Click hoặc kéo thả ảnh vào đây</p>
+                            <p class="text-muted small mb-0">JPG, PNG, GIF, WEBP (Max 5MB) - Khuyến nghị: 1920x600px</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label asp-for="Title" class="form-label fw-semibold">Tiêu đề <span class="text-danger">*</span></label>
+                        <input asp-for="Title" class="form-control" placeholder="Nhập tiêu đề banner">
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="SubTitle" class="form-label fw-semibold">Phụ đề</label>
+                        <input asp-for="SubTitle" class="form-control" placeholder="Nhập phụ đề (tùy chọn)">
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="LinkUrl" class="form-label fw-semibold">Link</label>
+                        <input asp-for="LinkUrl" class="form-control" placeholder="https://...">
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="SortOrder" class="form-label fw-semibold">Thứ tự</label>
+                        <input asp-for="SortOrder" class="form-control" type="number" value="0">
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="ImageUrl" class="form-label fw-semibold">Hoặc nhập URL ảnh trực tiếp</label>
+                        <input asp-for="ImageUrl" class="form-control" placeholder="https://...">
+                        <small class="text-muted">Nếu không upload file, bạn có thể dán link ảnh từ internet</small>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-brand"><i class="bi bi-check-lg me-1"></i>Lưu banner</button>
+                    <a asp-action="Index" class="btn btn-outline-secondary">Hủy</a>
+                </div>
+            </form>
+        </div>
+
+        @section Scripts {
+        <script>
+            function previewBannerImage(input) {
+                const preview = document.getElementById('bannerPreview');
+                if (input.files && input.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.innerHTML = `
+                            <div class="preview-container">
+                                <img src="${e.target.result}" class="preview-img" style="max-height:300px">
+                                <button type="button" class="preview-remove" onclick="removeBannerPreview()">
+                                    <i class="bi bi-x"></i>
+                                </button>
+                            </div>
+                        `;
+                    };
+                    reader.readAsDataURL(input.files[0]);
+                }
+            }
+
+            function removeBannerPreview() {
+                document.getElementById('bannerFile').value = '';
+                document.getElementById('bannerPreview').innerHTML = `
+                    <i class="bi bi-cloud-upload" style="font-size:48px;color:var(--brand)"></i>
+                    <p class="mb-1 fw-semibold mt-3" style="font-size:16px">Click hoặc kéo thả ảnh vào đây</p>
+                    <p class="text-muted small mb-0">JPG, PNG, GIF, WEBP (Max 5MB) - Khuyến nghị: 1920x600px</p>
+                `;
+            }
+
+            // Drag and drop
+            const uploadArea = document.querySelector('.file-upload-area');
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, preventDefaults, false);
+            });
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            ['dragenter', 'dragover'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, () => uploadArea.classList.add('dragover'), false);
+            });
+            ['dragleave', 'drop'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, () => uploadArea.classList.remove('dragover'), false);
+            });
+            uploadArea.addEventListener('drop', (e) => {
+                const file = e.dataTransfer.files[0];
+                document.getElementById('bannerFile').files = e.dataTransfer.files;
+                previewBannerImage(document.getElementById('bannerFile'));
+            });
+        </script>
+        }
