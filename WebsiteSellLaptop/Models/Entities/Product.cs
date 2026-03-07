@@ -54,6 +54,8 @@ namespace WebsiteSellLaptop.Models.Entities
 
         public bool IsFeatured { get; set; }
 
+        public bool IsAccessory { get; set; }
+
         // FK
         public Guid CategoryId { get; set; }
         public Guid BrandId { get; set; }
@@ -65,7 +67,7 @@ namespace WebsiteSellLaptop.Models.Entities
         [ForeignKey("BrandId")]
         public virtual Brand? Brand { get; set; }
 
-        public virtual ICollection<ProductImage> Images { get; set; } = new List<ProductImage>();
-        public virtual ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
+        public virtual ICollection<ProductImage> Images { get; set; } = [];
+        public virtual ICollection<OrderDetail> OrderDetails { get; set; } = [];
     }
 }

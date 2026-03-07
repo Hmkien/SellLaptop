@@ -9,12 +9,17 @@
     <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Quay lại</a>
 </div>
 
-<div class="admin-card">
-    <form asp-action="Create" method="post">
+<div class="admin-card p-4">
+    <form asp-action="Create" method="post" enctype="multipart/form-data">
         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
         <h6 class="fw-bold text-primary mb-3"><i class="bi bi-info-circle me-1"></i>Thông tin cơ bản</h6>
         <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <label asp-for="Code" class="form-label fw-semibold">Mã sản phẩm <span class="text-danger">*</span></label>
+                <input asp-for="Code" class="form-control" placeholder="VD: DELL-XPS-13">
+                <span asp-validation-for="Code" class="text-danger"></span>
+            </div>
             <div class="col-md-8">
                 <label asp-for="Name" class="form-label fw-semibold">Tên sản phẩm <span class="text-danger">*</span></label>
                 <input asp-for="Name" class="form-control" placeholder="Nhập tên sản phẩm">
@@ -23,7 +28,7 @@
             <div class="col-md-4">
                 <label class="form-label fw-semibold">Ảnh đại diện</label>
                 <div class="file-upload-wrapper">
-                    <input type="file" id="thumbnailFile" accept="image/*" class="d-none" onchange="previewImage(this, 'thumbnailPreview')">
+                    <input type="file" id="thumbnailFile" name="thumbnailFile" accept="image/*" class="d-none" onchange="previewImage(this, 'thumbnailPreview')">
                     <div class="file-upload-area" onclick="document.getElementById('thumbnailFile').click()">
                         <div id="thumbnailPreview">
                             <i class="bi bi-cloud-upload" style="font-size:32px;color:var(--brand)"></i>
@@ -36,13 +41,13 @@
             </div>
             <div class="col-md-4">
                 <label asp-for="CategoryId" class="form-label fw-semibold">Danh mục <span class="text-danger">*</span></label>
-                <select asp-for="CategoryId" asp-items="@ViewBag.Categories" class="form-select">
+                <select asp-for="CategoryId" asp-items="@ViewBag.Categories" class="form-select mt-2">
                     <option value="">-- Chọn danh mục --</option>
                 </select>
             </div>
             <div class="col-md-4">
                 <label asp-for="BrandId" class="form-label fw-semibold">Thương hiệu <span class="text-danger">*</span></label>
-                <select asp-for="BrandId" asp-items="@ViewBag.Brands" class="form-select">
+                <select asp-for="BrandId" asp-items="@ViewBag.Brands" class="form-select mt-2">
                     <option value="">-- Chọn thương hiệu --</option>
                 </select>
             </div>
@@ -52,6 +57,14 @@
                     <input asp-for="IsFeatured" class="form-check-input" type="checkbox">
                     <label asp-for="IsFeatured" class="form-check-label">Sản phẩm nổi bật</label>
                 </div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">Loại sản phẩm</label>
+                <div class="form-check form-switch mt-2">
+                    <input asp-for="IsAccessory" class="form-check-input" type="checkbox">
+                    <label asp-for="IsAccessory" class="form-check-label">Là phụ kiện</label>
+                </div>
+                <small class="text-muted">Bỏ chọn = Laptop</small>
             </div>
             <div class="col-md-12">
                 <label asp-for="ShortDescription" class="form-label fw-semibold">Mô tả ngắn</label>
@@ -115,6 +128,22 @@
             </div>
         </div>
 
+        <h6 class="fw-bold text-primary mb-3"><i class="bi bi-images me-1"></i>Ảnh chi tiết sản phẩm</h6>
+        <div class="row g-3 mb-4">
+            <div class="col-12">
+                <label class="form-label fw-semibold">Upload nhiều ảnh</label>
+                <input type="file" id="productImages" name="productImages" accept="image/*" multiple class="d-none" onchange="previewMultipleImages(this)">
+                <div class="file-upload-area" style="padding:30px" onclick="document.getElementById('productImages').click()">
+                    <i class="bi bi-cloud-upload" style="font-size:36px;color:var(--brand)"></i>
+                    <p class="mb-1 fw-semibold mt-2">Click để tải nhiều ảnh lên</p>
+                    <p class="text-muted small mb-0">JPG, PNG, GIF, WEBP (Max 5MB mỗi ảnh) - Chọn nhiều ảnh cùng lúc</p>
+                </div>
+            </div>
+            <div class="col-12">
+                <div id="multipleImagesPreview" class="row g-2"></div>
+            </div>
+        </div>
+
         <hr>
         <div class="d-flex gap-2">
             <button type="submit" class="btn btn-brand"><i class="bi bi-check-lg me-1"></i>Lưu</button>
@@ -150,6 +179,73 @@
             <p class="mb-1 fw-semibold mt-2">Click để tải ảnh lên</p>
             <p class="text-muted small mb-0">JPG, PNG, GIF (Max 5MB)</p>
         `;
+    }
+
+    // Xử lý preview nhiều ảnh
+    let selectedFiles = [];
+
+    function previewMultipleImages(input) {
+        const previewContainer = document.getElementById('multipleImagesPreview');
+
+        if (input.files && input.files.length > 0) {
+            // Thêm files mới vào danh sách
+            selectedFiles = Array.from(input.files);
+
+            // Clear preview container
+            previewContainer.innerHTML = '';
+
+            // Hiển thị preview cho từng ảnh
+            selectedFiles.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const col = document.createElement('div');
+                    col.className = 'col-6 col-md-3';
+                    col.innerHTML = `
+                        <div class="preview-container position-relative">
+                            <img src="${e.target.result}" class="preview-img" style="width:100%;height:150px;object-fit:cover;border-radius:8px;">
+                            <button type="button" class="preview-remove" onclick="removeImageFromMultiple(${index})" style="position:absolute;top:5px;right:5px;background:rgba(239,68,68,0.9);border:none;border-radius:50%;width:28px;height:28px;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+                                <i class="bi bi-x" style="font-size:18px;"></i>
+                            </button>
+                        </div>
+                    `;
+                    previewContainer.appendChild(col);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+    }
+
+    function removeImageFromMultiple(index) {
+        // Xóa file khỏi danh sách
+        selectedFiles.splice(index, 1);
+
+        // Cập nhật lại input file
+        const input = document.getElementById('productImages');
+        const dataTransfer = new DataTransfer();
+        selectedFiles.forEach(file => dataTransfer.items.add(file));
+        input.files = dataTransfer.files;
+
+        // Re-render preview
+        const previewContainer = document.getElementById('multipleImagesPreview');
+        previewContainer.innerHTML = '';
+
+        selectedFiles.forEach((file, idx) => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const col = document.createElement('div');
+                col.className = 'col-6 col-md-3';
+                col.innerHTML = `
+                    <div class="preview-container position-relative">
+                        <img src="${e.target.result}" class="preview-img" style="width:100%;height:150px;object-fit:cover;border-radius:8px;">
+                        <button type="button" class="preview-remove" onclick="removeImageFromMultiple(${idx})" style="position:absolute;top:5px;right:5px;background:rgba(239,68,68,0.9);border:none;border-radius:50%;width:28px;height:28px;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+                            <i class="bi bi-x" style="font-size:18px;"></i>
+                        </button>
+                    </div>
+                `;
+                previewContainer.appendChild(col);
+            };
+            reader.readAsDataURL(file);
+        });
     }
 </script>
 }

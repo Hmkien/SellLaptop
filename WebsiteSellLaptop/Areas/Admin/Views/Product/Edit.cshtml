@@ -9,21 +9,26 @@
     <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Quay lại</a>
 </div>
 
-<div class="admin-card">
+<div class="admin-card p-4">
     <form asp-action="Edit" method="post">
         <input asp-for="Id" type="hidden" />
         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
         <h6 class="fw-bold text-primary mb-3"><i class="bi bi-info-circle me-1"></i>Thông tin cơ bản</h6>
         <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <label asp-for="Code" class="form-label fw-semibold">Mã sản phẩm <span class="text-danger">*</span></label>
+                <input asp-for="Code" class="form-control" placeholder="VD: DELL-XPS-13">
+                <span asp-validation-for="Code" class="text-danger"></span>
+            </div>
             <div class="col-md-8">
                 <label asp-for="Name" class="form-label fw-semibold">Tên sản phẩm <span class="text-danger">*</span></label>
                 <input asp-for="Name" class="form-control">
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-12">
                 <label asp-for="ThumbnailUrl" class="form-label fw-semibold">Ảnh đại diện (URL)</label>
-                <input asp-for="ThumbnailUrl" class="form-control">
+                <input asp-for="ThumbnailUrl" class="form-control" placeholder="https://example.com/image.jpg">
             </div>
             <div class="col-md-4">
                 <label asp-for="CategoryId" class="form-label fw-semibold">Danh mục</label>
@@ -39,6 +44,14 @@
                     <input asp-for="IsFeatured" class="form-check-input" type="checkbox">
                     <label asp-for="IsFeatured" class="form-check-label">Sản phẩm nổi bật</label>
                 </div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">Loại sản phẩm</label>
+                <div class="form-check form-switch mt-2">
+                    <input asp-for="IsAccessory" class="form-check-input" type="checkbox">
+                    <label asp-for="IsAccessory" class="form-check-label">Là phụ kiện</label>
+                </div>
+                <small class="text-muted">Bỏ chọn = Laptop</small>
             </div>
             <div class="col-md-12">
                 <label asp-for="ShortDescription" class="form-label fw-semibold">Mô tả ngắn</label>

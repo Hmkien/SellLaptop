@@ -1,0 +1,111 @@
+@model List<Partner>
+@{
+    ViewData["Title"] = "Đối tác & Nhà cung cấp";
+}
+
+@section Styles {
+<style>
+    .partner-card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:24px;text-align:center;transition:transform .2s,box-shadow .2s;height:100%}
+    .partner-card:hover{transform:translateY(-4px);box-shadow:0 16px 48px rgba(15,23,42,.08)}
+    .partner-card img{height:80px;width:auto;max-width:100%;object-fit:contain;margin-bottom:16px}
+    .page-header{background:#fff;padding:32px 0;border-bottom:1px solid #e5e7eb;margin-bottom:2rem}
+    .section{margin-top:56px}
+    .feature-card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:24px;height:100%}
+</style>
+}
+
+<div class="page-header">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-2">
+                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+                <li class="breadcrumb-item active">Đối tác</li>
+            </ol>
+        </nav>
+        <h2 class="fw-bold mb-0">Đối tác & Nhà cung cấp</h2>
+    </div>
+</div>
+
+<main class="container my-4">
+    <p class="text-muted mb-4">
+        LapTopHub là đối tác uỷ quyền chính thức của các thương hiệu laptop và phụ kiện hàng đầu thế giới. 
+        Cam kết 100% hàng chính hãng, bảo hành tại hãng.
+    </p>
+
+    @if (Model.Any())
+    {
+        <div class="row g-4">
+            @foreach (var partner in Model)
+            {
+                <div class="col-6 col-md-4 col-lg-3">
+                    <div class="partner-card">
+                        @if (!string.IsNullOrEmpty(partner.LogoUrl))
+                        {
+                            <img src="@partner.LogoUrl" alt="@partner.Name">
+                        }
+                        else
+                        {
+                            <div style="height:80px;display:flex;align-items:center;justify-content:center;background:#f8fafc;border-radius:8px;margin-bottom:16px">
+                                <i class="bi bi-building" style="font-size:40px;color:#d1d5db"></i>
+                            </div>
+                        }
+                        <h6 class="fw-bold mb-2">@partner.Name</h6>
+                        @if (!string.IsNullOrEmpty(partner.Description))
+                        {
+                            <p class="text-muted small mb-0">@partner.Description</p>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle me-2"></i>Thông tin đối tác đang được cập nhật
+        </div>
+    }
+
+    <div class="section">
+        <h3 class="fw-bold mb-4">Tại sao chọn LapTopHub?</h3>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <i class="bi bi-patch-check-fill text-primary fs-1 mb-3 d-block"></i>
+                    <h6 class="fw-bold mb-2">Hàng chính hãng 100%</h6>
+                    <p class="text-muted small mb-0">
+                        Nhập trực tiếp từ nhà phân phối, tem chống hàng giả, đầy đủ giấy tờ xuất xứ.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <i class="bi bi-headset text-primary fs-1 mb-3 d-block"></i>
+                    <h6 class="fw-bold mb-2">Hỗ trợ chuyên nghiệp</h6>
+                    <p class="text-muted small mb-0">
+                        Đội ngũ kỹ thuật được đào tạo bởi hãng, tư vấn và hỗ trợ 24/7.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <i class="bi bi-shield-lock-fill text-primary fs-1 mb-3 d-block"></i>
+                    <h6 class="fw-bold mb-2">Bảo hành tại hãng</h6>
+                    <p class="text-muted small mb-0">
+                        Bảo hành chính hãng toàn quốc, đổi mới 1-1 trong 30 ngày nếu có lỗi từ nhà sản xuất.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="bg-primary text-white rounded-4 p-5 text-center">
+            <h3 class="fw-bold mb-3">Muốn trở thành đối tác?</h3>
+            <p class="mb-4">Liên hệ với chúng tôi để được tư vấn về chương trình đối tác và hợp tác kinh doanh</p>
+            <a href="tel:19006868" class="btn btn-light btn-lg">
+                <i class="bi bi-telephone me-2"></i>Hotline: 1900 6868
+            </a>
+        </div>
+    </div>
+</main>

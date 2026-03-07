@@ -1,0 +1,85 @@
+@using WebsiteSellLaptop.Models.Enums
+@model Order
+@{
+    ViewData["Title"] = "Đặt hàng thành công";
+}
+
+@section Styles {
+<style>
+    .success-card{background:#fff;border-radius:16px;border:1px solid #e5e7eb;padding:48px;text-align:center;max-width:600px;margin:40px auto}
+    .success-icon{width:80px;height:80px;border-radius:50%;background:#dcfce7;color:#16a34a;font-size:40px;display:flex;align-items:center;justify-content:center;margin:0 auto 24px}
+    .order-info{background:#f8fafc;border-radius:12px;padding:20px;margin:24px 0;text-align:left}
+    .order-info-row{display:flex;justify-content:space-between;margin-bottom:12px}
+    .order-info-row:last-child{margin-bottom:0}
+</style>
+}
+
+<main class="container mb-5">
+    <div class="success-card">
+        <div class="success-icon"><i class="bi bi-check-circle-fill"></i></div>
+        <h2 class="fw-bold mb-2">Đặt hàng thành công!</h2>
+        <p class="text-muted">Cảm ơn bạn đã đặt hàng. Chúng tôi sẽ xử lý đơn hàng của bạn trong thời gian sớm nhất.</p>
+
+        <div class="order-info">
+            <div class="order-info-row">
+                <span class="text-muted">Mã đơn hàng:</span>
+                <span class="fw-bold">@Model.OrderCode</span>
+            </div>
+            <div class="order-info-row">
+                <span class="text-muted">Người nhận:</span>
+                <span class="fw-semibold">@Model.FullName</span>
+            </div>
+            <div class="order-info-row">
+                <span class="text-muted">Số điện thoại:</span>
+                <span>@Model.Phone</span>
+            </div>
+            <div class="order-info-row">
+                <span class="text-muted">Email:</span>
+                <span>@Model.Email</span>
+            </div>
+            <div class="order-info-row">
+                <span class="text-muted">Địa chỉ:</span>
+                <span>@Model.Address</span>
+            </div>
+            <div class="order-info-row">
+                <span class="text-muted">Phương thức thanh toán:</span>
+                <span>
+                    @switch (Model.PaymentMethod)
+                    {
+                        case PaymentMethod.COD:
+                            <span>Thanh toán khi nhận hàng</span>
+                            break;
+                        case PaymentMethod.BankTransfer:
+                            <span>Chuyển khoản ngân hàng</span>
+                            break;
+                        case PaymentMethod.EWallet:
+                            <span>VNPay</span>
+                            break;
+                        default:
+                            <span>@Model.PaymentMethod</span>
+                            break;
+                    }
+                </span>
+            </div>
+            <div class="order-info-row">
+                <span class="text-muted">Tổng tiền:</span>
+                <span class="fw-bold text-primary fs-5">@Model.TotalAmount.ToString("N0")₫</span>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2 justify-content-center mt-4">
+            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-primary">
+                <i class="bi bi-house me-2"></i>Về trang chủ
+            </a>
+            <a asp-controller="Product" asp-action="Index" class="btn btn-brand">
+                <i class="bi bi-arrow-left me-2"></i>Tiếp tục mua sắm
+            </a>
+        </div>
+
+        <div class="alert alert-info mt-4 text-start">
+            <i class="bi bi-info-circle me-2"></i>
+            <strong>Lưu ý:</strong> Chúng tôi đã gửi email xác nhận đơn hàng đến <strong>@Model.Email</strong>. 
+            Vui lòng kiểm tra hộp thư của bạn.
+        </div>
+    </div>
+</main>

@@ -1,0 +1,59 @@
+@using WebsiteSellLaptop.Models.Entities
+@model Product
+
+@{
+    decimal? discountPct = null;
+    if (Model.DiscountPrice.HasValue && Model.DiscountPrice > 0 && Model.DiscountPrice > Model.Price)
+    {
+        discountPct = Math.Round((Model.DiscountPrice.Value - Model.Price) / Model.DiscountPrice.Value * 100);
+    }
+    bool isNew = (DateTime.UtcNow - Model.Created).TotalDays <= 14;
+}
+
+<div class="prod-card">
+    <div class="prod-thumb">
+        <a asp-controller="Product" asp-action="Detail" asp-route-id="@Model.Id">
+            @if (!string.IsNullOrEmpty(Model.ThumbnailUrl))
+            {
+                <img src="@Model.ThumbnailUrl" alt="@Model.Name" loading="lazy">
+            }
+            else
+            {
+                <img src="https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=400&q=60" alt="@Model.Name" loading="lazy">
+            }
+        </a>
+        @if (discountPct.HasValue)
+        {
+            <span class="prod-badge">-@discountPct%</span>
+        }
+        else if (isNew)
+        {
+            <span class="prod-badge new">Mới</span>
+        }
+    </div>
+    <div class="prod-body">
+        <a asp-controller="Product" asp-action="Detail" asp-route-id="@Model.Id" class="text-decoration-none">
+            <div class="prod-name">@Model.Name</div>
+        </a>
+        @if (!string.IsNullOrEmpty(Model.CPU))
+        {
+            <div class="prod-spec"><i class="bi bi-cpu me-1"></i>@Model.CPU</div>
+        }
+        <div class="prod-price-block">
+            <div>
+                <span class="prod-price">@Model.Price.ToString("N0")₫</span>
+                @if (discountPct.HasValue)
+                {
+                    <span class="prod-discount-pct">-@discountPct%</span>
+                }
+            </div>
+            @if (Model.DiscountPrice.HasValue && Model.DiscountPrice > 0)
+            {
+                <div class="prod-old-price">@Model.DiscountPrice.Value.ToString("N0")₫</div>
+            }
+            <button onclick="addToCart('@Model.Id')" class="btn-cart">
+                <i class="bi bi-cart-plus me-1"></i>Thêm vào giỏ
+            </button>
+        </div>
+    </div>
+</div>

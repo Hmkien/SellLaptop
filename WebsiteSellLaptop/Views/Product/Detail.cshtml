@@ -1,0 +1,244 @@
+@model Product
+@{
+    ViewData["Title"] = Model.Name;
+    var relatedProducts = ViewBag.RelatedProducts as List<Product> ?? new List<Product>();
+}
+
+@section Styles {
+<style>
+    .price{font-weight:800;color:var(--brand);font-size:28px}
+    .old-price{color:var(--muted);text-decoration:line-through;font-size:18px}
+    .gallery-main{border-radius:16px;object-fit:cover;width:100%;height:400px;border:1px solid #e5e7eb}
+    .spec-table td{padding:10px 14px;border-bottom:1px solid #f1f3f7}
+    .spec-table tr:nth-child(odd){background:#f8fafc}
+    .page-header{background:#fff;padding:32px 0;border-bottom:1px solid #e5e7eb}
+    .product-card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:16px;transition:transform .2s}
+    .product-card:hover{transform:translateY(-4px)}
+    .thumb{border-radius:12px;object-fit:cover;width:100%;height:170px}
+</style>
+}
+
+<div class="page-header">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+                <li class="breadcrumb-item">
+                    @if (Model.IsAccessory)
+                    {
+                        <a asp-controller="Product" asp-action="Accessories">Phụ kiện</a>
+                    }
+                    else
+                    {
+                        <a asp-controller="Product" asp-action="Index">Laptop</a>
+                    }
+                </li>
+                <li class="breadcrumb-item active">@Model.Name</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<main class="container my-4">
+    <div class="row g-4">
+        <!-- Gallery -->
+        <div class="col-lg-6">
+            <img src="@(!string.IsNullOrEmpty(Model.ThumbnailUrl) ? Model.ThumbnailUrl : "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=1200&q=80")" 
+                 class="gallery-main" alt="@Model.Name">
+        </div>
+
+        <!-- Product Info -->
+        <div class="col-lg-6">
+            <span class="badge bg-success mb-2">Còn hàng</span>
+            @if (Model.IsAccessory)
+            {
+                <span class="badge mb-2" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9)">Phụ kiện</span>
+            }
+            else
+            {
+                <span class="badge mb-2" style="background:linear-gradient(135deg,#0ea5e9,#3b82f6)">Laptop</span>
+            }
+            <h2 class="fw-bold mb-1">@Model.Name</h2>
+            <p class="text-muted mb-3">
+                @Model.CPU @if (!string.IsNullOrEmpty(Model.RAM)) { <span>| @Model.RAM</span> } 
+                @if (!string.IsNullOrEmpty(Model.Storage)) { <span>| @Model.Storage</span> }
+            </p>
+
+            <div class="d-flex align-items-baseline gap-3 mb-3">
+                <span class="price">@Model.Price.ToString("N0")₫</span>
+                @if (Model.DiscountPrice.HasValue && Model.DiscountPrice > 0)
+                {
+                    var discount = (int)Math.Round((1 - Model.Price / Model.DiscountPrice.Value) * 100);
+                    <span class="old-price">@Model.DiscountPrice.Value.ToString("N0")₫</span>
+                    <span class="badge bg-danger">-@discount%</span>
+                }
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Số lượng</label>
+                <div class="input-group" style="width:140px">
+                    <button class="btn btn-outline-secondary" type="button" onclick="changeQty(-1)">-</button>
+                    <input type="number" id="quantity" class="form-control text-center" value="1" min="1" max="99">
+                    <button class="btn btn-outline-secondary" type="button" onclick="changeQty(1)">+</button>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2 mb-4">
+                <button class="btn btn-brand btn-lg flex-grow-1" onclick="addToCart('@Model.Id')">
+                    <i class="bi bi-bag-plus me-2"></i>Thêm vào giỏ
+                </button>
+                <button class="btn btn-dark btn-lg" onclick="buyNow('@Model.Id')">Mua ngay</button>
+            </div>
+
+            <div class="row g-2 text-muted small">
+                <div class="col-6"><i class="bi bi-truck me-1"></i> Giao nhanh 2h nội thành</div>
+                <div class="col-6"><i class="bi bi-shield-check me-1"></i> Bảo hành 12 tháng</div>
+                <div class="col-6"><i class="bi bi-arrow-repeat me-1"></i> Đổi trả 7 ngày</div>
+                <div class="col-6"><i class="bi bi-credit-card me-1"></i> Trả góp 0%</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <ul class="nav nav-tabs mt-5" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#specs">Thông số</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#desc">Mô tả</button>
+        </li>
+    </ul>
+
+    <div class="tab-content bg-white border border-top-0 rounded-bottom p-4">
+        <!-- Specs Tab -->
+        <div class="tab-pane fade show active" id="specs">
+            <table class="table spec-table mb-0">
+                @if (!string.IsNullOrEmpty(Model.CPU))
+                {
+                    <tr><td class="fw-semibold" style="width:200px">CPU</td><td>@Model.CPU</td></tr>
+                }
+                @if (!string.IsNullOrEmpty(Model.RAM))
+                {
+                    <tr><td class="fw-semibold">RAM</td><td>@Model.RAM</td></tr>
+                }
+                @if (!string.IsNullOrEmpty(Model.Storage))
+                {
+                    <tr><td class="fw-semibold">Ổ cứng</td><td>@Model.Storage</td></tr>
+                }
+                @if (!string.IsNullOrEmpty(Model.Screen))
+                {
+                    <tr><td class="fw-semibold">Màn hình</td><td>@Model.Screen</td></tr>
+                }
+                @if (!string.IsNullOrEmpty(Model.GPU))
+                {
+                    <tr><td class="fw-semibold">Card đồ họa</td><td>@Model.GPU</td></tr>
+                }
+                @if (!string.IsNullOrEmpty(Model.Battery))
+                {
+                    <tr><td class="fw-semibold">Pin</td><td>@Model.Battery</td></tr>
+                }
+                @if (!string.IsNullOrEmpty(Model.Weight))
+                {
+                    <tr><td class="fw-semibold">Trọng lượng</td><td>@Model.Weight</td></tr>
+                }
+                @if (!string.IsNullOrEmpty(Model.OS))
+                {
+                    <tr><td class="fw-semibold">Hệ điều hành</td><td>@Model.OS</td></tr>
+                }
+            </table>
+        </div>
+
+        <!-- Description Tab -->
+        <div class="tab-pane fade" id="desc">
+            @if (!string.IsNullOrEmpty(Model.Description))
+            {
+                <div>@Html.Raw(Model.Description)</div>
+            }
+            else
+            {
+                <p class="text-muted">Chưa có mô tả chi tiết</p>
+            }
+        </div>
+    </div>
+
+    <!-- Related Products -->
+    @if (relatedProducts.Any())
+    {
+        <div class="mt-5">
+            <h4 class="fw-bold mb-3">Sản phẩm liên quan</h4>
+            <div class="row g-3">
+                @foreach (var related in relatedProducts)
+                {
+                    <div class="col-md-3">
+                        <div class="product-card h-100">
+                            @if (!string.IsNullOrEmpty(related.ThumbnailUrl))
+                            {
+                                <img src="@related.ThumbnailUrl" class="thumb" alt="@related.Name">
+                            }
+                            else
+                            {
+                                <img src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=900&q=80" 
+                                     class="thumb" alt="@related.Name">
+                            }
+                            <h6 class="fw-semibold mt-2">@related.Name</h6>
+                            <div class="product-meta">
+                                <div class="price fs-6">@related.Price.ToString("N0")₫</div>
+                                <a asp-controller="Product" asp-action="Detail" asp-route-id="@related.Id" 
+                                   class="btn btn-dark w-100 mt-2">Xem chi tiết</a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</main>
+
+@section Scripts {
+<script>
+    function changeQty(delta) {
+        const input = document.getElementById('quantity');
+        const newVal = parseInt(input.value) + delta;
+        if (newVal >= 1 && newVal <= 99) {
+            input.value = newVal;
+        }
+    }
+
+    function addToCart(productId) {
+        const qty = document.getElementById('quantity').value;
+        $.post('@Url.Action("AddToCart", "Cart")', {
+            productId: productId,
+            quantity: parseInt(qty)
+        }, function(response) {
+            if (response.success) {
+                alert(response.message);
+                $('.icon-badge').text(response.cartCount);
+            } else {
+                alert(response.message || 'Có lỗi xảy ra');
+            }
+        }).fail(function(xhr, status, error) {
+            console.error('Error:', error);
+            console.error('Response:', xhr.responseText);
+            alert('Không thể thêm vào giỏ hàng. Vui lòng thử lại.');
+        });
+    }
+
+    function buyNow(productId) {
+        const qty = document.getElementById('quantity').value;
+        $.post('@Url.Action("AddToCart", "Cart")', {
+            productId: productId,
+            quantity: parseInt(qty)
+        }, function(response) {
+            if (response.success) {
+                window.location.href = '@Url.Action("Index", "Cart")';
+            } else {
+                alert(response.message || 'Có lỗi xảy ra');
+            }
+        }).fail(function(xhr, status, error) {
+            console.error('Error:', error);
+            console.error('Response:', xhr.responseText);
+            alert('Không thể thực hiện. Vui lòng thử lại.');
+        });
+    }
+</script>
+}

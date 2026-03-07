@@ -1,0 +1,35 @@
+@{
+    ViewData["Title"] = "Thanh toán thất bại";
+}
+
+@section Styles {
+<style>
+    .failed-card{background:#fff;border-radius:16px;border:1px solid #e5e7eb;padding:48px;text-align:center;max-width:600px;margin:40px auto}
+    .failed-icon{width:80px;height:80px;border-radius:50%;background:#fee2e2;color:#ef4444;font-size:40px;display:flex;align-items:center;justify-content:center;margin:0 auto 24px}
+</style>
+}
+
+<main class="container mb-5">
+    <div class="failed-card">
+        <div class="failed-icon"><i class="bi bi-x-circle-fill"></i></div>
+        <h2 class="fw-bold mb-2">Thanh toán thất bại</h2>
+        <p class="text-muted mb-4">
+            Đã có lỗi xảy ra trong quá trình thanh toán. Vui lòng thử lại hoặc chọn phương thức thanh toán khác.
+        </p>
+
+        <div class="d-flex gap-2 justify-content-center">
+            <a asp-controller="Cart" asp-action="Index" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-left me-2"></i>Quay lại giỏ hàng
+            </a>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-brand">
+                <i class="bi bi-house me-2"></i>Về trang chủ
+            </a>
+        </div>
+
+        <div class="alert alert-warning mt-4 text-start">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <strong>Lưu ý:</strong> Nếu bạn gặp vấn đề liên tục, vui lòng liên hệ với chúng tôi qua hotline 
+            <strong>1900 6868</strong> để được hỗ trợ.
+        </div>
+    </div>
+</main>

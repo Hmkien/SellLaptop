@@ -1,0 +1,94 @@
+@model Blog
+@{
+    ViewData["Title"] = Model.Title;
+    var relatedBlogs = ViewBag.RelatedBlogs as List<Blog> ?? new List<Blog>();
+}
+
+@section Styles {
+<style>
+    .blog-header{background:#fff;padding:40px 0;border-bottom:1px solid #e5e7eb}
+    .blog-featured-img{border-radius:16px;width:100%;max-height:500px;object-fit:cover;margin:32px 0}
+    .blog-content{background:#fff;border-radius:16px;padding:32px;margin-bottom:32px}
+    .blog-content h1{font-size:32px;font-weight:700;margin-bottom:16px}
+    .blog-content h2{font-size:24px;font-weight:700;margin:24px 0 12px}
+    .blog-content p{margin-bottom:16px;line-height:1.7}
+    .blog-content img{max-width:100%;border-radius:12px;margin:20px 0}
+    .related-card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;transition:transform .2s}
+    .related-card:hover{transform:translateY(-4px)}
+    .related-card img{width:100%;height:180px;object-fit:cover}
+</style>
+}
+
+<div class="blog-header">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-3">
+                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+                <li class="breadcrumb-item"><a asp-action="Index">Blog</a></li>
+                <li class="breadcrumb-item active">@Model.Title</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="container my-4">
+    <div class="row justify-content-center">
+            <div class="blog-content">
+                <h1>@Model.Title</h1>
+                <div class="text-muted small mb-4">
+                    <i class="bi bi-calendar3 me-2"></i>@Model.Created.ToString("dd/MM/yyyy HH:mm")
+                    <i class="bi bi-person ms-3 me-2"></i>Admin
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.ThumbnailUrl))
+                {
+                    <img src="@Model.ThumbnailUrl" class="blog-featured-img" alt="@Model.Title">
+                }
+
+                @if (!string.IsNullOrEmpty(Model.Summary))
+                {
+                    <p class="lead fw-semibold">@Model.Summary</p>
+                }
+
+                @if (!string.IsNullOrEmpty(Model.Content))
+                {
+                    <div>@Html.Raw(Model.Content)</div>
+                }
+                else
+                {
+                    <p>Nội dung đang được cập nhật...</p>
+                }
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            @if (relatedBlogs.Any())
+            {
+                <div class="bg-white rounded-4 p-3 mb-4" style="border:1px solid #e5e7eb">
+                    <h6 class="fw-bold mb-3">Bài viết liên quan</h6>
+                    @foreach (var blog in relatedBlogs)
+                    {
+                        <a asp-action="Detail" asp-route-id="@blog.Id" style="text-decoration:none;color:inherit">
+                            <div class="related-card mb-3">
+                                @if (!string.IsNullOrEmpty(blog.ThumbnailUrl))
+                                {
+                                    <img src="@blog.ThumbnailUrl" alt="@blog.Title">
+                                }
+                                else
+                                {
+                                    <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=600&q=80" 
+                                         alt="@blog.Title">
+                                }
+                                <div class="p-3">
+                                    <h6 class="fw-semibold mb-2" style="font-size:14px">@blog.Title</h6>
+                                    <div class="text-muted small">
+                                        <i class="bi bi-calendar3 me-1"></i>@blog.Created.ToString("dd/MM/yyyy")
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    }
+                </div>
+            }
+        </div>
+</div>

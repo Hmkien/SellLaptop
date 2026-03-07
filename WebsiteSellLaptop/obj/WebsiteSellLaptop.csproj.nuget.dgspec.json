@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Dự án\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\WebsiteSellLaptop.csproj": {}
+    "C:\\Dự án\\SellLaptop\\WebsiteSellLaptop\\WebsiteSellLaptop.csproj": {}
   },
   "projects": {
-    "D:\\Dự án\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\WebsiteSellLaptop.csproj": {
+    "C:\\Dự án\\SellLaptop\\WebsiteSellLaptop\\WebsiteSellLaptop.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Dự án\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\WebsiteSellLaptop.csproj",
+        "projectUniqueName": "C:\\Dự án\\SellLaptop\\WebsiteSellLaptop\\WebsiteSellLaptop.csproj",
         "projectName": "WebsiteSellLaptop",
-        "projectPath": "D:\\Dự án\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\WebsiteSellLaptop.csproj",
-        "packagesPath": "C:\\Users\\Admin\\.nuget\\packages\\",
-        "outputPath": "D:\\Dự án\\WebsiteSellComputer\\SellLaptop\\WebsiteSellLaptop\\obj\\",
+        "projectPath": "C:\\Dự án\\SellLaptop\\WebsiteSellLaptop\\WebsiteSellLaptop.csproj",
+        "packagesPath": "C:\\Users\\manhk\\.nuget\\packages\\",
+        "outputPath": "C:\\Dự án\\SellLaptop\\WebsiteSellLaptop\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\Admin\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\manhk\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -52,51 +52,51 @@
           "dependencies": {
             "EFCORE.BulkExtensions": {
               "target": "Package",
-              "version": "[10.0.0, )"
+              "version": "[10.0.1, )"
             },
             "EPPLUS": {
               "target": "Package",
-              "version": "[8.4.1, )"
+              "version": "[8.5.0, )"
             },
             "MailKit": {
               "target": "Package",
-              "version": "[4.14.1, )"
+              "version": "[4.15.1, )"
             },
             "Microsoft.AspNetCore.Identity.EntityFrameworkCore": {
               "target": "Package",
-              "version": "[10.0.2, )"
+              "version": "[10.0.3, )"
             },
             "Microsoft.AspNetCore.Identity.UI": {
               "target": "Package",
-              "version": "[10.0.2, )"
+              "version": "[10.0.3, )"
             },
             "Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation": {
               "target": "Package",
-              "version": "[10.0.2, )"
+              "version": "[10.0.3, )"
             },
             "Microsoft.EntityFrameworkCore": {
               "target": "Package",
-              "version": "[10.0.2, )"
+              "version": "[10.0.3, )"
             },
             "Microsoft.EntityFrameworkCore.Design": {
               "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
               "suppressParent": "All",
               "target": "Package",
-              "version": "[10.0.2, )"
+              "version": "[10.0.3, )"
             },
             "Microsoft.EntityFrameworkCore.SQLite": {
               "target": "Package",
-              "version": "[10.0.2, )"
+              "version": "[10.0.3, )"
             },
             "Microsoft.EntityFrameworkCore.SqlServer": {
               "target": "Package",
-              "version": "[10.0.2, )"
+              "version": "[10.0.3, )"
             },
             "Microsoft.EntityFrameworkCore.Tools": {
               "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
               "suppressParent": "All",
               "target": "Package",
-              "version": "[10.0.2, )"
+              "version": "[10.0.3, )"
             },
             "Microsoft.VisualStudio.Web.CodeGeneration.Design": {
               "target": "Package",

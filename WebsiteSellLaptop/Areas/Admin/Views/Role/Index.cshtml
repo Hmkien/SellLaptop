@@ -11,7 +11,7 @@
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="fw-bold mb-0"><i class="bi bi-person-badge me-2"></i>Quản lý vai trò</h4>
+    <h4 class="fw-bold mb-0">Quản lý vai trò</h4>
     <div class="d-flex gap-2">
         <button type="button" class="btn btn-outline-secondary" onclick="syncFromEnum()">
             <i class="bi bi-arrow-repeat me-1"></i>Đồng bộ từ Enum
@@ -23,14 +23,16 @@
 </div>
 
 <!-- Search Form -->
-<div class="admin-card mb-4">
-    <form method="get" class="row g-3 align-items-end p-3">
-        <div class="col-md-8">
+<div class="admin-card p-4 mb-4">
+    <form method="get" class="row g-3 align-items-end">
+        <div class="col-md-11">
             <label class="form-label fw-semibold">Tìm kiếm</label>
             <input type="text" name="keyword" value="@keyword" class="form-control" placeholder="Nhập mã hoặc tên vai trò...">
         </div>
-        <div class="col-md-4">
-            <button type="submit" class="btn btn-brand w-100"><i class="bi bi-search me-1"></i>Tìm kiếm</button>
+        <div class="col-md-1 text-center">
+            <button type="submit" class="btn btn-link p-0" style="margin-top:8px">
+                <i class="bi bi-search" style="font-size:24px;color:var(--brand)"></i>
+            </button>
         </div>
     </form>
 </div>
@@ -83,34 +85,40 @@
                             <td>
                                 @switch (item.Status)
                                 {
-                                    case StatusEntity.Approved: <span class="badge-status approved"><i class="bi bi-check-circle me-1"></i>Đã duyệt</span> break;
-                                    case StatusEntity.Pending: <span class="badge-status pending"><i class="bi bi-clock me-1"></i>Chờ duyệt</span> break;
-                                    case StatusEntity.Rejected: <span class="badge-status rejected"><i class="bi bi-x-circle me-1"></i>Hủy duyệt</span> break;
-                                    case StatusEntity.Draft: <span class="badge-status draft"><i class="bi bi-pencil me-1"></i>Nháp</span> break;
+                                    case StatusEntity.Approved: 
+                                        <span style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:20px;font-size:13px;font-weight:600;background:linear-gradient(135deg, #10b981 0%, #059669 100%);color:white;box-shadow:0 2px 8px rgba(16,185,129,0.3)">
+                                            Đã duyệt
+                                        </span>
+                                        break;
+                                    case StatusEntity.Pending: 
+                                        <span style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:20px;font-size:13px;font-weight:600;background:linear-gradient(135deg, #f59e0b 0%, #d97706 100%);color:white;box-shadow:0 2px 8px rgba(245,158,11,0.3)">
+                                            Chờ duyệt
+                                        </span>
+                                        break;
+                                    case StatusEntity.Rejected: 
+                                        <span style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:20px;font-size:13px;font-weight:600;background:linear-gradient(135deg, #ef4444 0%, #dc2626 100%);color:white;box-shadow:0 2px 8px rgba(239,68,68,0.3)">
+                                            Hủy duyệt
+                                        </span>
+                                        break;
+                                    case StatusEntity.Draft: 
+                                        <span style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:20px;font-size:13px;font-weight:600;background:linear-gradient(135deg, #6b7280 0%, #4b5563 100%);color:white;box-shadow:0 2px 8px rgba(107,114,128,0.3)">
+                                            Nháp
+                                        </span>
+                                        break;
                                 }
                             </td>
                             <td>@item.Created.ToString("dd/MM/yyyy")</td>
                             <td>
-                                <div class="d-flex gap-1 align-items-center">
+                                <div class="d-flex gap-2 align-items-center">
                                     @if (item.Status == StatusEntity.Approved)
                                     {
-                                        <!-- Đã duyệt: Chỉ hiển thị nút Hủy duyệt -->
-                                        <button type="button" class="action-icon action-reject" title="Hủy duyệt" onclick="confirmReject('@item.Id', '@item.Name')">
-                                            <i class="bi bi-x-circle-fill"></i>
-                                        </button>
+                                        <i class="bi bi-x-circle-fill" style="font-size:22px;color:#f59e42;cursor:pointer" title="Hủy duyệt" onclick="doReject('@item.Id')"></i>
                                     }
                                     else
                                     {
-                                        <!-- Chưa duyệt: Hiển thị các nút chức năng -->
-                                        <button type="button" class="action-icon action-approve" title="Duyệt" onclick="confirmApprove('@item.Id', '@item.Name')">
-                                            <i class="bi bi-check-circle-fill"></i>
-                                        </button>
-                                        <button type="button" class="action-icon action-edit" title="Sửa" onclick="openEditModal('@item.Id')">
-                                            <i class="bi bi-pencil-square"></i>
-                                        </button>
-                                        <button type="button" class="action-icon action-delete" title="Xóa" onclick="confirmDelete('@item.Id', '@item.Name')">
-                                            <i class="bi bi-trash3-fill"></i>
-                                        </button>
+                                        <i class="bi bi-check-circle-fill" style="font-size:22px;color:#22c55e;cursor:pointer" title="Duyệt" onclick="doApprove('@item.Id')"></i>
+                                        <i class="bi bi-pencil-square" style="font-size:22px;color:#2563eb;cursor:pointer" title="Sửa" onclick="openEditModal('@item.Id')"></i>
+                                        <i class="bi bi-trash3-fill" style="font-size:22px;color:#ef4444;cursor:pointer" title="Xóa vĩnh viễn" onclick="confirmDelete('@item.Id', '@item.Name')"></i>
                                     }
                                 </div>
                             </td>
@@ -172,14 +180,14 @@
 </div>
 
 <!-- Modal Thêm mới -->
-<div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
+<div class="modal fade" id="createModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <form id="createForm">
                 @Html.AntiForgeryToken()
                 <div class="modal-header">
-                    <h5 class="modal-title" id="createModalLabel"><i class="bi bi-plus-circle me-2"></i>Thêm mới vai trò</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title">Thêm mới vai trò</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="row g-3">
@@ -220,15 +228,15 @@
 </div>
 
 <!-- Modal Sửa -->
-<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+<div class="modal fade" id="editModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <form id="editForm">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="Id" id="editId">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="editModalLabel"><i class="bi bi-pencil-square me-2"></i>Sửa vai trò</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title">Sửa vai trò</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="row g-3">
@@ -269,12 +277,12 @@
 </div>
 
 <!-- Modal Xem chi tiết -->
-<div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
+<div class="modal fade" id="detailModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="detailModalLabel"><i class="bi bi-info-circle me-2"></i>Chi tiết vai trò</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title">Chi tiết vai trò</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <table class="table table-bordered">
@@ -296,12 +304,12 @@
 </div>
 
 <!-- Modal Xác nhận xóa -->
-<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+<div class="modal fade" id="deleteModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title" id="deleteModalLabel"><i class="bi bi-exclamation-triangle me-2"></i>Xác nhận xóa</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-header">
+                <h5 class="modal-title">Xác nhận xóa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <p>Bạn có chắc chắn muốn xóa vai trò <strong id="deleteItemName"></strong>?</p>
@@ -316,55 +324,16 @@
     </div>
 </div>
 
-<!-- Modal Xác nhận duyệt -->
-<div class="modal fade" id="approveModal" tabindex="-1" aria-labelledby="approveModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-success text-white">
-                <h5 class="modal-title" id="approveModalLabel"><i class="bi bi-check-circle me-2"></i>Xác nhận duyệt</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p>Bạn có chắc chắn muốn duyệt vai trò <strong id="approveItemName"></strong>?</p>
-            </div>
-            <div class="modal-footer">
-                <input type="hidden" id="approveItemId">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                <button type="button" class="btn btn-success" onclick="doApprove()">Duyệt</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal Xác nhận hủy duyệt -->
-<div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-warning text-dark">
-                <h5 class="modal-title" id="rejectModalLabel"><i class="bi bi-x-circle me-2"></i>Xác nhận hủy duyệt</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p>Bạn có chắc chắn muốn hủy duyệt vai trò <strong id="rejectItemName"></strong>?</p>
-            </div>
-            <div class="modal-footer">
-                <input type="hidden" id="rejectItemId">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                <button type="button" class="btn btn-warning" onclick="doReject()">Hủy duyệt</button>
-            </div>
-        </div>
-    </div>
-</div>
-
 <!-- Toast thông báo -->
-<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
-    <div id="toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="toast-header">
-            <i class="bi me-2" id="toastIcon"></i>
-            <strong class="me-auto" id="toastTitle">Thông báo</strong>
-            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index:9999">
+    <div id="toast" class="toast align-items-center border-0" role="alert">
+        <div class="d-flex">
+            <div class="toast-body" id="toastMessage" style="display:flex;align-items:center;gap:8px">
+                <i class="bi" id="toastIcon" style="font-size:20px"></i>
+                <span id="toastText"></span>
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
         </div>
-        <div class="toast-body" id="toastMessage"></div>
     </div>
 </div>
 
@@ -386,30 +355,22 @@
     // Toast
     function showToast(message, type = 'success') {
         const toast = document.getElementById('toast');
-        const toastIcon = document.getElementById('toastIcon');
-        const toastTitle = document.getElementById('toastTitle');
-        const toastMessage = document.getElementById('toastMessage');
-        
-        toast.classList.remove('bg-success', 'bg-danger', 'bg-warning', 'text-white');
-        toastIcon.classList.remove('bi-check-circle-fill', 'bi-x-circle-fill', 'bi-exclamation-triangle-fill');
-        
+        const icon = document.getElementById('toastIcon');
+        const text = document.getElementById('toastText');
+
+        toast.classList.remove('bg-success', 'bg-danger', 'text-white');
+        icon.className = 'bi';
+
         if (type === 'success') {
             toast.classList.add('bg-success', 'text-white');
-            toastIcon.classList.add('bi-check-circle-fill');
-            toastTitle.textContent = 'Thành công';
-        } else if (type === 'error') {
-            toast.classList.add('bg-danger', 'text-white');
-            toastIcon.classList.add('bi-x-circle-fill');
-            toastTitle.textContent = 'Lỗi';
+            icon.classList.add('bi-check-circle-fill');
         } else {
-            toast.classList.add('bg-warning');
-            toastIcon.classList.add('bi-exclamation-triangle-fill');
-            toastTitle.textContent = 'Cảnh báo';
+            toast.classList.add('bg-danger', 'text-white');
+            icon.classList.add('bi-x-circle-fill');
         }
-        
-        toastMessage.textContent = message;
-        const bsToast = new bootstrap.Toast(toast);
-        bsToast.show();
+
+        text.textContent = message;
+        new bootstrap.Toast(toast).show();
     }
 
     // Create
@@ -520,59 +481,41 @@
         }
     }
 
-    // Approve
-    function confirmApprove(id, name) {
-        document.getElementById('approveItemId').value = id;
-        document.getElementById('approveItemName').textContent = name;
-        new bootstrap.Modal(document.getElementById('approveModal')).show();
-    }
-
-    async function doApprove() {
-        const id = document.getElementById('approveItemId').value;
+    // Approve - Direct call
+    async function doApprove(id) {
         const formData = new FormData();
         formData.append('id', id);
         formData.append('__RequestVerificationToken', token);
-        
+
         const response = await fetch(`${baseUrl}/Approve`, {
             method: 'POST',
             body: formData
         });
-        
+
         const result = await response.json();
+        showToast(result.message, result.success ? 'success' : 'error');
+
         if (result.success) {
-            showToast(result.message, 'success');
-            bootstrap.Modal.getInstance(document.getElementById('approveModal')).hide();
             setTimeout(() => location.reload(), 1000);
-        } else {
-            showToast(result.message, 'error');
         }
     }
 
-    // Reject
-    function confirmReject(id, name) {
-        document.getElementById('rejectItemId').value = id;
-        document.getElementById('rejectItemName').textContent = name;
-        new bootstrap.Modal(document.getElementById('rejectModal')).show();
-    }
-
-    async function doReject() {
-        const id = document.getElementById('rejectItemId').value;
+    // Reject - Direct call
+    async function doReject(id) {
         const formData = new FormData();
         formData.append('id', id);
         formData.append('__RequestVerificationToken', token);
-        
+
         const response = await fetch(`${baseUrl}/Reject`, {
             method: 'POST',
             body: formData
         });
-        
+
         const result = await response.json();
+        showToast(result.message, result.success ? 'success' : 'error');
+
         if (result.success) {
-            showToast(result.message, 'success');
-            bootstrap.Modal.getInstance(document.getElementById('rejectModal')).hide();
             setTimeout(() => location.reload(), 1000);
-        } else {
-            showToast(result.message, 'error');
         }
     }
 

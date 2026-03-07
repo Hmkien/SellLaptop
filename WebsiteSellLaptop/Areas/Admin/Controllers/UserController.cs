@@ -75,6 +75,56 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
             return View(user);
         }
 
+        // GET: Admin/User/GetById
+        public async Task<IActionResult> GetById(string id)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user == null)
+                return Json(new { success = false, message = "Không tìm thấy người dùng" });
+
+            var roles = await _userManager.GetRolesAsync(user);
+            var isLocked = user.LockoutEnd != null && user.LockoutEnd > DateTimeOffset.Now;
+
+            return Json(new
+            {
+                success = true,
+                user = new
+                {
+                    id = user.Id,
+                    fullName = user.FullName,
+                    email = user.Email,
+                    phoneNumber = user.PhoneNumber,
+                    role = roles.FirstOrDefault() ?? "User",
+                    isLocked = isLocked,
+                    created = user.Created
+                }
+            });
+        }
+
+        // POST: Admin/User/Edit
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(string id, string fullName, string? phoneNumber)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user == null)
+                return Json(new { success = false, message = "Không tìm thấy người dùng" });
+
+            // Check if admin
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.Contains("Admin"))
+                return Json(new { success = false, message = "Không thể sửa thông tin tài khoản Admin" });
+
+            if (string.IsNullOrWhiteSpace(fullName))
+                return Json(new { success = false, message = "Họ tên không được để trống" });
+
+            user.FullName = fullName.Trim();
+            user.PhoneNumber = phoneNumber?.Trim();
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, message = "Đã cập nhật thông tin người dùng" });
+        }
+
         // POST: Admin/User/ToggleLockout
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -123,6 +173,33 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
             await _context.SaveChangesAsync();
 
             return Json(new { success = true, message = "Đã xóa người dùng" });
+        }
+
+        // POST: Admin/User/ResetPassword
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPassword(string id, string newPassword)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user == null)
+                return Json(new { success = false, message = "Không tìm thấy người dùng" });
+
+            // Check if admin
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.Contains("Admin"))
+                return Json(new { success = false, message = "Không thể đổi mật khẩu tài khoản Admin" });
+
+            if (string.IsNullOrEmpty(newPassword) || newPassword.Length < 6)
+                return Json(new { success = false, message = "Mật khẩu phải có ít nhất 6 ký tự" });
+
+            // Remove old password and set new one
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
+
+            if (result.Succeeded)
+                return Json(new { success = true, message = "Đã đổi mật khẩu thành công" });
+            else
+                return Json(new { success = false, message = "Lỗi: " + string.Join(", ", result.Errors.Select(e => e.Description)) });
         }
     }
 }

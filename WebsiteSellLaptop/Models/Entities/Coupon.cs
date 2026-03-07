@@ -7,7 +7,7 @@ namespace WebsiteSellLaptop.Models.Entities
     {
         [Required(ErrorMessage = "Mã giảm giá không được để trống")]
         [StringLength(50)]
-        public string Code { get; set; } = string.Empty;
+        public new string Code { get; set; } = string.Empty;
 
         public string? Description { get; set; }
 

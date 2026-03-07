@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel;
+using System.Reflection;
 using WebsiteSellLaptop.Data;
 using WebsiteSellLaptop.Models.Entities;
 using WebsiteSellLaptop.Models.Enums;
@@ -12,13 +14,16 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
     public class RoleController : Controller
     {
         private readonly AppDbContext _context;
-        public RoleController(AppDbContext context) => _context = context;
+        public RoleController(AppDbContext context)
+        {
+            _context = context;
+        }
 
         #region Index - Danh sách
         public async Task<IActionResult> Index(int page = 1, string? keyword = null, int pageSize = 10)
         {
-            var query = _context.AppRoles.Where(x => x.Status != StatusEntity.Deleted).AsQueryable();
-            
+            IQueryable<Role> query = _context.AppRoles.AsQueryable();
+
             if (!string.IsNullOrEmpty(keyword))
             {
                 keyword = keyword.Trim().ToLower();
@@ -26,10 +31,10 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
             }
 
             var totalItems = await query.CountAsync();
-            var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+            int totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
             page = Math.Max(1, Math.Min(page, Math.Max(1, totalPages)));
 
-            var data = await query
+            List<Role> data = await query
                 .OrderByDescending(x => x.Created)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
@@ -49,9 +54,11 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
         [HttpGet]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var item = await _context.AppRoles.FindAsync(id);
+            Role? item = await _context.AppRoles.FindAsync(id);
             if (item == null)
+            {
                 return Json(new { success = false, message = "Không tìm thấy dữ liệu" });
+            }
 
             return Json(new
             {
@@ -80,18 +87,24 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
         public async Task<IActionResult> Create([FromForm] Role model)
         {
             if (string.IsNullOrWhiteSpace(model.Code))
+            {
                 return Json(new { success = false, message = "Mã vai trò không được để trống" });
+            }
 
             if (string.IsNullOrWhiteSpace(model.Name))
+            {
                 return Json(new { success = false, message = "Tên vai trò không được để trống" });
+            }
 
             // Kiểm tra trùng mã
-            var codeExists = await _context.AppRoles
-                .AnyAsync(x => x.Code.ToLower() == model.Code.Trim().ToLower() && x.Status != StatusEntity.Deleted);
+            bool codeExists = await _context.AppRoles
+                .AnyAsync(x => x.Code.ToLower() == model.Code.Trim().ToLower());
             if (codeExists)
+            {
                 return Json(new { success = false, message = "Mã vai trò đã tồn tại" });
+            }
 
-            var entity = new Role
+            Role entity = new()
             {
                 Code = model.Code.Trim(),
                 Name = model.Name.Trim(),
@@ -102,8 +115,8 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
                 CreatedBy = User.Identity?.Name
             };
 
-            _context.AppRoles.Add(entity);
-            await _context.SaveChangesAsync();
+            _ = _context.AppRoles.Add(entity);
+            _ = await _context.SaveChangesAsync();
 
             return Json(new { success = true, message = "Thêm mới thành công" });
         }
@@ -114,26 +127,36 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit([FromForm] Role model)
         {
-            var item = await _context.AppRoles.FindAsync(model.Id);
+            Role? item = await _context.AppRoles.FindAsync(model.Id);
             if (item == null)
+            {
                 return Json(new { success = false, message = "Không tìm thấy dữ liệu" });
+            }
 
             if (item.Status == StatusEntity.Approved)
+            {
                 return Json(new { success = false, message = "Không thể sửa bản ghi đã duyệt" });
+            }
 
             if (string.IsNullOrWhiteSpace(model.Code))
+            {
                 return Json(new { success = false, message = "Mã vai trò không được để trống" });
+            }
 
             if (string.IsNullOrWhiteSpace(model.Name))
+            {
                 return Json(new { success = false, message = "Tên vai trò không được để trống" });
+            }
 
             // Kiểm tra trùng mã (loại trừ bản ghi hiện tại)
-            var codeExists = await _context.AppRoles
-                .AnyAsync(x => x.Code.ToLower() == model.Code.Trim().ToLower() 
-                            && x.Id != model.Id 
-                            && x.Status != StatusEntity.Deleted);
+            bool codeExists = await _context.AppRoles
+                .AnyAsync(x => x.Code.ToLower() == model.Code.Trim().ToLower()
+                            && x.Id != model.Id
+                                );
             if (codeExists)
+            {
                 return Json(new { success = false, message = "Mã vai trò đã tồn tại" });
+            }
 
             item.Code = model.Code.Trim();
             item.Name = model.Name.Trim();
@@ -143,7 +166,7 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
             item.LastModified = DateTime.Now;
             item.ModifiedBy = User.Identity?.Name;
 
-            await _context.SaveChangesAsync();
+            _ = await _context.SaveChangesAsync();
 
             return Json(new { success = true, message = "Cập nhật thành công" });
         }
@@ -154,14 +177,16 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Approve(Guid id)
         {
-            var item = await _context.AppRoles.FindAsync(id);
+            Role? item = await _context.AppRoles.FindAsync(id);
             if (item == null)
+            {
                 return Json(new { success = false, message = "Không tìm thấy dữ liệu" });
+            }
 
             item.Status = StatusEntity.Approved;
             item.LastModified = DateTime.Now;
             item.ModifiedBy = User.Identity?.Name;
-            await _context.SaveChangesAsync();
+            _ = await _context.SaveChangesAsync();
 
             return Json(new { success = true, message = "Duyệt thành công" });
         }
@@ -172,14 +197,16 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Reject(Guid id)
         {
-            var item = await _context.AppRoles.FindAsync(id);
+            Role? item = await _context.AppRoles.FindAsync(id);
             if (item == null)
+            {
                 return Json(new { success = false, message = "Không tìm thấy dữ liệu" });
+            }
 
             item.Status = StatusEntity.Rejected;
             item.LastModified = DateTime.Now;
             item.ModifiedBy = User.Identity?.Name;
-            await _context.SaveChangesAsync();
+            _ = await _context.SaveChangesAsync();
 
             return Json(new { success = true, message = "Hủy duyệt thành công" });
         }
@@ -190,17 +217,18 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var item = await _context.AppRoles.FindAsync(id);
+            Role? item = await _context.AppRoles.FindAsync(id);
             if (item == null)
+            {
                 return Json(new { success = false, message = "Không tìm thấy dữ liệu" });
+            }
 
             if (item.Status == StatusEntity.Approved)
+            {
                 return Json(new { success = false, message = "Không thể xóa bản ghi đã duyệt" });
-
-            item.Status = StatusEntity.Deleted;
-            item.LastModified = DateTime.Now;
-            item.ModifiedBy = User.Identity?.Name;
-            await _context.SaveChangesAsync();
+            }
+            _ = _context.AppRoles.Remove(item);
+            _ = await _context.SaveChangesAsync();
 
             return Json(new { success = true, message = "Xóa thành công" });
         }
@@ -211,15 +239,15 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SyncFromEnum()
         {
-            var enumValues = Enum.GetValues<UserRole>();
+            UserRole[] enumValues = Enum.GetValues<UserRole>();
             int added = 0;
 
-            foreach (var roleType in enumValues)
+            foreach (UserRole roleType in enumValues)
             {
-                var exists = await _context.AppRoles.AnyAsync(x => x.RoleType == roleType && x.Status != StatusEntity.Deleted);
+                bool exists = await _context.AppRoles.AnyAsync(x => x.RoleType == roleType);
                 if (!exists)
                 {
-                    var role = new Role
+                    Role role = new()
                     {
                         Code = roleType.ToString().ToUpper(),
                         Name = GetEnumDescription(roleType),
@@ -228,13 +256,15 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
                         Status = StatusEntity.Approved,
                         CreatedBy = User.Identity?.Name
                     };
-                    _context.AppRoles.Add(role);
+                    _ = _context.AppRoles.Add(role);
                     added++;
                 }
             }
 
             if (added > 0)
-                await _context.SaveChangesAsync();
+            {
+                _ = await _context.SaveChangesAsync();
+            }
 
             return Json(new { success = true, message = $"Đồng bộ thành công {added} vai trò" });
         }
@@ -243,8 +273,8 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
         #region Helper - Lấy Description từ enum
         private static string GetEnumDescription(Enum value)
         {
-            var field = value.GetType().GetField(value.ToString());
-            var attr = field?.GetCustomAttributes(typeof(System.ComponentModel.DescriptionAttribute), false)
+            FieldInfo? field = value.GetType().GetField(value.ToString());
+            DescriptionAttribute? attr = field?.GetCustomAttributes(typeof(System.ComponentModel.DescriptionAttribute), false)
                             .FirstOrDefault() as System.ComponentModel.DescriptionAttribute;
             return attr?.Description ?? value.ToString();
         }

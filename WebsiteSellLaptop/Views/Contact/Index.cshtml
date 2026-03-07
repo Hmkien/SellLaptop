@@ -1,0 +1,139 @@
+@model Contact
+
+@{
+    ViewData["Title"] = "Liên hệ";
+}
+
+@section Styles {
+<style>
+    .contact-hero{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;padding:60px 0;margin-bottom:48px}
+    .contact-card{background:#fff;border-radius:16px;border:1px solid #e5e7eb;padding:32px}
+    .contact-info{display:flex;align-items:start;gap:16px;margin-bottom:24px}
+    .contact-info-icon{width:48px;height:48px;border-radius:12px;background:#eef2ff;display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--brand);flex-shrink:0}
+    .contact-info h6{font-weight:700;margin-bottom:4px}
+    .contact-info p{color:var(--muted);margin:0}
+</style>
+}
+
+<div class="contact-hero">
+    <div class="container text-center">
+        <h1 class="display-5 fw-bold mb-3">Liên hệ với chúng tôi</h1>
+        <p class="lead mb-0">Chúng tôi luôn sẵn sàng hỗ trợ bạn 24/7</p>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <div class="row g-4">
+        <!-- Contact Info -->
+        <div class="col-lg-4">
+            <div class="contact-card">
+                <h5 class="fw-bold mb-4">Thông tin liên hệ</h5>
+                
+                <div class="contact-info">
+                    <div class="contact-info-icon">
+                        <i class="bi bi-geo-alt-fill"></i>
+                    </div>
+                    <div>
+                        <h6>Địa chỉ</h6>
+                        <p>123 Nguyễn Huệ, Quận 1<br>TP. Hồ Chí Minh</p>
+                    </div>
+                </div>
+
+                <div class="contact-info">
+                    <div class="contact-info-icon">
+                        <i class="bi bi-telephone-fill"></i>
+                    </div>
+                    <div>
+                        <h6>Hotline</h6>
+                        <p>1900 6868<br>08:00 - 22:00 (Tất cả các ngày)</p>
+                    </div>
+                </div>
+
+                <div class="contact-info">
+                    <div class="contact-info-icon">
+                        <i class="bi bi-envelope-fill"></i>
+                    </div>
+                    <div>
+                        <h6>Email</h6>
+                        <p>support@laptophub.vn<br>sales@laptophub.vn</p>
+                    </div>
+                </div>
+
+                <div class="contact-info">
+                    <div class="contact-info-icon">
+                        <i class="bi bi-clock-fill"></i>
+                    </div>
+                    <div>
+                        <h6>Giờ làm việc</h6>
+                        <p>Thứ 2 - Chủ nhật<br>08:00 - 22:00</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Form -->
+        <div class="col-lg-8">
+            <div class="contact-card">
+                <h5 class="fw-bold mb-4">Gửi tin nhắn cho chúng tôi</h5>
+                
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="bi bi-check-circle me-2"></i>@TempData["SuccessMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+
+                <form asp-action="Index" method="post">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="FullName" class="form-label fw-semibold">Họ và tên <span class="text-danger">*</span></label>
+                            <input asp-for="FullName" class="form-control" placeholder="Nhập họ tên của bạn" style="border-radius:12px">
+                            <span asp-validation-for="FullName" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Email" class="form-label fw-semibold">Email <span class="text-danger">*</span></label>
+                            <input asp-for="Email" type="email" class="form-control" placeholder="email@example.com" style="border-radius:12px">
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Phone" class="form-label fw-semibold">Số điện thoại</label>
+                            <input asp-for="Phone" class="form-control" placeholder="0987 654 321" style="border-radius:12px">
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Subject" class="form-label fw-semibold">Tiêu đề <span class="text-danger">*</span></label>
+                            <input asp-for="Subject" class="form-control" placeholder="Chủ đề liên hệ" style="border-radius:12px">
+                            <span asp-validation-for="Subject" class="text-danger"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Message" class="form-label fw-semibold">Nội dung <span class="text-danger">*</span></label>
+                            <textarea asp-for="Message" class="form-control" rows="6" placeholder="Nhập nội dung bạn muốn gửi..." style="border-radius:12px"></textarea>
+                            <span asp-validation-for="Message" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-brand mt-4 px-4">
+                        <i class="bi bi-send me-2"></i>Gửi tin nhắn
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Map -->
+    <div class="mt-5">
+        <div class="contact-card p-0" style="overflow:hidden;height:400px">
+            <iframe 
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.4958447252155!2d106.70298731533422!3d10.775356762202795!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752f4b3330bcc9%3A0xf34f38c2b96e8c8!2zTmd1eeG7hW4gSHXhu4csIFF14bqtbiAxLCBUaMOgbmggcGjhu5EgSOG7kyBDaMOtIE1pbmgsIFZp4buHdCBOYW0!5e0!3m2!1svi!2s!4v1234567890"
+                width="100%" 
+                height="400" 
+                style="border:0" 
+                allowfullscreen="" 
+                loading="lazy">
+            </iframe>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

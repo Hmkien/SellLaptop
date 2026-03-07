@@ -1,6 +1,6 @@
-using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 using WebsiteSellLaptop.Data;
 using WebsiteSellLaptop.Models;
 using WebsiteSellLaptop.Models.Enums;
@@ -22,22 +22,39 @@ public class HomeController : Controller
         ViewBag.FeaturedProducts = await _context.Products
             .Include(p => p.Category)
             .Include(p => p.Brand)
-            .Where(p => p.IsFeatured && p.Status == StatusEntity.Approved)
-            .Take(8)
+            .Where(p => p.IsFeatured && p.Status == StatusEntity.Approved && !p.IsAccessory)
+            .OrderByDescending(p => p.Created)
+            .Take(10)
+            .ToListAsync();
+
+        // Get latest products (non-featured)
+        ViewBag.LatestProducts = await _context.Products
+            .Include(p => p.Category)
+            .Include(p => p.Brand)
+            .Where(p => p.Status == StatusEntity.Approved && !p.IsAccessory)
+            .OrderByDescending(p => p.Created)
+            .Take(10)
             .ToListAsync();
 
         // Get categories
         ViewBag.Categories = await _context.Categories
             .Where(c => c.Status == StatusEntity.Approved)
             .OrderBy(c => c.SortOrder)
-            .Take(4)
+            .Take(8)
             .ToListAsync();
 
         // Get banners
         ViewBag.Banners = await _context.Banners
             .Where(b => b.Status == StatusEntity.Approved)
             .OrderBy(b => b.SortOrder)
-            .Take(3)
+            .Take(5)
+            .ToListAsync();
+
+        // Get brands
+        ViewBag.Brands = await _context.Brands
+            .Where(b => b.Status == StatusEntity.Approved)
+            .OrderBy(b => b.SortOrder)
+            .Take(12)
             .ToListAsync();
 
         // Get partners

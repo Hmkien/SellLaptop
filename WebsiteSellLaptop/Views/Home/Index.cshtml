@@ -1,228 +1,386 @@
-﻿@using WebsiteSellLaptop.Models.Enums
+@using WebsiteSellLaptop.Models.Enums
 @{
     ViewData["Title"] = "Trang chủ";
     var featuredProducts = ViewBag.FeaturedProducts as List<Product> ?? new List<Product>();
-    var categories = ViewBag.Categories as List<Category> ?? new List<Category>();
-    var banners = ViewBag.Banners as List<Banner> ?? new List<Banner>();
+    var latestProducts   = ViewBag.LatestProducts   as List<Product> ?? new List<Product>();
+    var categories       = ViewBag.Categories       as List<Category> ?? new List<Category>();
+    var banners          = ViewBag.Banners           as List<Banner> ?? new List<Banner>();
+    var approvedBanners  = banners.Where(b => b.Status == StatusEntity.Approved && !string.IsNullOrEmpty(b.ImageUrl))
+                                  .OrderBy(b => b.SortOrder).ToList();
+    var approvedCats     = categories.Where(c => c.Status == StatusEntity.Approved).ToList();
+    var brands           = ViewBag.Brands as List<Brand> ?? new List<Brand>();
+    var approvedBrands   = brands.Where(b => b.Status == StatusEntity.Approved && !string.IsNullOrEmpty(b.LogoUrl)).ToList();
 }
 
 @section Styles {
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
 <style>
-    .hero{background:linear-gradient(135deg,#ffffff 0%,#eef2ff 100%);border-radius:28px;padding:52px;border:1px solid #e5e7eb;box-shadow:0 20px 60px rgba(15,23,42,0.08)}
-    .hero-img{border-radius:18px;object-fit:cover;width:100%;height:100%;min-height:320px;box-shadow:0 18px 50px rgba(37,99,235,0.16)}
-    .pill{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;background:#e0ecff;color:#1d4ed8;border-radius:999px;font-weight:600;font-size:14px}
-    .stat{background:#fff;border-radius:14px;padding:12px 16px;border:1px solid #e5e7eb}
-    .category-card,.product-card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;transition:transform 0.2s,box-shadow 0.2s}
-    .category-card:hover,.product-card:hover{transform:translateY(-4px);box-shadow:0 16px 48px rgba(15,23,42,0.08)}
-    .category-card{padding:0;overflow:hidden}
-    .category-card img{width:100%;height:140px;object-fit:cover}
-    .category-card .category-body{padding:14px;text-align:center}
-    .category-card .category-title{font-weight:700;margin-bottom:6px}
-    .category-card .category-sub{color:var(--muted);font-size:13px}
-    .product-card{display:flex;flex-direction:column;gap:8px;min-height:360px;padding:16px}
-    .product-card h6{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin:0}
-    .product-meta{margin-top:auto}
-    .thumb{border-radius:12px;object-fit:cover;width:100%;height:170px}
-    .price{font-weight:800;color:var(--brand);font-size:18px}
-    .old-price{color:var(--muted);text-decoration:line-through;font-size:14px}
-    .step-card{background:#fff;border-radius:14px;border:1px dashed #d1d5db;padding:18px;height:100%}
-    .step-badge{min-width:44px;height:44px;border-radius:50%;background:var(--brand);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:700}
-    .feature-icon{width:48px;height:48px;border-radius:12px;background:#eef2ff;display:inline-flex;align-items:center;justify-content:center;color:var(--brand);font-size:20px;margin-right:12px}
+/* ===== HERO BANNER ===== */
+.hero-banner{position:relative;border-radius:14px;overflow:hidden;background:#0a0f1e;line-height:0;margin-bottom:16px}
+.hero-banner .swiper-slide img{width:100%;height:460px;;display:block}
+.hero-banner .swiper-slide a{display:block;line-height:0}
+.hero-banner .swiper-button-next,.hero-banner .swiper-button-prev{color:#fff;background:rgba(0,0,0,.4);width:40px;height:40px;border-radius:50%}
+.hero-banner .swiper-button-next:after,.hero-banner .swiper-button-prev:after{font-size:15px;font-weight:700}
+.hero-banner .swiper-pagination-bullet{background:rgba(255,255,255,.5);opacity:1}
+.hero-banner .swiper-pagination-bullet-active{background:#fff;width:24px;border-radius:4px}
+@@media(max-width:768px){.hero-banner .swiper-slide img{height:180px}}
+
+/* ===== BENEFIT BAR ===== */
+.benefit-bar{background:#fff;border:1px solid #e8edf2;border-radius:12px;padding:10px 16px;margin-bottom:24px}
+.benefit-item{display:flex;align-items:center;gap:10px;padding:6px 0}
+.benefit-icon{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#0ea5e9,#3b82f6);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.1rem;flex-shrink:0}
+.benefit-text strong{display:block;font-size:.85rem;font-weight:700;color:#1e293b;line-height:1.2}
+.benefit-text span{font-size:.75rem;color:#64748b}
+@@media(max-width:576px){.benefit-bar .col-6{border-bottom:1px solid #f1f5f9}}
+
+/* ===== SECTION HEADERS ===== */
+.section-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding-bottom:12px;border-bottom:2px solid #e2e8f0}
+.section-title h2{font-size:1.4rem;font-weight:800;margin:0;color:#0f172a;display:flex;align-items:center;gap:8px}
+.section-title h2::before{content:'';display:inline-block;width:4px;height:22px;background:linear-gradient(180deg,#0ea5e9,#3b82f6);border-radius:4px}
+.section-title a{font-size:.85rem;color:#0ea5e9;font-weight:600;white-space:nowrap;text-decoration:none}
+.section-title a:hover{color:#0284c7}
+
+/* ===== CATEGORY ROW ===== */
+.cat-scroll{display:flex;gap:12px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none}
+.cat-scroll::-webkit-scrollbar{display:none}
+.cat-item{flex:0 0 auto;text-align:center;cursor:pointer;width:100px}
+.cat-item a{text-decoration:none}
+.cat-img-wrap{width:72px;height:72px;border-radius:50%;overflow:hidden;border:2px solid #e2e8f0;margin:0 auto 8px;transition:all .3s;background:#f8fafc}
+.cat-img-wrap img{width:100%;height:100%;object-fit:contain}
+.cat-item:hover .cat-img-wrap{border-color:#0ea5e9;box-shadow:0 4px 16px rgba(14,165,233,.25);transform:translateY(-3px)}
+.cat-item p{font-size:.78rem;font-weight:600;color:#334155;margin:0;line-height:1.3}
+
+/* ===== PRODUCT CARDS ===== */
+.prod-card{background:#fff;border:1px solid #e8edf2;border-radius:12px;overflow:hidden;height:100%;display:flex;flex-direction:column;transition:all .25s;position:relative}
+.prod-card:hover{border-color:#0ea5e9;box-shadow:0 8px 32px rgba(14,165,233,.18);transform:translateY(-4px)}
+.prod-thumb{position:relative;overflow:hidden;background:#f8fafc}
+.prod-thumb img{width:100%;height:180px;object-fit:contain;transition:transform .3s}
+.prod-card:hover .prod-thumb img{transform:scale(1.06)}
+.prod-badge{position:absolute;top:8px;left:8px;background:#ef4444;color:#fff;font-size:.7rem;font-weight:700;padding:3px 10px;border-radius:20px;z-index:2}
+.prod-badge.new{background:#10b981}
+.prod-body{padding:12px;flex:1;display:flex;flex-direction:column}
+.prod-name{font-size:.88rem;font-weight:700;color:#1e293b;margin-bottom:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.4}
+.prod-spec{font-size:.75rem;color:#64748b;margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prod-spec i{color:#0ea5e9}
+.prod-price-block{margin-top:auto}
+.prod-price{font-size:1.1rem;font-weight:800;color:#e53e3e}
+.prod-old-price{font-size:.8rem;color:#94a3b8;text-decoration:line-through}
+.prod-discount-pct{font-size:.72rem;color:#e53e3e;font-weight:700;background:#fff0f0;border-radius:4px;padding:1px 5px;margin-left:4px}
+.btn-cart{width:100%;background:linear-gradient(135deg,#0ea5e9,#2563eb);color:#fff;border:none;border-radius:8px;padding:8px;font-size:.82rem;font-weight:700;margin-top:10px;transition:all .25s}
+.btn-cart:hover{opacity:.88;transform:translateY(-1px);color:#fff}
+
+/* ===== PROMO BANNER STRIP ===== */
+.promo-strip{border-radius:14px;overflow:hidden;display:block;transition:transform .25s}
+.promo-strip:hover{transform:translateY(-3px)}
+.promo-strip img{width:100%;;display:block}
+
+/* ===== STATS ===== */
+.stats-bar{background:linear-gradient(135deg,#0f172a,#1e3a5f);border-radius:16px;padding:36px 24px;margin:40px 0}
+.stat-val{font-size:2rem;font-weight:800;background:linear-gradient(135deg,#38bdf8,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-lbl{color:rgba(255,255,255,.7);font-size:.85rem;margin-top:2px}
+
+/* ===== FEATURES ===== */
+.feat-card{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:24px 20px;height:100%;transition:all .25s}
+.feat-card:hover{border-color:#0ea5e9;box-shadow:0 8px 28px rgba(14,165,233,.15);transform:translateY(-3px)}
+.feat-icon{width:54px;height:54px;border-radius:14px;background:linear-gradient(135deg,#0ea5e9,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:1.4rem;color:#fff;margin-bottom:14px;box-shadow:0 6px 16px rgba(14,165,233,.3)}
+.feat-title{font-weight:700;font-size:1rem;margin-bottom:6px}
+.feat-desc{color:#64748b;font-size:.88rem;line-height:1.5}
+
+/* ===== PRODUCT GRID RESPONSIVE ===== */
+.prod-grid{display:grid;gap:14px;grid-template-columns:repeat(5,1fr)}
+@@media(max-width:1199px){.prod-grid{grid-template-columns:repeat(4,1fr)}}
+@@media(max-width:991px){.prod-grid{grid-template-columns:repeat(3,1fr)}}
+@@media(max-width:575px){.prod-grid{grid-template-columns:repeat(2,1fr)}}
+
+/* ===== BRANDS ===== */
+.brand-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+@@media(max-width:991px){.brand-grid{grid-template-columns:repeat(4,1fr)}}
+@@media(max-width:575px){.brand-grid{grid-template-columns:repeat(3,1fr)}}
+.brand-item{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:14px 8px;background:#fff;border:1.5px solid #e2e8f0;border-radius:12px;text-decoration:none;transition:all .25s;cursor:pointer}
+.brand-item:hover{border-color:#0ea5e9;box-shadow:0 6px 20px rgba(14,165,233,.18);transform:translateY(-3px)}
+.brand-logo{width:56px;height:36px;object-fit:contain;filter:grayscale(40%);transition:filter .25s}
+.brand-item:hover .brand-logo{filter:grayscale(0%)}
+.brand-name{font-size:.75rem;font-weight:700;color:#334155;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90px;text-align:center}
+
+/* ===== VIEW MORE BTN ===== */
+.btn-viewmore{border:2px solid #0ea5e9;color:#0ea5e9;border-radius:8px;padding:10px 36px;font-weight:700;font-size:.9rem;transition:all .25s}
+.btn-viewmore:hover{background:#0ea5e9;color:#fff}
 </style>
 }
 
-<div class="container my-5">
-    <!-- Hero Section -->
-    <section class="hero row g-4 align-items-center">
-        <div class="col-lg-6">
-            <div class="pill mb-3"><i class="bi bi-lightning-charge-fill"></i> Deal tuần - Giảm đến 15%</div>
-            <h1 class="fw-bold display-5 mb-3">Laptop hiệu năng cao, giao tận tay trong 2 giờ</h1>
-            <p class="text-muted mb-4">Hàng chính hãng, bảo hành tại hãng, hỗ trợ cài đặt và backup dữ liệu trước khi giao</p>
-            <div class="d-flex gap-3 flex-wrap">
-                <a class="btn btn-brand btn-lg" asp-controller="Product" asp-action="Index">Chọn laptop</a>
-                <a class="btn btn-outline-dark btn-lg" href="#">Xem phụ kiện</a>
-            </div>
-            <div class="row row-cols-3 g-2 mt-4">
-                <div class="col"><div class="stat small"><i class="bi bi-truck"></i> Giao nhanh 2h</div></div>
-                <div class="col"><div class="stat small"><i class="bi bi-shield-check"></i> Bảo hành 1-1</div></div>
-                <div class="col"><div class="stat small"><i class="bi bi-arrow-repeat"></i> Đổi trả 7 ngày</div></div>
-            </div>
-        </div>
-        <div class="col-lg-6">
-            <img src="https://images.unsplash.com/photo-1481277542470-605612bd2d61?auto=format&fit=crop&w=1400&q=80" class="hero-img" alt="Laptop">
-        </div>
-    </section>
+<div class="container" style="padding-top:20px;padding-bottom:48px">
 
-    <!-- Categories -->
-    @if (categories.Any())
-    {
-        <section class="section">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h2 class="section-title">Danh mục nổi bật</h2>
-            </div>
-            <div class="row g-3">
-                @foreach (var cat in categories)
+<!-- ==================== HERO BANNER ==================== -->
+@if (approvedBanners.Any())
+{
+    <div class="hero-banner">
+        <div class="swiper hero-swiper">
+            <div class="swiper-wrapper">
+                @foreach (var banner in approvedBanners)
                 {
-                    <div class="col-6 col-md-3">
-                        <div class="category-card h-100">
+                    <div class="swiper-slide">
+                        @if (!string.IsNullOrEmpty(banner.LinkUrl))
+                        {
+                            <a href="@banner.LinkUrl"><img src="@banner.ImageUrl" alt="@banner.Title"></a>
+                        }
+                        else
+                        {
+                            <img src="@banner.ImageUrl" alt="@banner.Title">
+                        }
+                    </div>
+                }
+            </div>
+            <div class="swiper-pagination"></div>
+            <div class="swiper-button-prev"></div>
+            <div class="swiper-button-next"></div>
+        </div>
+    </div>
+}
+
+<!-- ==================== BENEFIT BAR ==================== -->
+<div class="benefit-bar">
+    <div class="row g-0">
+        <div class="col-6 col-md-3">
+            <div class="benefit-item">
+                <div class="benefit-icon"><i class="bi bi-patch-check-fill"></i></div>
+                <div class="benefit-text">
+                    <strong>Hàng New Seal</strong>
+                    <span>Chưa active, fullbox</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="benefit-item">
+                <div class="benefit-icon"><i class="bi bi-shield-fill-check"></i></div>
+                <div class="benefit-text">
+                    <strong>Bảo hành 12-24 tháng</strong>
+                    <span>Tại hệ thống cửa hàng</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="benefit-item">
+                <div class="benefit-icon"><i class="bi bi-arrow-repeat"></i></div>
+                <div class="benefit-text">
+                    <strong>1 đổi 1 trong 30 ngày</strong>
+                    <span>Nếu lỗi do nhà sản xuất</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="benefit-item">
+                <div class="benefit-icon"><i class="bi bi-truck"></i></div>
+                <div class="benefit-text">
+                    <strong>Giao hàng toàn quốc</strong>
+                    <span>Nhanh chóng, an toàn</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- ==================== CATEGORIES ==================== -->
+    @if (approvedCats.Any())
+    {
+        <div class="section-title mb-3">
+            <h2>Danh mục nổi bật</h2>
+            <a asp-controller="Product" asp-action="Index">Xem tất cả <i class="bi bi-chevron-right"></i></a>
+        </div>
+        <div class="cat-scroll mb-4">
+            @foreach (var cat in approvedCats)
+            {
+                <div class="cat-item">
+                    <a href="@Url.Action("Index", "Product", new { category = cat.Id })">
+                        <div class="cat-img-wrap">
                             @if (!string.IsNullOrEmpty(cat.ImageUrl))
                             {
                                 <img src="@cat.ImageUrl" alt="@cat.Name">
                             }
                             else
                             {
-                                <img src="https://images.unsplash.com/photo-1518779578993-ec3579fee39f?auto=format&fit=crop&w=800&q=80" alt="@cat.Name">
+                                <img src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=200&q=60" alt="@cat.Name">
                             }
-                            <div class="category-body">
-                                <div class="category-title">@cat.Name</div>
-                                <div class="category-sub">@(cat.Description ?? "Khám phá ngay")</div>
-                            </div>
                         </div>
-                    </div>
-                }
-            </div>
-        </section>
+                        <p>@cat.Name</p>
+                    </a>
+                </div>
+            }
+        </div>
     }
 
-    <!-- Featured Products -->
+    <!-- ==================== BRANDS ==================== -->
+    @if (approvedBrands.Any())
+    {
+        <div class="section-title mb-3">
+            <h2>Thương hiệu nổi bật</h2>
+            <a asp-controller="Product" asp-action="Index">Xem tất cả <i class="bi bi-chevron-right"></i></a>
+        </div>
+        <div class="brand-grid mb-4">
+            @foreach (var b in approvedBrands)
+            {
+                <a class="brand-item" href="@Url.Action("Index", "Product", new { brand = b.Id })">
+                    <img class="brand-logo" src="@b.LogoUrl" alt="@b.Name">
+                </a>
+            }
+        </div>
+    }
+
+    <!-- ==================== FEATURED PRODUCTS ==================== -->
     @if (featuredProducts.Any())
     {
-        <section class="section">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h2 class="section-title">Laptop nổi bật</h2>
-                <a asp-controller="Product" asp-action="Index" class="text-primary">Xem tất cả</a>
-            </div>
-            <div class="row g-4">
-                @foreach (var product in featuredProducts.Take(4))
-                {
-                    <div class="col-md-3">
-                        <div class="product-card h-100">
-                            @if (!string.IsNullOrEmpty(product.ThumbnailUrl))
-                            {
-                                <img src="@product.ThumbnailUrl" class="thumb" alt="@product.Name">
-                            }
-                            else
-                            {
-                                <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=900&q=80" class="thumb" alt="@product.Name">
-                            }
-                            <div class="d-flex justify-content-between align-items-start mt-2 mb-1">
-                                <h6 class="fw-semibold">@product.Name</h6>
-                                @if (product.IsFeatured)
-                                {
-                                    <span class="badge bg-success">Nổi bật</span>
-                                }
-                            </div>
-                            <p class="text-muted small mb-1">@product.CPU</p>
-                            <div class="product-meta">
-                                <div class="price">@product.Price.ToString("N0")₫</div>
-                                @if (product.DiscountPrice.HasValue && product.DiscountPrice > 0)
-                                {
-                                    <div class="old-price">@product.DiscountPrice.Value.ToString("N0")₫</div>
-                                }
-                                <button class="btn btn-dark w-100 mt-3">Thêm vào giỏ</button>
-                            </div>
-                        </div>
-                    </div>
-                }
-            </div>
-        </section>
+        <div class="section-title">
+            <h2><i class="bi bi-fire text-danger me-1"></i>Laptop nổi bật</h2>
+            <a asp-controller="Product" asp-action="Index">Xem thêm <i class="bi bi-chevron-right"></i></a>
+        </div>
+        <div class="prod-grid mb-2">
+            @foreach (var p in featuredProducts)
+            {
+                @await Html.PartialAsync("_ProductCard", p)
+            }
+        </div>
+        <div class="text-center mt-3 mb-5">
+            <a asp-controller="Product" asp-action="Index" class="btn btn-viewmore">
+                Xem tất cả laptop nổi bật <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+        </div>
     }
-    else
+
+    <!-- ==================== STATS BAR ==================== -->
+    <div class="stats-bar">
+        <div class="row text-center g-0">
+            <div class="col-6 col-md-3 mb-3 mb-md-0">
+                <div class="stat-val" data-count="5000">0</div>
+                <div class="stat-lbl">Sản phẩm</div>
+            </div>
+            <div class="col-6 col-md-3 mb-3 mb-md-0">
+                <div class="stat-val" data-count="10000">0</div>
+                <div class="stat-lbl">Khách hàng</div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-val">4.9★</div>
+                <div class="stat-lbl">Đánh giá</div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-val">24/7</div>
+                <div class="stat-lbl">Hỗ trợ</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== LATEST PRODUCTS ==================== -->
+    @if (latestProducts.Any())
     {
-        <section class="section">
-            <div class="alert alert-info">
-                <i class="bi bi-info-circle me-2"></i>
-                Chưa có sản phẩm nào. Vui lòng thêm sản phẩm trong <a asp-area="Admin" asp-controller="Product" asp-action="Create">Admin Panel</a>.
-            </div>
-        </section>
+        <div class="section-title mt-4">
+            <h2><i class="bi bi-lightning-charge-fill text-warning me-1"></i>Laptop mới nhất</h2>
+            <a asp-controller="Product" asp-action="Index">Xem thêm <i class="bi bi-chevron-right"></i></a>
+        </div>
+        <div class="prod-grid mb-2">
+            @foreach (var p in latestProducts)
+            {
+                @await Html.PartialAsync("_ProductCard", p)
+            }
+        </div>
+        <div class="text-center mt-3 mb-5">
+            <a asp-controller="Product" asp-action="Index" class="btn btn-viewmore">
+                Xem tất cả sản phẩm <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+        </div>
     }
 
-    <!-- Process Steps -->
-    <section class="section">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2 class="section-title">Quy trình mua nhanh</h2>
+    @if (!featuredProducts.Any() && !latestProducts.Any())
+    {
+        <div class="alert alert-info text-center my-5">
+            <i class="bi bi-info-circle me-2"></i>
+            Chưa có sản phẩm nào. Vui lòng thêm sản phẩm trong <a asp-area="Admin" asp-controller="Product" asp-action="Create" class="alert-link">Admin Panel</a>.
         </div>
-        <div class="row g-3">
-            <div class="col-md-3">
-                <div class="step-card">
-                    <div class="d-flex align-items-start gap-3">
-                        <div class="step-badge">1</div>
-                        <div>
-                            <div class="fw-semibold">Chọn nhu cầu</div>
-                            <p class="text-muted small mb-0">Gaming, đồ họa, văn phòng</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="step-card">
-                    <div class="d-flex align-items-start gap-3">
-                        <div class="step-badge">2</div>
-                        <div>
-                            <div class="fw-semibold">So sánh nhanh</div>
-                            <p class="text-muted small mb-0">Hiệu năng, màn hình, giá</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="step-card">
-                    <div class="d-flex align-items-start gap-3">
-                        <div class="step-badge">3</div>
-                        <div>
-                            <div class="fw-semibold">Đặt cọc online</div>
-                            <p class="text-muted small mb-0">Giữ máy 24h</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="step-card">
-                    <div class="d-flex align-items-start gap-3">
-                        <div class="step-badge">4</div>
-                        <div>
-                            <div class="fw-semibold">Giao nhanh</div>
-                            <p class="text-muted small mb-0">Giao 2h, cài đặt sẵn</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+    }
 
-    <!-- Features -->
-    <section class="section">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2 class="section-title">Ưu đãi & Dịch vụ</h2>
-        </div>
-        <div class="row g-4">
-            <div class="col-md-4">
-                <div class="d-flex align-items-start p-3 bg-white rounded-3 border h-100">
-                    <div class="feature-icon"><i class="bi bi-credit-card-2-front-fill"></i></div>
-                    <div>
-                        <h6 class="fw-semibold">Trả góp 0%</h6>
-                        <p class="text-muted small mb-0">Hỗ trợ nhiều ngân hàng, duyệt online 5 phút</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="d-flex align-items-start p-3 bg-white rounded-3 border h-100">
-                    <div class="feature-icon"><i class="bi bi-building"></i></div>
-                    <div>
-                        <h6 class="fw-semibold">Hỗ trợ doanh nghiệp</h6>
-                        <p class="text-muted small mb-0">Hoá đơn VAT, hợp đồng, giao tận nơi</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="d-flex align-items-start p-3 bg-white rounded-3 border h-100">
-                    <div class="feature-icon"><i class="bi bi-tools"></i></div>
-                    <div>
-                        <h6 class="fw-semibold">Kỹ thuật tại chỗ</h6>
-                        <p class="text-muted small mb-0">Backup dữ liệu, tối ưu hiệu năng</p>
-                    </div>
-                </div>
+    <!-- ==================== FEATURES ==================== -->
+    <div class="row g-3 mt-2">
+        <div class="col-12 col-md-3">
+            <div class="feat-card">
+                <div class="feat-icon"><i class="bi bi-credit-card-2-front-fill"></i></div>
+                <div class="feat-title">Trả góp 0%</div>
+                <div class="feat-desc">Duyệt nhanh qua thẻ tín dụng & công ty tài chính uy tín chỉ 5 phút.</div>
             </div>
         </div>
-    </section>
+        <div class="col-12 col-md-3">
+            <div class="feat-card">
+                <div class="feat-icon"><i class="bi bi-shield-check"></i></div>
+                <div class="feat-title">Bảo hành chính hãng</div>
+                <div class="feat-desc">Bảo hành theo hãng. Đổi trả trong 7 ngày nếu lỗi kỹ thuật.</div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="feat-card">
+                <div class="feat-icon"><i class="bi bi-box-seam"></i></div>
+                <div class="feat-title">Hàng chính hãng</div>
+                <div class="feat-desc">100% hàng new seal, đầy đủ hộp phụ kiện, tem chính hãng.</div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="feat-card">
+                <div class="feat-icon"><i class="bi bi-headset"></i></div>
+                <div class="feat-title">Hỗ trợ 24/7</div>
+                <div class="feat-desc">Đội ngũ tư vấn online sẵn sàng hỗ trợ mọi thắc mắc của bạn.</div>
+            </div>
+        </div>
+    </div>
+
 </div>
+
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script>
+    // Hero Banner
+    new Swiper('.hero-swiper', {
+        loop: true,
+        autoplay: { delay: 4500, disableOnInteraction: false },
+        speed: 700,
+        pagination: { el: '.swiper-pagination', clickable: true },
+        navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' }
+    });
+
+    // Counter animation
+    function animateCounter(el) {
+        const target = parseInt(el.getAttribute('data-count'));
+        const step = target / 80;
+        let cur = 0;
+        const t = setInterval(() => {
+            cur = Math.min(cur + step, target);
+            el.textContent = Math.floor(cur).toLocaleString('vi-VN') + '+';
+            if (cur >= target) clearInterval(t);
+        }, 20);
+    }
+    const statsObs = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+            if (e.isIntersecting) {
+                document.querySelectorAll('.stat-val[data-count]').forEach(el => {
+                    if (!el.dataset.done) { el.dataset.done = '1'; animateCounter(el); }
+                });
+            }
+        });
+    }, { threshold: 0.4 });
+    const statsEl = document.querySelector('.stats-bar');
+    if (statsEl) statsObs.observe(statsEl);
+
+    // Add to cart
+    function addToCart(productId) {
+        $.post('@Url.Action("AddToCart", "Cart")', { productId, quantity: 1 }, function (res) {
+            if (res.success) {
+                const toast = document.createElement('div');
+                toast.className = 'toast align-items-center border-0 bg-success text-white position-fixed top-0 end-0 m-3';
+                toast.style.zIndex = '9999';
+                toast.innerHTML = `<div class="d-flex"><div class="toast-body"><i class="bi bi-check-circle me-2"></i>${res.message}</div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>`;
+                document.body.appendChild(toast);
+                new bootstrap.Toast(toast).show();
+                setTimeout(() => toast.remove(), 3000);
+                $('.icon-badge').text(res.cartCount);
+            } else {
+                alert(res.message || 'Có lỗi xảy ra');
+            }
+        }).fail(() => alert('Không thể thêm vào giỏ hàng. Vui lòng thử lại.'));
+    }
+</script>
+}

@@ -1,0 +1,136 @@
+@model IPagedList<Contact>
+@using WebsiteSellLaptop.Models.Enums
+@using X.PagedList.Mvc.Core
+
+@{
+    ViewData["Title"] = "Quản lý liên hệ";
+    var keyword = ViewBag.Keyword as string;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0"><i class="bi bi-envelope me-2"></i>Quản lý liên hệ</h4>
+</div>
+
+<div class="admin-card mb-4 p-4">
+    <form method="get" class="row g-3 align-items-end">
+        <div class="col-md-10">
+            <label class="form-label fw-semibold">Tìm kiếm</label>
+            <input type="text" name="keyword" value="@keyword" class="form-control" placeholder="Tìm theo tên hoặc tiêu đề...">
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-brand w-100"><i class="bi bi-search me-1"></i>Tìm</button>
+        </div>
+    </form>
+</div>
+
+<div class="admin-card p-0">
+    <div class="table-responsive">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th width="60">STT</th>
+                    <th>Họ tên</th>
+                    <th>Email / SĐT</th>
+                    <th>Tiêu đề</th>
+                    <th width="100">Ngày gửi</th>
+                    <th width="100">Trạng thái</th>
+                    <th width="100">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model == null || Model.Count == 0)
+                {
+                    <tr><td colspan="7" class="text-center text-muted py-4">Không có dữ liệu</td></tr>
+                }
+                else
+                {
+                    var stt = (Model.PageNumber - 1) * Model.PageSize;
+                    @foreach (var item in Model)
+                    {
+                        stt++;
+                        <tr class="@(!item.IsRead ? "table-active" : "")">
+                            <td class="text-center">@stt</td>
+                            <td>
+                                <div class="fw-semibold">@item.FullName</div>
+                                @if (!item.IsRead)
+                                {
+                                    <span class="badge bg-primary bg-opacity-10 text-primary" style="font-size:10px">MỚI</span>
+                                }
+                            </td>
+                            <td>
+                                <div>@item.Email</div>
+                                @if (!string.IsNullOrEmpty(item.Phone))
+                                {
+                                    <div class="text-muted small">@item.Phone</div>
+                                }
+                            </td>
+                            <td>@item.Subject</td>
+                            <td>@item.Created.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                @switch (item.Status)
+                                {
+                                    case StatusEntity.Approved: <span class="badge-status approved"><i class="bi bi-check-circle me-1"></i>Đã xử lý</span> break;
+                                    case StatusEntity.Pending: <span class="badge-status pending"><i class="bi bi-clock me-1"></i>Chờ xử lý</span> break;
+                                    case StatusEntity.Rejected: <span class="badge-status rejected"><i class="bi bi-x-circle me-1"></i>Đã từ chối</span> break;
+                                }
+                            </td>
+                            <td>
+                                <a asp-action="Detail" asp-route-id="@item.Id" class="action-icon action-view" title="Chi tiết">
+                                    <i class="bi bi-eye-fill"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (Model != null && Model.PageCount > 1)
+    {
+        <div class="admin-pagination">
+            <div class="pg-info">
+                Hiển thị @((Model.PageNumber - 1) * Model.PageSize + 1) - @Math.Min(Model.PageNumber * Model.PageSize, Model.TotalItemCount) / @Model.TotalItemCount bản ghi
+            </div>
+            <div class="pg-list">
+                @if (Model.PageNumber > 1)
+                {
+                    <a href="@Url.Action("Index", new { page = 1, keyword })">«</a>
+                    <a href="@Url.Action("Index", new { page = Model.PageNumber - 1, keyword })">‹</a>
+                }
+                else
+                {
+                    <span class="disabled">«</span>
+                    <span class="disabled">‹</span>
+                }
+
+                @{
+                    var start = Math.Max(1, Model.PageNumber - 2);
+                    var end = Math.Min(Model.PageCount, Model.PageNumber + 2);
+                }
+                @for (int p = start; p <= end; p++)
+                {
+                    if (p == Model.PageNumber)
+                    {
+                        <span class="active">@p</span>
+                    }
+                    else
+                    {
+                        <a href="@Url.Action("Index", new { page = p, keyword })">@p</a>
+                    }
+                }
+
+                @if (Model.PageNumber < Model.PageCount)
+                {
+                    <a href="@Url.Action("Index", new { page = Model.PageNumber + 1, keyword })">›</a>
+                    <a href="@Url.Action("Index", new { page = Model.PageCount, keyword })">»</a>
+                }
+                else
+                {
+                    <span class="disabled">›</span>
+                    <span class="disabled">»</span>
+                }
+            </div>
+        </div>
+    }
+</div>

@@ -13,14 +13,16 @@
     <h4 class="fw-bold mb-0"><i class="bi bi-people-fill me-2"></i>Quản lý người dùng</h4>
 </div>
 
-<div class="admin-card mb-4">
-    <form method="get" class="row g-3 align-items-end p-3">
-        <div class="col-md-10">
+<div class="admin-card p-4 mb-4">
+    <form method="get" class="row g-3 align-items-end">
+        <div class="col-md-11">
             <label class="form-label fw-semibold">Tìm kiếm</label>
             <input type="text" name="keyword" value="@keyword" class="form-control" placeholder="Nhập tên, email hoặc số điện thoại...">
         </div>
-        <div class="col-md-2">
-            <button type="submit" class="btn btn-brand w-100"><i class="bi bi-search me-1"></i>Tìm kiếm</button>
+        <div class="col-md-1 text-center">
+            <button type="submit" class="btn btn-link p-0" style="margin-top:8px">
+                <i class="bi bi-search" style="font-size:24px;color:var(--brand)"></i>
+            </button>
         </div>
     </form>
 </div>
@@ -58,46 +60,40 @@
                         <tr>
                             <td class="text-center">@stt</td>
                             <td>
-                                <a asp-action="Detail" asp-route-id="@user.Id" class="record-title">@user.FullName</a>
+                                <a href="javascript:void(0)" onclick="showDetail('@user.Id')" class="text-primary fw-semibold">@user.FullName</a>
                             </td>
                             <td>@user.Email</td>
                             <td>@(user.PhoneNumber ?? "—")</td>
                             <td>
                                 @if (role == "Admin")
                                 {
-                                    <span class="badge-status" style="background:#fef3c7;color:#d97706"><i class="bi bi-star-fill me-1"></i>Admin</span>
+                                    <span style="display:inline-flex;align-items:center;padding:6px 12px;border-radius:20px;font-size:13px;font-weight:500;background:linear-gradient(135deg,#fef3c7,#fde68a);color:#d97706;box-shadow:0 2px 4px rgba(217,119,6,0.2)">Admin</span>
                                 }
                                 else
                                 {
-                                    <span class="badge-status" style="background:#e0f2fe;color:#0284c7"><i class="bi bi-person-fill me-1"></i>User</span>
+                                    <span style="display:inline-flex;align-items:center;padding:6px 12px;border-radius:20px;font-size:13px;font-weight:500;background:linear-gradient(135deg,#dbeafe,#bfdbfe);color:#1e40af;box-shadow:0 2px 4px rgba(30,64,175,0.2)">User</span>
                                 }
                             </td>
                             <td>
                                 @if (isLocked)
                                 {
-                                    <span class="badge-status badge-rejected"><i class="bi bi-lock-fill me-1"></i>Đã khóa</span>
+                                    <span style="display:inline-flex;align-items:center;padding:6px 12px;border-radius:20px;font-size:13px;font-weight:500;background:linear-gradient(135deg,#fee,#fcc);color:#dc2626;box-shadow:0 2px 4px rgba(220,38,38,0.2)">Đã khóa</span>
                                 }
                                 else
                                 {
-                                    <span class="badge-status badge-approved"><i class="bi bi-unlock-fill me-1"></i>Hoạt động</span>
+                                    <span style="display:inline-flex;align-items:center;padding:6px 12px;border-radius:20px;font-size:13px;font-weight:500;background:linear-gradient(135deg,#d1fae5,#a7f3d0);color:#059669;box-shadow:0 2px 4px rgba(5,150,105,0.2)">Hoạt động</span>
                                 }
                             </td>
                             <td class="small">@user.Created.ToString("dd/MM/yyyy")</td>
                             <td>
-                                <div class="d-flex gap-1">
-                                    <a asp-action="Detail" asp-route-id="@user.Id" class="action-icon action-edit" title="Chi tiết">
-                                        <i class="bi bi-eye-fill"></i>
-                                    </a>
+                                <div class="d-flex gap-2">
                                     @if (role != "Admin")
                                     {
-                                        <button type="button" class="action-icon @(isLocked ? "action-approve" : "action-reject")" 
-                                                title="@(isLocked ? "Mở khóa" : "Khóa")" 
-                                                onclick="toggleLockout('@user.Id', '@user.FullName', @(isLocked ? "true" : "false"))">
-                                            <i class="bi bi-@(isLocked ? "unlock" : "lock")-fill"></i>
-                                        </button>
-                                        <button type="button" class="action-icon action-delete" title="Xóa" onclick="confirmDelete('@user.Id', '@user.FullName')">
-                                            <i class="bi bi-trash3-fill"></i>
-                                        </button>
+                                        <i class="bi bi-person-badge" style="font-size:22px;color:#10b981;cursor:pointer" title="Gán vai trò" onclick="showAssignRoleModal('@user.Id', '@user.FullName', '@role')"></i>
+                                        <i class="bi bi-pencil-square" style="font-size:22px;color:#2563eb;cursor:pointer" title="Sửa" onclick="showEditModal('@user.Id', '@user.FullName')"></i>
+                                        <i class="bi bi-key-fill" style="font-size:22px;color:#8b5cf6;cursor:pointer" title="Đổi mật khẩu" onclick="showResetPasswordModal('@user.Id', '@user.FullName')"></i>
+                                        <i class="bi bi-@(isLocked ? "unlock" : "lock")-fill" style="font-size:22px;color:@(isLocked ? "#10b981" : "#f59e0b");cursor:pointer" title="@(isLocked ? "Mở khóa" : "Khóa")" onclick="toggleLockout('@user.Id', '@user.FullName', @(isLocked ? "true" : "false"))"></i>
+                                        <i class="bi bi-trash3-fill" style="font-size:22px;color:#ef4444;cursor:pointer" title="Xóa" onclick="confirmDelete('@user.Id', '@user.FullName')"></i>
                                     }
                                 </div>
                             </td>
@@ -122,12 +118,62 @@
 </div>
 
 <!-- Modals -->
+<div class="modal fade" id="detailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Chi tiết người dùng</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-borderless">
+                    <tr><th width="150">Họ tên:</th><td id="detailFullName"></td></tr>
+                    <tr><th>Email:</th><td id="detailEmail"></td></tr>
+                    <tr><th>Số điện thoại:</th><td id="detailPhone"></td></tr>
+                    <tr><th>Vai trò:</th><td id="detailRole"></td></tr>
+                    <tr><th>Trạng thái:</th><td id="detailStatus"></td></tr>
+                    <tr><th>Ngày tạo:</th><td id="detailCreated"></td></tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Sửa thông tin</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editUserId">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Họ tên <span class="text-danger">*</span></label>
+                    <input type="text" id="editFullName" class="form-control" placeholder="Nhập họ tên">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Số điện thoại</label>
+                    <input type="text" id="editPhone" class="form-control" placeholder="Nhập số điện thoại">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-brand" onclick="doEdit()"><i class="bi bi-check-lg me-1"></i>Cập nhật</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="deleteModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title"><i class="bi bi-exclamation-triangle me-2"></i>Xác nhận xóa</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            <div class="modal-header">
+                <h5 class="modal-title">Xác nhận xóa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <p>Bạn có chắc chắn muốn xóa người dùng <strong id="deleteItemName"></strong>?</p>
@@ -136,43 +182,72 @@
             <div class="modal-footer">
                 <input type="hidden" id="deleteItemId">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                <button type="button" class="btn btn-danger" onclick="doDelete()">Xóa</button>
+                <button type="button" class="btn btn-danger" onclick="doDelete()"><i class="bi bi-trash3 me-1"></i>Xóa</button>
             </div>
         </div>
     </div>
 </div>
 
-<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
-    <div id="toast" class="toast" role="alert">
-        <div class="toast-header">
-            <i class="bi me-2" id="toastIcon"></i>
-            <strong class="me-auto" id="toastTitle">Thông báo</strong>
-            <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+<div class="modal fade" id="resetPasswordModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Đổi mật khẩu</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-3">Đổi mật khẩu cho: <strong id="resetPasswordUserName"></strong></p>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Mật khẩu mới <span class="text-danger">*</span></label>
+                    <input type="password" id="newPassword" class="form-control" placeholder="Nhập mật khẩu mới (tối thiểu 6 ký tự)">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Xác nhận mật khẩu <span class="text-danger">*</span></label>
+                    <input type="password" id="confirmPassword" class="form-control" placeholder="Nhập lại mật khẩu">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <input type="hidden" id="resetPasswordUserId">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-brand" onclick="doResetPassword()"><i class="bi bi-check-lg me-1"></i>Đổi mật khẩu</button>
+            </div>
         </div>
-        <div class="toast-body" id="toastMessage"></div>
+    </div>
+</div>
+
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index:9999">
+    <div id="toast" class="toast align-items-center border-0" role="alert">
+        <div class="d-flex">
+            <div class="toast-body" id="toastMessage" style="display:flex;align-items:center;gap:8px">
+                <i class="bi" id="toastIcon" style="font-size:20px"></i>
+                <span id="toastText"></span>
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
     </div>
 </div>
 
 @section Scripts {
 <script>
     const baseUrl = '@Url.Action("Index", "User", new { area = "Admin" })'.replace('/Index', '');
-    
+
     function showToast(message, type = 'success') {
         const toast = document.getElementById('toast');
+        const icon = document.getElementById('toastIcon');
+        const text = document.getElementById('toastText');
+
         toast.classList.remove('bg-success', 'bg-danger', 'text-white');
-        document.getElementById('toastIcon').classList.remove('bi-check-circle-fill', 'bi-x-circle-fill');
-        
+        icon.className = 'bi';
+
         if (type === 'success') {
             toast.classList.add('bg-success', 'text-white');
-            document.getElementById('toastIcon').classList.add('bi-check-circle-fill');
-            document.getElementById('toastTitle').textContent = 'Thành công';
+            icon.classList.add('bi-check-circle-fill');
         } else {
             toast.classList.add('bg-danger', 'text-white');
-            document.getElementById('toastIcon').classList.add('bi-x-circle-fill');
-            document.getElementById('toastTitle').textContent = 'Lỗi';
+            icon.classList.add('bi-x-circle-fill');
         }
-        
-        document.getElementById('toastMessage').textContent = message;
+
+        text.textContent = message;
         new bootstrap.Toast(toast).show();
     }
 
@@ -182,16 +257,68 @@
         new bootstrap.Modal(document.getElementById('deleteModal')).show();
     }
 
+    async function showDetail(id) {
+        const r = await fetch(`${baseUrl}/GetById?id=${id}`);
+        const data = await r.json();
+
+        if (data.success) {
+            const u = data.user;
+            document.getElementById('detailFullName').textContent = u.fullName;
+            document.getElementById('detailEmail').textContent = u.email;
+            document.getElementById('detailPhone').textContent = u.phoneNumber || '—';
+            document.getElementById('detailRole').innerHTML = u.role === 'Admin' 
+                ? '<span style="display:inline-flex;padding:4px 10px;border-radius:15px;font-size:12px;background:#fef3c7;color:#d97706">Admin</span>'
+                : '<span style="display:inline-flex;padding:4px 10px;border-radius:15px;font-size:12px;background:#dbeafe;color:#1e40af">User</span>';
+            document.getElementById('detailStatus').innerHTML = u.isLocked
+                ? '<span style="display:inline-flex;padding:4px 10px;border-radius:15px;font-size:12px;background:#fee;color:#dc2626">Đã khóa</span>'
+                : '<span style="display:inline-flex;padding:4px 10px;border-radius:15px;font-size:12px;background:#d1fae5;color:#059669">Hoạt động</span>';
+            document.getElementById('detailCreated').textContent = new Date(u.created).toLocaleDateString('vi-VN');
+
+            new bootstrap.Modal(document.getElementById('detailModal')).show();
+        }
+    }
+
+    function showEditModal(id, name) {
+        fetch(`${baseUrl}/GetById?id=${id}`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('editUserId').value = data.user.id;
+                    document.getElementById('editFullName').value = data.user.fullName;
+                    document.getElementById('editPhone').value = data.user.phoneNumber || '';
+                    new bootstrap.Modal(document.getElementById('editModal')).show();
+                }
+            });
+    }
+
+    async function doEdit() {
+        const formData = new FormData();
+        formData.append('id', document.getElementById('editUserId').value);
+        formData.append('fullName', document.getElementById('editFullName').value);
+        formData.append('phoneNumber', document.getElementById('editPhone').value);
+        formData.append('__RequestVerificationToken', '@Html.AntiForgeryToken()'.match(/value="([^"]+)"/)?.[1] || '');
+
+        const r = await fetch(`${baseUrl}/Edit`, { method: 'POST', body: formData });
+        const result = await r.json();
+
+        showToast(result.message, result.success ? 'success' : 'error');
+
+        if (result.success) {
+            bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
+            setTimeout(() => location.reload(), 1000);
+        }
+    }
+
     async function doDelete() {
         const formData = new FormData();
         formData.append('id', document.getElementById('deleteItemId').value);
         formData.append('__RequestVerificationToken', '@Html.AntiForgeryToken()'.match(/value="([^"]+)"/)?.[1] || '');
-        
+
         const r = await fetch(`${baseUrl}/Delete`, { method: 'POST', body: formData });
         const result = await r.json();
-        
+
         showToast(result.message, result.success ? 'success' : 'error');
-        
+
         if (result.success) {
             bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
             setTimeout(() => location.reload(), 1000);
@@ -200,19 +327,56 @@
 
     async function toggleLockout(id, name, isLocked) {
         const action = isLocked ? 'mở khóa' : 'khóa';
-        if (!confirm(`Bạn có chắc chắn muốn ${action} tài khoản "${name}"?`)) return;
-        
+
         const formData = new FormData();
         formData.append('id', id);
         formData.append('__RequestVerificationToken', '@Html.AntiForgeryToken()'.match(/value="([^"]+)"/)?.[1] || '');
-        
+
         const r = await fetch(`${baseUrl}/ToggleLockout`, { method: 'POST', body: formData });
         const result = await r.json();
-        
+
         showToast(result.message, result.success ? 'success' : 'error');
-        
+
         if (result.success) {
             setTimeout(() => location.reload(), 1000);
+        }
+    }
+
+    function showResetPasswordModal(id, name) {
+        document.getElementById('resetPasswordUserId').value = id;
+        document.getElementById('resetPasswordUserName').textContent = name;
+        document.getElementById('newPassword').value = '';
+        document.getElementById('confirmPassword').value = '';
+        new bootstrap.Modal(document.getElementById('resetPasswordModal')).show();
+    }
+
+    async function doResetPassword() {
+        const userId = document.getElementById('resetPasswordUserId').value;
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+
+        if (!newPassword || newPassword.length < 6) {
+            showToast('Mật khẩu phải có ít nhất 6 ký tự', 'error');
+            return;
+        }
+
+        if (newPassword !== confirmPassword) {
+            showToast('Mật khẩu xác nhận không khớp', 'error');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('id', userId);
+        formData.append('newPassword', newPassword);
+        formData.append('__RequestVerificationToken', '@Html.AntiForgeryToken()'.match(/value="([^"]+)"/)?.[1] || '');
+
+        const r = await fetch(`${baseUrl}/ResetPassword`, { method: 'POST', body: formData });
+        const result = await r.json();
+
+        showToast(result.message, result.success ? 'success' : 'error');
+
+        if (result.success) {
+            bootstrap.Modal.getInstance(document.getElementById('resetPasswordModal')).hide();
         }
     }
 </script>

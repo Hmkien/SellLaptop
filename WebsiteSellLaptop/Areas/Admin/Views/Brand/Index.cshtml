@@ -20,12 +20,12 @@
 <!-- Search Form -->
 <div class="admin-card mb-4">
     <form method="get" class="row g-3 align-items-end p-3">
-        <div class="col-md-8">
+        <div class="col-md-11">
             <label class="form-label fw-semibold">Tìm kiếm</label>
             <input type="text" name="keyword" value="@keyword" class="form-control" placeholder="Nhập mã hoặc tên thương hiệu...">
         </div>
-        <div class="col-md-4">
-            <button type="submit" class="btn btn-brand w-100"><i class="bi bi-search me-1"></i>Tìm kiếm</button>
+        <div class="col-md-1 text-center">
+            <i class="bi bi-search" style="font-size:24px;color:var(--brand);cursor:pointer" onclick="this.closest('form').submit()" title="Tìm kiếm"></i>
         </div>
     </form>
 </div>
@@ -83,34 +83,40 @@
                             <td>
                                 @switch (item.Status)
                                 {
-                                    case StatusEntity.Approved: <span class="badge-status approved"><i class="bi bi-check-circle me-1"></i>Đã duyệt</span> break;
-                                    case StatusEntity.Pending: <span class="badge-status pending"><i class="bi bi-clock me-1"></i>Chờ duyệt</span> break;
-                                    case StatusEntity.Rejected: <span class="badge-status rejected"><i class="bi bi-x-circle me-1"></i>Hủy duyệt</span> break;
-                                    case StatusEntity.Draft: <span class="badge-status draft"><i class="bi bi-pencil me-1"></i>Nháp</span> break;
+                                    case StatusEntity.Approved: 
+                                        <span style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:20px;font-size:13px;font-weight:600;background:linear-gradient(135deg, #10b981 0%, #059669 100%);color:white;box-shadow:0 2px 8px rgba(16,185,129,0.3)">
+                                            <i class="bi bi-check-circle-fill"></i>Đã duyệt
+                                        </span>
+                                        break;
+                                    case StatusEntity.Pending: 
+                                        <span style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:20px;font-size:13px;font-weight:600;background:linear-gradient(135deg, #f59e0b 0%, #d97706 100%);color:white;box-shadow:0 2px 8px rgba(245,158,11,0.3)">
+                                            <i class="bi bi-clock-fill"></i>Chờ duyệt
+                                        </span>
+                                        break;
+                                    case StatusEntity.Rejected: 
+                                        <span style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:20px;font-size:13px;font-weight:600;background:linear-gradient(135deg, #ef4444 0%, #dc2626 100%);color:white;box-shadow:0 2px 8px rgba(239,68,68,0.3)">
+                                            <i class="bi bi-x-circle-fill"></i>Hủy duyệt
+                                        </span>
+                                        break;
+                                    case StatusEntity.Draft: 
+                                        <span style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:20px;font-size:13px;font-weight:600;background:linear-gradient(135deg, #6b7280 0%, #4b5563 100%);color:white;box-shadow:0 2px 8px rgba(107,114,128,0.3)">
+                                            <i class="bi bi-pencil-fill"></i>Nháp
+                                        </span>
+                                        break;
                                 }
                             </td>
                             <td>@item.Created.ToString("dd/MM/yyyy")</td>
                             <td>
-                                <div class="d-flex gap-1 align-items-center">
+                                <div class="d-flex gap-2 align-items-center">
                                     @if (item.Status == StatusEntity.Approved)
                                     {
-                                        <!-- Đã duyệt: Chỉ hiển thị nút Hủy duyệt -->
-                                        <button type="button" class="action-icon action-reject" title="Hủy duyệt" onclick="confirmReject('@item.Id', '@item.Name')">
-                                            <i class="bi bi-x-circle-fill"></i>
-                                        </button>
+                                        <i class="bi bi-x-circle-fill" style="font-size:22px;color:#f59e42;cursor:pointer" title="Hủy duyệt" onclick="doReject('@item.Id')"></i>
                                     }
                                     else
                                     {
-                                        <!-- Chưa duyệt: Hiển thị các nút chức năng -->
-                                        <button type="button" class="action-icon action-approve" title="Duyệt" onclick="confirmApprove('@item.Id', '@item.Name')">
-                                            <i class="bi bi-check-circle-fill"></i>
-                                        </button>
-                                        <button type="button" class="action-icon action-edit" title="Sửa" onclick="openEditModal('@item.Id')">
-                                            <i class="bi bi-pencil-square"></i>
-                                        </button>
-                                        <button type="button" class="action-icon action-delete" title="Xóa" onclick="confirmDelete('@item.Id', '@item.Name')">
-                                            <i class="bi bi-trash3-fill"></i>
-                                        </button>
+                                        <i class="bi bi-check-circle-fill" style="font-size:22px;color:#22c55e;cursor:pointer" title="Duyệt" onclick="doApprove('@item.Id')"></i>
+                                        <i class="bi bi-pencil-square" style="font-size:22px;color:#2563eb;cursor:pointer" title="Sửa" onclick="openEditModal('@item.Id')"></i>
+                                        <i class="bi bi-trash3-fill" style="font-size:22px;color:#ef4444;cursor:pointer" title="Xóa vĩnh viễn" onclick="confirmDelete('@item.Id', '@item.Name')"></i>
                                     }
                                 </div>
                             </td>
@@ -177,6 +183,7 @@
         <div class="modal-content">
             <form id="createForm">
                 @Html.AntiForgeryToken()
+                <input type="hidden" name="SortOrder" value="0">
                 <div class="modal-header">
                     <h5 class="modal-title" id="createModalLabel"><i class="bi bi-plus-circle me-2"></i>Thêm mới thương hiệu</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -199,19 +206,28 @@
                             <label class="form-label fw-semibold">Website</label>
                             <input type="text" name="Website" class="form-control" maxlength="500" placeholder="https://...">
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Thứ tự</label>
-                            <input type="number" name="SortOrder" class="form-control" value="0" min="0">
-                        </div>
                         <div class="col-12">
                             <label class="form-label fw-semibold">Mô tả</label>
                             <textarea name="Description" class="form-control" rows="3" placeholder="Nhập mô tả thương hiệu"></textarea>
+                        </div>
+
+                        <!-- Upload logo ở cuối form -->
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Hoặc tải logo từ máy tính</label>
+                            <input type="file" id="createLogoFile" name="logoFile" accept="image/*" class="d-none" onchange="previewCreateLogo(this)">
+                            <div class="file-upload-area" style="padding:30px" onclick="document.getElementById('createLogoFile').click()">
+                                <div id="createLogoPreview">
+                                    <i class="bi bi-cloud-upload" style="font-size:36px;color:var(--brand)"></i>
+                                    <p class="mb-1 fw-semibold mt-2">Click để tải logo lên</p>
+                                    <p class="text-muted small mb-0">JPG, PNG, GIF, WEBP (Max 5MB)</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                    <button type="submit" class="btn btn-brand">Thêm mới</button>
+                    <button type="submit" class="btn btn-brand">Lưu</button>
                 </div>
             </form>
         </div>
@@ -225,6 +241,7 @@
             <form id="editForm">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="Id" id="editId">
+                <input type="hidden" name="SortOrder" id="editSortOrder" value="0">
                 <div class="modal-header">
                     <h5 class="modal-title" id="editModalLabel"><i class="bi bi-pencil-square me-2"></i>Sửa thương hiệu</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -247,19 +264,36 @@
                             <label class="form-label fw-semibold">Website</label>
                             <input type="text" name="Website" id="editWebsite" class="form-control" maxlength="500">
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Thứ tự</label>
-                            <input type="number" name="SortOrder" id="editSortOrder" class="form-control" min="0">
-                        </div>
                         <div class="col-12">
                             <label class="form-label fw-semibold">Mô tả</label>
                             <textarea name="Description" id="editDescription" class="form-control" rows="3"></textarea>
                         </div>
+
+                        <!-- Current Logo -->
+                        <div class="col-12" id="editCurrentLogoContainer" style="display:none">
+                            <label class="form-label fw-semibold">Logo hiện tại</label>
+                            <div class="mb-2">
+                                <img id="editCurrentLogo" src="" style="max-height:120px;border-radius:8px;border:1px solid #e5e7eb">
+                            </div>
+                        </div>
+
+                        <!-- Upload logo mới -->
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Thay đổi logo</label>
+                            <input type="file" id="editLogoFile" name="logoFile" accept="image/*" class="d-none" onchange="previewEditLogo(this)">
+                            <div class="file-upload-area" style="padding:30px" onclick="document.getElementById('editLogoFile').click()">
+                                <div id="editLogoPreview">
+                                    <i class="bi bi-cloud-upload" style="font-size:36px;color:var(--brand)"></i>
+                                    <p class="mb-1 fw-semibold mt-2">Click để tải logo mới</p>
+                                    <p class="text-muted small mb-0">JPG, PNG, GIF, WEBP (Max 5MB)</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                    <button type="submit" class="btn btn-brand">Cập nhật</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Huỷ</button>
+                    <button type="submit" class="btn btn-brand">Lưu</button>
                 </div>
             </form>
         </div>
@@ -281,7 +315,6 @@
                     <tr><th>Tên thương hiệu</th><td id="detailName"></td></tr>
                     <tr><th>Website</th><td id="detailWebsite"></td></tr>
                     <tr><th>Mô tả</th><td id="detailDescription"></td></tr>
-                    <tr><th>Thứ tự</th><td id="detailSortOrder"></td></tr>
                     <tr><th>Trạng thái</th><td id="detailStatus"></td></tr>
                     <tr><th>Ngày tạo</th><td id="detailCreated"></td></tr>
                     <tr><th>Cập nhật lần cuối</th><td id="detailLastModified"></td></tr>
@@ -298,58 +331,29 @@
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title" id="deleteModalLabel"><i class="bi bi-exclamation-triangle me-2"></i>Xác nhận xóa</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p>Bạn có chắc chắn muốn xóa thương hiệu <strong id="deleteItemName"></strong>?</p>
-                <p class="text-muted small mb-0">Hành động này không thể hoàn tác.</p>
-            </div>
-            <div class="modal-footer">
-                <input type="hidden" id="deleteItemId">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                <button type="button" class="btn btn-danger" onclick="doDelete()">Xóa</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal Xác nhận duyệt -->
-<div class="modal fade" id="approveModal" tabindex="-1" aria-labelledby="approveModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-success text-white">
-                <h5 class="modal-title" id="approveModalLabel"><i class="bi bi-check-circle me-2"></i>Xác nhận duyệt</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p>Bạn có chắc chắn muốn duyệt thương hiệu <strong id="approveItemName"></strong>?</p>
-            </div>
-            <div class="modal-footer">
-                <input type="hidden" id="approveItemId">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                <button type="button" class="btn btn-success" onclick="doApprove()">Duyệt</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal Xác nhận hủy duyệt -->
-<div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-warning text-dark">
-                <h5 class="modal-title" id="rejectModalLabel"><i class="bi bi-x-circle me-2"></i>Xác nhận hủy duyệt</h5>
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel"><i class="bi bi-exclamation-triangle text-danger me-2"></i>Xác nhận xóa vĩnh viễn</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <p>Bạn có chắc chắn muốn hủy duyệt thương hiệu <strong id="rejectItemName"></strong>?</p>
+                <div class="alert alert-danger mb-3">
+                    <i class="bi bi-exclamation-circle me-2"></i>
+                    <strong>Cảnh báo:</strong> Hành động này sẽ xóa vĩnh viễn dữ liệu khỏi hệ thống!
+                </div>
+                <p>Bạn có chắc chắn muốn xóa thương hiệu <strong id="deleteItemName"></strong>?</p>
+                <p class="text-muted small mb-0">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Nếu thương hiệu có sản phẩm, bạn sẽ không thể xóa.
+                </p>
             </div>
             <div class="modal-footer">
-                <input type="hidden" id="rejectItemId">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                <button type="button" class="btn btn-warning" onclick="doReject()">Hủy duyệt</button>
+                <input type="hidden" id="deleteItemId">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+                <button type="button" class="btn btn-danger" onclick="doDelete()">
+                    <i class="bi bi-trash3-fill"></i>
+                </button>
             </div>
         </div>
     </div>
@@ -357,13 +361,14 @@
 
 <!-- Toast thông báo -->
 <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
-    <div id="toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="toast-header">
-            <i class="bi me-2" id="toastIcon"></i>
-            <strong class="me-auto" id="toastTitle">Thông báo</strong>
-            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+    <div id="toast" class="toast align-items-center border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body d-flex align-items-center gap-2">
+                <i class="bi" id="toastIcon" style="font-size:20px"></i>
+                <span id="toastMessage"></span>
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
         </div>
-        <div class="toast-body" id="toastMessage"></div>
     </div>
 </div>
 
@@ -372,11 +377,65 @@
     const baseUrl = '@Url.Action("Index", "Brand", new { area = "Admin" })'.replace('/Index', '');
     const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
 
+    // Logo Preview Functions
+    function previewCreateLogo(input) {
+        const preview = document.getElementById('createLogoPreview');
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.innerHTML = `
+                    <div class="preview-container">
+                        <img src="${e.target.result}" class="preview-img" style="max-height:150px">
+                        <button type="button" class="preview-remove" onclick="removeCreateLogo()">
+                            <i class="bi bi-x"></i>
+                        </button>
+                    </div>
+                `;
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function removeCreateLogo() {
+        document.getElementById('createLogoFile').value = '';
+        document.getElementById('createLogoPreview').innerHTML = `
+            <i class="bi bi-cloud-upload" style="font-size:36px;color:var(--brand)"></i>
+            <p class="mb-1 fw-semibold mt-2">Click để tải logo lên</p>
+            <p class="text-muted small mb-0">JPG, PNG, GIF, WEBP (Max 5MB)</p>
+        `;
+    }
+
+    function previewEditLogo(input) {
+        const preview = document.getElementById('editLogoPreview');
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.innerHTML = `
+                    <div class="preview-container">
+                        <img src="${e.target.result}" class="preview-img" style="max-height:150px">
+                        <button type="button" class="preview-remove" onclick="removeEditLogo()">
+                            <i class="bi bi-x"></i>
+                        </button>
+                    </div>
+                `;
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function removeEditLogo() {
+        document.getElementById('editLogoFile').value = '';
+        document.getElementById('editLogoPreview').innerHTML = `
+            <i class="bi bi-cloud-upload" style="font-size:36px;color:var(--brand)"></i>
+            <p class="mb-1 fw-semibold mt-2">Click để tải logo mới</p>
+            <p class="text-muted small mb-0">JPG, PNG, GIF, WEBP (Max 5MB)</p>
+        `;
+    }
+
     // Toast
     function showToast(message, type = 'success') {
         const toast = document.getElementById('toast');
         const toastIcon = document.getElementById('toastIcon');
-        const toastTitle = document.getElementById('toastTitle');
         const toastMessage = document.getElementById('toastMessage');
 
         toast.classList.remove('bg-success', 'bg-danger', 'bg-warning', 'text-white');
@@ -385,15 +444,12 @@
         if (type === 'success') {
             toast.classList.add('bg-success', 'text-white');
             toastIcon.classList.add('bi-check-circle-fill');
-            toastTitle.textContent = 'Thành công';
         } else if (type === 'error') {
             toast.classList.add('bg-danger', 'text-white');
             toastIcon.classList.add('bi-x-circle-fill');
-            toastTitle.textContent = 'Lỗi';
         } else {
-            toast.classList.add('bg-warning');
+            toast.classList.add('bg-warning', 'text-dark');
             toastIcon.classList.add('bi-exclamation-triangle-fill');
-            toastTitle.textContent = 'Cảnh báo';
         }
 
         toastMessage.textContent = message;
@@ -428,12 +484,24 @@
 
         if (result.success) {
             document.getElementById('editId').value = result.data.id;
+            document.getElementById('editSortOrder').value = result.data.sortOrder;
             document.getElementById('editCode').value = result.data.code;
             document.getElementById('editName').value = result.data.name;
             document.getElementById('editLogoUrl').value = result.data.logoUrl || '';
             document.getElementById('editWebsite').value = result.data.website || '';
-            document.getElementById('editSortOrder').value = result.data.sortOrder;
             document.getElementById('editDescription').value = result.data.description || '';
+
+            // Show current logo if exists
+            if (result.data.logoUrl) {
+                document.getElementById('editCurrentLogo').src = result.data.logoUrl;
+                document.getElementById('editCurrentLogoContainer').style.display = 'block';
+            } else {
+                document.getElementById('editCurrentLogoContainer').style.display = 'none';
+            }
+
+            // Reset file input and preview
+            document.getElementById('editLogoFile').value = '';
+            removeEditLogo();
 
             new bootstrap.Modal(document.getElementById('editModal')).show();
         } else {
@@ -477,7 +545,6 @@
             document.getElementById('detailName').textContent = result.data.name;
             document.getElementById('detailWebsite').innerHTML = result.data.website ? `<a href="${result.data.website}" target="_blank">${result.data.website}</a>` : '-';
             document.getElementById('detailDescription').textContent = result.data.description || '-';
-            document.getElementById('detailSortOrder').textContent = result.data.sortOrder;
             document.getElementById('detailStatus').textContent = result.data.statusName;
             document.getElementById('detailCreated').textContent = result.data.created;
             document.getElementById('detailLastModified').textContent = result.data.lastModified;
@@ -516,15 +583,8 @@
         }
     }
 
-    // Approve
-    function confirmApprove(id, name) {
-        document.getElementById('approveItemId').value = id;
-        document.getElementById('approveItemName').textContent = name;
-        new bootstrap.Modal(document.getElementById('approveModal')).show();
-    }
-
-    async function doApprove() {
-        const id = document.getElementById('approveItemId').value;
+    // Approve - Gọi trực tiếp không cần modal
+    async function doApprove(id) {
         const formData = new FormData();
         formData.append('id', id);
         formData.append('__RequestVerificationToken', token);
@@ -537,22 +597,14 @@
         const result = await response.json();
         if (result.success) {
             showToast(result.message, 'success');
-            bootstrap.Modal.getInstance(document.getElementById('approveModal')).hide();
             setTimeout(() => location.reload(), 1000);
         } else {
             showToast(result.message, 'error');
         }
     }
 
-    // Reject
-    function confirmReject(id, name) {
-        document.getElementById('rejectItemId').value = id;
-        document.getElementById('rejectItemName').textContent = name;
-        new bootstrap.Modal(document.getElementById('rejectModal')).show();
-    }
-
-    async function doReject() {
-        const id = document.getElementById('rejectItemId').value;
+    // Reject - Gọi trực tiếp không cần modal
+    async function doReject(id) {
         const formData = new FormData();
         formData.append('id', id);
         formData.append('__RequestVerificationToken', token);
@@ -565,7 +617,6 @@
         const result = await response.json();
         if (result.success) {
             showToast(result.message, 'success');
-            bootstrap.Modal.getInstance(document.getElementById('rejectModal')).hide();
             setTimeout(() => location.reload(), 1000);
         } else {
             showToast(result.message, 'error');

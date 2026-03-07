@@ -4,41 +4,286 @@
     ViewData["Title"] = "Thêm bài viết";
 }
 
+@section Styles {
+<style>
+    .ql-container { min-height: 400px; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; }
+    .ql-toolbar { border-top-left-radius: 8px; border-top-right-radius: 8px; background: #f8f9fa; }
+    .ql-editor { min-height: 400px; font-size: 15px; }
+
+    .content-section {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 20px;
+        border: 1px solid #e5e7eb;
+    }
+
+    .section-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid #f3f4f6;
+    }
+
+    .file-upload-area {
+        border: 2px dashed #d1d5db;
+        border-radius: 12px;
+        padding: 40px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s;
+        background: #f9fafb;
+    }
+
+    .file-upload-area:hover {
+        border-color: var(--brand);
+        background: #f0f9ff;
+    }
+
+    .preview-container {
+        position: relative;
+        display: inline-block;
+    }
+
+    .preview-img {
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .preview-remove {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: #ef4444;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        transition: all 0.2s;
+    }
+
+    .preview-remove:hover {
+        background: #dc2626;
+        transform: scale(1.1);
+    }
+</style>
+}
+
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="fw-bold mb-0"><i class="bi bi-plus-circle me-2"></i>Thêm bài viết mới</h4>
-    <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Quay lại</a>
+    <div>
+        <h4 class="fw-bold mb-1"><i class="bi bi-file-earmark-text me-2" style="color:var(--brand)"></i>Tạo bài viết mới</h4>
+        <p class="text-muted small mb-0">Thêm bài viết mới vào hệ thống</p>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Quay lại danh sách</a>
 </div>
 
-<div class="admin-card">
-    <form asp-action="Create" method="post">
-        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+<form asp-action="Create" method="post" enctype="multipart/form-data" id="blogForm">
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+    <!-- Thông tin cơ bản -->
+    <div class="content-section">
+        <div class="section-title">
+            <i class="bi bi-info-circle me-2"></i>Thông tin cơ bản
+        </div>
         <div class="row g-3">
             <div class="col-md-8">
-                <label asp-for="Title" class="form-label fw-semibold">Tiêu đề <span class="text-danger">*</span></label>
-                <input asp-for="Title" class="form-control" placeholder="Nhập tiêu đề bài viết">
-                <span asp-validation-for="Title" class="text-danger"></span>
+                <label asp-for="Title" class="form-label fw-semibold">Tiêu đề bài viết <span class="text-danger">*</span></label>
+                <input asp-for="Title" class="form-control form-control-lg" placeholder="Nhập tiêu đề hấp dẫn cho bài viết..." required>
+                <span asp-validation-for="Title" class="text-danger small"></span>
             </div>
             <div class="col-md-4">
                 <label asp-for="Category" class="form-label fw-semibold">Chuyên mục</label>
-                <input asp-for="Category" class="form-control" placeholder="VD: Tin tức, Đánh giá...">
+                <select asp-for="Category" class="form-select">
+                    <option value="">-- Chọn chuyên mục --</option>
+                    <option value="Tin tức">📰 Tin tức</option>
+                    <option value="Hướng dẫn">📚 Hướng dẫn</option>
+                    <option value="Đánh giá">⭐ Đánh giá</option>
+                    <option value="Khuyến mãi">🎁 Khuyến mãi</option>
+                    <option value="Công nghệ">💻 Công nghệ</option>
+                </select>
             </div>
-            <div class="col-md-12">
-                <label asp-for="ThumbnailUrl" class="form-label fw-semibold">Ảnh đại diện (URL)</label>
-                <input asp-for="ThumbnailUrl" class="form-control" placeholder="Nhập link ảnh">
-            </div>
-            <div class="col-md-12">
-                <label asp-for="Summary" class="form-label fw-semibold">Tóm tắt</label>
-                <textarea asp-for="Summary" class="form-control" rows="2" placeholder="Nhập tóm tắt bài viết"></textarea>
-            </div>
-            <div class="col-md-12">
-                <label asp-for="Content" class="form-label fw-semibold">Nội dung</label>
-                <textarea asp-for="Content" class="form-control" rows="10" placeholder="Nhập nội dung bài viết"></textarea>
+            <div class="col-12">
+                <label asp-for="Summary" class="form-label fw-semibold">Tóm tắt ngắn gọn</label>
+                <textarea asp-for="Summary" class="form-control" rows="3" placeholder="Nhập mô tả ngắn gọn về nội dung bài viết (hiển thị trong danh sách)"></textarea>
+                <small class="text-muted">Nên từ 100-160 ký tự để tối ưu SEO</small>
             </div>
         </div>
-        <hr>
-        <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-brand"><i class="bi bi-check-lg me-1"></i>Lưu</button>
-            <a asp-action="Index" class="btn btn-outline-secondary">Hủy</a>
+    </div>
+
+    <!-- Ảnh đại diện -->
+    <div class="content-section">
+        <div class="section-title">
+            <i class="bi bi-image me-2"></i>Ảnh đại diện
         </div>
-    </form>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">Tải ảnh lên</label>
+                <input type="file" id="thumbnailFile" name="thumbnailFile" accept="image/*" class="d-none" onchange="previewThumbnail(this)">
+                <div class="file-upload-area" onclick="document.getElementById('thumbnailFile').click()">
+                    <div id="thumbnailPreview">
+                        <i class="bi bi-cloud-arrow-up" style="font-size:48px;color:var(--brand)"></i>
+                        <p class="fw-semibold mt-3 mb-1">Click để chọn ảnh đại diện</p>
+                        <p class="text-muted small mb-0">Khuyến nghị: 1200x630px, JPG/PNG (Max 5MB)</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="ThumbnailUrl" class="form-label fw-semibold">Hoặc nhập URL ảnh</label>
+                <input asp-for="ThumbnailUrl" class="form-control" placeholder="https://example.com/image.jpg">
+                <small class="text-muted">Dán link ảnh từ nguồn bên ngoài</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Nội dung bài viết -->
+    <div class="content-section">
+        <div class="section-title">
+            <i class="bi bi-pencil-square me-2"></i>Nội dung bài viết <span class="text-danger">*</span>
+        </div>
+        <div id="contentEditor"></div>
+        <textarea asp-for="Content" id="contentHidden" style="display:none;"></textarea>
+        <span asp-validation-for="Content" class="text-danger small"></span>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="content-section" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="text-muted small">
+                <i class="bi bi-info-circle me-1"></i>
+                Bài viết sẽ ở trạng thái <strong>Chờ duyệt</strong> sau khi lưu
+            </div>
+            <div class="d-flex gap-2">
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-lg me-1"></i>Hủy bỏ
+                </a>
+                <button type="submit" class="btn btn-brand" style="min-width:140px">
+                    <i class="bi bi-check2-circle me-1"></i>Xuất bản
+                </button>
+            </div>
+        </div>
+    </div>
+</form>
+
+<!-- Toast notification -->
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+    <div id="toast" class="toast align-items-center border-0" role="alert">
+        <div class="d-flex">
+            <div class="toast-body d-flex align-items-center gap-2">
+                <i class="bi" id="toastIcon" style="font-size:20px"></i>
+                <span id="toastMessage"></span>
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
 </div>
+
+@section Scripts {
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+<script>
+    // Initialize Quill editor
+    var quill = new Quill('#contentEditor', {
+        theme: 'snow',
+        modules: {
+            toolbar: [
+                [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                ['bold', 'italic', 'underline', 'strike'],
+                [{ 'color': [] }, { 'background': [] }],
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                [{ 'align': [] }],
+                ['blockquote', 'code-block'],
+                ['link', 'image', 'video'],
+                ['clean']
+            ]
+        },
+        placeholder: '✍️ Bắt đầu viết nội dung bài viết của bạn tại đây...'
+    });
+
+    // Thumbnail preview
+    function previewThumbnail(input) {
+        const preview = document.getElementById('thumbnailPreview');
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.innerHTML = `
+                    <div class="preview-container">
+                        <img src="${e.target.result}" class="preview-img" style="max-width:100%;max-height:300px">
+                        <button type="button" class="preview-remove" onclick="removeThumbnail()">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                `;
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function removeThumbnail() {
+        document.getElementById('thumbnailFile').value = '';
+        document.getElementById('thumbnailPreview').innerHTML = `
+            <i class="bi bi-cloud-arrow-up" style="font-size:48px;color:var(--brand)"></i>
+            <p class="fw-semibold mt-3 mb-1">Click để chọn ảnh đại diện</p>
+            <p class="text-muted small mb-0">Khuyến nghị: 1200x630px, JPG/PNG (Max 5MB)</p>
+        `;
+    }
+
+    // Toast notification
+    function showToast(message, type = 'success') {
+        const toast = document.getElementById('toast');
+        const toastIcon = document.getElementById('toastIcon');
+        const toastMessage = document.getElementById('toastMessage');
+
+        toast.classList.remove('bg-success', 'bg-danger', 'bg-warning', 'text-white');
+        toastIcon.classList.remove('bi-check-circle-fill', 'bi-x-circle-fill', 'bi-exclamation-triangle-fill');
+
+        if (type === 'success') {
+            toast.classList.add('bg-success', 'text-white');
+            toastIcon.classList.add('bi-check-circle-fill');
+        } else if (type === 'error') {
+            toast.classList.add('bg-danger', 'text-white');
+            toastIcon.classList.add('bi-x-circle-fill');
+        } else {
+            toast.classList.add('bg-warning', 'text-dark');
+            toastIcon.classList.add('bi-exclamation-triangle-fill');
+        }
+
+        toastMessage.textContent = message;
+        const bsToast = new bootstrap.Toast(toast);
+        bsToast.show();
+    }
+
+    // Form submit handler
+    document.getElementById('blogForm').addEventListener('submit', function(e) {
+        var content = quill.root.innerHTML;
+        document.getElementById('contentHidden').value = content;
+
+        // Validate content not empty
+        if (!content || content.trim() === '<p><br></p>' || content.trim() === '') {
+            e.preventDefault();
+            showToast('Vui lòng nhập nội dung bài viết', 'error');
+            return false;
+        }
+
+        // Show loading
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang lưu...';
+
+        // Restore button after 3 seconds if form doesn't redirect
+        setTimeout(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        }, 3000);
+    });
+</script>
+}

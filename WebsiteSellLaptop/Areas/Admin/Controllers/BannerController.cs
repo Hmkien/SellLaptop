@@ -23,18 +23,18 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
 
         public async Task<IActionResult> Index(int page = 1, string? keyword = null, int pageSize = 10)
         {
-            var query = _context.Banners.Where(x => x.Status != StatusEntity.Deleted).AsQueryable();
+            IQueryable<Banner> query = _context.Banners.AsQueryable();
             if (!string.IsNullOrEmpty(keyword))
             {
                 keyword = keyword.Trim().ToLower();
                 query = query.Where(x => x.Title.ToLower().Contains(keyword) || x.Code.ToLower().Contains(keyword));
             }
 
-            var totalItems = await query.CountAsync();
-            var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+            int totalItems = await query.CountAsync();
+            int totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
             page = Math.Max(1, Math.Min(page, Math.Max(1, totalPages)));
 
-            var data = await query.OrderByDescending(x => x.Created).Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+            List<Banner> data = await query.OrderByDescending(x => x.Created).Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
 
             ViewBag.Keyword = keyword;
             ViewBag.CurrentPage = page;
@@ -45,16 +45,48 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
             return View(data);
         }
 
-        public IActionResult Create() => View(new Banner());
+        [HttpGet]
+        public async Task<IActionResult> GetDetail(Guid id)
+        {
+            Banner? banner = await _context.Banners.FindAsync(id);
+            if (banner == null)
+            {
+                return Json(new { success = false, message = "Không tìm thấy banner" });
+            }
+
+            return Json(new
+            {
+                success = true,
+                data = new
+                {
+                    id = banner.Id,
+                    code = banner.Code,
+                    title = banner.Title,
+                    subTitle = banner.SubTitle,
+                    imageUrl = banner.ImageUrl,
+                    linkUrl = banner.LinkUrl,
+                    sortOrder = banner.SortOrder,
+                    status = banner.Status.ToString(),
+                    created = banner.Created.ToString("dd/MM/yyyy HH:mm"),
+                    lastModified = banner.LastModified.ToString("dd/MM/yyyy HH:mm")
+                }
+            });
+        }
 
         [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Banner model, IFormFile? imageFile)
         {
-            if (!ModelState.IsValid) return View(model);
-            var codeExists = await _context.Banners.AnyAsync(x => x.Code.ToLower() == model.Code.Trim().ToLower() && x.Status != StatusEntity.Deleted);
-            if (codeExists) { ModelState.AddModelError("Code", "Mã banner đã tồn tại"); return View(model); }
+            if (!ModelState.IsValid)
+            {
+                return Json(new { success = false, message = "Vui lòng kiểm tra lại thông tin", errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage) });
+            }
 
-            // Upload image if provided
+            bool codeExists = await _context.Banners.AnyAsync(x => x.Code.ToLower() == model.Code.Trim().ToLower());
+            if (codeExists)
+            {
+                return Json(new { success = false, message = "Mã banner đã tồn tại" });
+            }
+
             if (imageFile != null)
             {
                 try
@@ -63,35 +95,85 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
                 }
                 catch (Exception ex)
                 {
-                    ModelState.AddModelError("", ex.Message);
-                    return View(model);
+                    return Json(new { success = false, message = ex.Message });
                 }
             }
 
             model.Code = model.Code.Trim();
             model.CreatedBy = User.Identity?.Name;
-            _context.Banners.Add(model);
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
+            model.Status = StatusEntity.Approved;
+            _ = _context.Banners.Add(model);
+            _ = await _context.SaveChangesAsync();
 
-        public async Task<IActionResult> Detail(Guid id) { var i = await _context.Banners.FindAsync(id); return i == null ? NotFound() : View(i); }
-        public async Task<IActionResult> Edit(Guid id) { var i = await _context.Banners.FindAsync(id); return i == null ? NotFound() : View(i); }
+            return Json(new { success = true, message = "Thêm banner thành công" });
+        }
 
         [HttpPost, ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Banner model)
+        public async Task<IActionResult> Edit(Banner model, IFormFile? imageFile)
         {
-            if (!ModelState.IsValid) return View(model);
-            var i = await _context.Banners.FindAsync(model.Id); if (i == null) return NotFound();
-            if (i.Status == StatusEntity.Approved) { ModelState.AddModelError("", "Không thể sửa banner đã duyệt"); return View(model); }
-            var codeExists = await _context.Banners.AnyAsync(x => x.Code.ToLower() == model.Code.Trim().ToLower() && x.Id != model.Id && x.Status != StatusEntity.Deleted);
-            if (codeExists) { ModelState.AddModelError("Code", "Mã banner đã tồn tại"); return View(model); }
-            i.Code = model.Code.Trim(); i.Title = model.Title; i.SubTitle = model.SubTitle; i.ImageUrl = model.ImageUrl; i.LinkUrl = model.LinkUrl; i.SortOrder = model.SortOrder; i.LastModified = DateTime.Now; i.ModifiedBy = User.Identity?.Name;
-            await _context.SaveChangesAsync(); return RedirectToAction(nameof(Index));
+            if (!ModelState.IsValid)
+            {
+                return Json(new { success = false, message = "Vui lòng kiểm tra lại thông tin", errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage) });
+            }
+
+            Banner? banner = await _context.Banners.FindAsync(model.Id);
+            if (banner == null)
+            {
+                return Json(new { success = false, message = "Không tìm thấy banner" });
+            }
+
+            if (banner.Status == StatusEntity.Approved)
+            {
+                return Json(new { success = false, message = "Không thể sửa banner đã duyệt" });
+            }
+
+            bool codeExists = await _context.Banners.AnyAsync(x => x.Code.ToLower() == model.Code.Trim().ToLower() && x.Id != model.Id);
+            if (codeExists)
+            {
+                return Json(new { success = false, message = "Mã banner đã tồn tại" });
+            }
+
+            if (imageFile != null)
+            {
+                try
+                {
+                    banner.ImageUrl = await _fileUpload.UploadImageAsync(imageFile, "uploads/banners");
+                }
+                catch (Exception ex)
+                {
+                    return Json(new { success = false, message = ex.Message });
+                }
+            }
+            else
+            {
+                banner.ImageUrl = model.ImageUrl;
+            }
+
+            banner.Code = model.Code.Trim();
+            banner.Title = model.Title;
+            banner.SubTitle = model.SubTitle;
+            banner.LinkUrl = model.LinkUrl;
+            banner.SortOrder = model.SortOrder;
+            banner.LastModified = DateTime.Now;
+            banner.ModifiedBy = User.Identity?.Name;
+
+            _ = await _context.SaveChangesAsync();
+            return Json(new { success = true, message = "Cập nhật banner thành công" });
         }
 
-        [HttpPost, ValidateAntiForgeryToken] public async Task<IActionResult> Approve(Guid id) { var i = await _context.Banners.FindAsync(id); if (i == null) return Json(new { success = false, message = "Không tìm thấy" }); i.Status = StatusEntity.Approved; i.LastModified = DateTime.Now; i.ModifiedBy = User.Identity?.Name; await _context.SaveChangesAsync(); return Json(new { success = true, message = "Duyệt thành công" }); }
-        [HttpPost, ValidateAntiForgeryToken] public async Task<IActionResult> Reject(Guid id) { var i = await _context.Banners.FindAsync(id); if (i == null) return Json(new { success = false, message = "Không tìm thấy" }); i.Status = StatusEntity.Rejected; i.LastModified = DateTime.Now; i.ModifiedBy = User.Identity?.Name; await _context.SaveChangesAsync(); return Json(new { success = true, message = "Hủy duyệt thành công" }); }
-        [HttpPost, ValidateAntiForgeryToken] public async Task<IActionResult> Delete(Guid id) { var i = await _context.Banners.FindAsync(id); if (i == null) return Json(new { success = false, message = "Không tìm thấy" }); if (i.Status == StatusEntity.Approved) return Json(new { success = false, message = "Không thể xóa đã duyệt" }); i.Status = StatusEntity.Deleted; i.LastModified = DateTime.Now; i.ModifiedBy = User.Identity?.Name; await _context.SaveChangesAsync(); return Json(new { success = true, message = "Xóa thành công" }); }
+        [HttpPost, ValidateAntiForgeryToken] public async Task<IActionResult> Approve(Guid id) { Banner? i = await _context.Banners.FindAsync(id); if (i == null) { return Json(new { success = false, message = "Không tìm thấy" }); } i.Status = StatusEntity.Approved; i.LastModified = DateTime.Now; i.ModifiedBy = User.Identity?.Name; _ = await _context.SaveChangesAsync(); return Json(new { success = true, message = "Duyệt thành công" }); }
+        [HttpPost, ValidateAntiForgeryToken] public async Task<IActionResult> Reject(Guid id) { Banner? i = await _context.Banners.FindAsync(id); if (i == null) { return Json(new { success = false, message = "Không tìm thấy" }); } i.Status = StatusEntity.Rejected; i.LastModified = DateTime.Now; i.ModifiedBy = User.Identity?.Name; _ = await _context.SaveChangesAsync(); return Json(new { success = true, message = "Hủy duyệt thành công" }); }
+        [HttpPost, ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            Banner? i = await _context.Banners.FindAsync(id);
+            if (i == null)
+            {
+                return Json(new { success = false, message = "Không tìm thấy" });
+            }
+            _ = _context.Banners.Remove(i);
+            _ = await _context.SaveChangesAsync();
+            return Json(new { success = true, message = "Xóa thành công" });
+        }
     }
 }

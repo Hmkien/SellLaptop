@@ -1,0 +1,575 @@
+@model X.PagedList.IPagedList<Coupon>
+@using WebsiteSellLaptop.Models.Enums
+
+@{
+    ViewData["Title"] = "Quản lý mã giảm giá";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0"><i class="bi bi-ticket-perforated me-2"></i>Quản lý mã giảm giá</h4>
+    <button type="button" class="btn btn-brand" data-bs-toggle="modal" data-bs-target="#createModal">
+        <i class="bi bi-plus-lg me-1"></i>Thêm mới
+    </button>
+</div>
+
+<div class="admin-card p-4 mb-4">
+    <form method="get" class="row g-3 align-items-end">
+        <div class="col-md-11">
+            <label class="form-label fw-semibold">Tìm kiếm</label>
+            <input type="text" name="keyword" value="@ViewBag.Keyword" class="form-control" placeholder="Nhập mã giảm giá hoặc mô tả...">
+        </div>
+        <div class="col-md-1 text-center">
+            <button type="submit" class="btn btn-link p-0" style="margin-top:8px">
+                <i class="bi bi-search" style="font-size:24px;color:var(--brand)"></i>
+            </button>
+        </div>
+    </form>
+</div>
+
+<div class="admin-card p-0">
+    <div class="table-responsive">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th width="60">STT</th>
+                    <th width="120">Mã giảm giá</th>
+                    <th>Mô tả</th>
+                    <th width="120">Giá trị giảm</th>
+                    <th width="120">ĐH tối thiểu</th>
+                    <th width="100">Số lần dùng</th>
+                    <th width="100">Hiệu lực</th>
+                    <th width="130">Trạng thái</th>
+                    <th width="180">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Count == 0)
+                {
+                    <tr><td colspan="9" class="text-center text-muted py-4">Không có dữ liệu</td></tr>
+                }
+                else
+                {
+                    @for (int i = 0; i < Model.Count; i++)
+                    {
+                        var item = Model[i];
+                        var stt = (Model.PageNumber - 1) * Model.PageSize + i + 1;
+                        var isExpired = item.EndDate.HasValue && item.EndDate < DateTime.Now;
+                        var isNotStarted = item.StartDate.HasValue && item.StartDate > DateTime.Now;
+                        var isActive = !isExpired && !isNotStarted;
+                        <tr>
+                            <td class="text-center">@stt</td>
+                            <td>
+                                <a href="javascript:void(0)" onclick="showDetail('@item.Id')" class="text-primary fw-semibold">@item.Code</a>
+                            </td>
+                            <td class="text-muted small">@(item.Description ?? "—")</td>
+                            <td class="text-center fw-semibold" style="color:var(--brand)">
+                                @if (item.IsPercent)
+                                {
+                                    <span>@item.DiscountAmount%</span>
+                                }
+                                else
+                                {
+                                    <span>@item.DiscountAmount.ToString("N0")đ</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                @if (item.MinOrderAmount.HasValue)
+                                {
+                                    <span class="text-muted small">@item.MinOrderAmount.Value.ToString("N0")đ</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                <span class="@(item.MaxUsage.HasValue && item.UsedCount >= item.MaxUsage ? "text-danger" : "text-muted")">
+                                    @item.UsedCount @if(item.MaxUsage.HasValue) { <span>/ @item.MaxUsage</span> } else { <span>/ ∞</span> }
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                @if (isExpired)
+                                {
+                                    <span class="badge bg-secondary small">Đã hết hạn</span>
+                                }
+                                else if (isNotStarted)
+                                {
+                                    <span class="badge bg-info small">Chưa bắt đầu</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success small">Đang hiệu lực</span>
+                                }
+                            </td>
+                            <td>
+                                @switch (item.Status)
+                                {
+                                    case StatusEntity.Approved:
+                                        <span style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:20px;font-size:13px;font-weight:600;background:linear-gradient(135deg, #10b981 0%, #059669 100%);color:white;box-shadow:0 2px 8px rgba(16,185,129,0.3)">
+                                            Đã duyệt
+                                        </span>
+                                        break;
+                                    case StatusEntity.Pending:
+                                        <span style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:20px;font-size:13px;font-weight:600;background:linear-gradient(135deg, #f59e0b 0%, #d97706 100%);color:white;box-shadow:0 2px 8px rgba(245,158,11,0.3)">
+                                            Chờ duyệt
+                                        </span>
+                                        break;
+                                    case StatusEntity.Rejected:
+                                        <span style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:20px;font-size:13px;font-weight:600;background:linear-gradient(135deg, #ef4444 0%, #dc2626 100%);color:white;box-shadow:0 2px 8px rgba(239,68,68,0.3)">
+                                            Hủy duyệt
+                                        </span>
+                                        break;
+                                    case StatusEntity.Draft:
+                                        <span style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:20px;font-size:13px;font-weight:600;background:linear-gradient(135deg, #6b7280 0%, #4b5563 100%);color:white;box-shadow:0 2px 8px rgba(107,114,128,0.3)">
+                                            Nháp
+                                        </span>
+                                        break;
+                                }
+                            </td>
+                            <td>
+                                <div class="d-flex gap-2 align-items-center">
+                                    @if (item.Status == StatusEntity.Approved)
+                                    {
+                                        <i class="bi bi-x-circle-fill" style="font-size:22px;color:#f59e0b;cursor:pointer" title="Hủy duyệt" onclick="doReject('@item.Id')"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-check-circle-fill" style="font-size:22px;color:#22c55e;cursor:pointer" title="Duyệt" onclick="doApprove('@item.Id')"></i>
+                                        <i class="bi bi-pencil-square" style="font-size:22px;color:#2563eb;cursor:pointer" title="Sửa" onclick="openEditModal('@item.Id')"></i>
+                                        <i class="bi bi-trash3-fill" style="font-size:22px;color:#ef4444;cursor:pointer" title="Xóa" onclick="confirmDelete('@item.Id', '@item.Code')"></i>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+    @if (Model.PageCount > 1)
+    {
+        <div class="admin-pagination">
+            <div class="pg-info">Hiển thị @(((Model.PageNumber - 1) * Model.PageSize) + 1) - @Math.Min(Model.PageNumber * Model.PageSize, Model.TotalItemCount) / @Model.TotalItemCount bản ghi</div>
+            <div class="pg-list">
+                @if (Model.PageNumber > 1)
+                {
+                    <a href="@Url.Action("Index", new { page = 1, keyword = ViewBag.Keyword })">«</a>
+                    <a href="@Url.Action("Index", new { page = Model.PageNumber - 1, keyword = ViewBag.Keyword })">‹</a>
+                }
+                else
+                {
+                    <span class="disabled">«</span>
+                    <span class="disabled">‹</span>
+                }
+                @{ var start = Math.Max(1, Model.PageNumber - 2); var end = Math.Min(Model.PageCount, Model.PageNumber + 2); }
+                @for (int p = start; p <= end; p++)
+                {
+                    if (p == Model.PageNumber)
+                    {
+                        <span class="active">@p</span>
+                    }
+                    else
+                    {
+                        <a href="@Url.Action("Index", new { page = p, keyword = ViewBag.Keyword })">@p</a>
+                    }
+                }
+                @if (Model.PageNumber < Model.PageCount)
+                {
+                    <a href="@Url.Action("Index", new { page = Model.PageNumber + 1, keyword = ViewBag.Keyword })">›</a>
+                    <a href="@Url.Action("Index", new { page = Model.PageCount, keyword = ViewBag.Keyword })">»</a>
+                }
+                else
+                {
+                    <span class="disabled">›</span>
+                    <span class="disabled">»</span>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Modal Create -->
+<div class="modal fade" id="createModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form id="createForm">
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title">Thêm mới mã giảm giá</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Mã giảm giá <span class="text-danger">*</span></label>
+                            <input type="text" name="Code" class="form-control" required placeholder="VD: SUMMER2024" style="text-transform:uppercase">
+                            <small class="text-muted">Mã sẽ tự động viết hoa</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Loại giảm giá <span class="text-danger">*</span></label>
+                            <select name="IsPercent" id="createIsPercent" class="form-select" onchange="toggleDiscountType('create')">
+                                <option value="false">Giảm theo số tiền</option>
+                                <option value="true">Giảm theo phần trăm</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Giá trị giảm <span class="text-danger">*</span></label>
+                            <input type="number" name="DiscountAmount" id="createDiscountAmount" class="form-control" required min="0" step="1" placeholder="Nhập giá trị">
+                            <small class="text-muted" id="createDiscountHint">VD: 50000 = Giảm 50,000đ</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Đơn hàng tối thiểu</label>
+                            <input type="number" name="MinOrderAmount" class="form-control" min="0" step="1000" placeholder="Không giới hạn">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Ngày bắt đầu</label>
+                            <input type="date" name="StartDate" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Ngày kết thúc</label>
+                            <input type="date" name="EndDate" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Số lần sử dụng tối đa</label>
+                            <input type="number" name="MaxUsage" class="form-control" min="1" placeholder="Không giới hạn">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Mô tả</label>
+                            <textarea name="Description" class="form-control" rows="3" placeholder="Mô tả chi tiết về mã giảm giá"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-brand"><i class="bi bi-check-lg me-1"></i>Thêm mới</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Edit -->
+<div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form id="editForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="Id" id="editId">
+                <div class="modal-header">
+                    <h5 class="modal-title">Sửa mã giảm giá</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Mã giảm giá <span class="text-danger">*</span></label>
+                            <input type="text" name="Code" id="editCode" class="form-control" required style="text-transform:uppercase">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Loại giảm giá <span class="text-danger">*</span></label>
+                            <select name="IsPercent" id="editIsPercent" class="form-select" onchange="toggleDiscountType('edit')">
+                                <option value="false">Giảm theo số tiền</option>
+                                <option value="true">Giảm theo phần trăm</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Giá trị giảm <span class="text-danger">*</span></label>
+                            <input type="number" name="DiscountAmount" id="editDiscountAmount" class="form-control" required min="0" step="1">
+                            <small class="text-muted" id="editDiscountHint">VD: 50000 = Giảm 50,000đ</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Đơn hàng tối thiểu</label>
+                            <input type="number" name="MinOrderAmount" id="editMinOrderAmount" class="form-control" min="0" step="1000">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Ngày bắt đầu</label>
+                            <input type="date" name="StartDate" id="editStartDate" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Ngày kết thúc</label>
+                            <input type="date" name="EndDate" id="editEndDate" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Số lần sử dụng tối đa</label>
+                            <input type="number" name="MaxUsage" id="editMaxUsage" class="form-control" min="1">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Mô tả</label>
+                            <textarea name="Description" id="editDescription" class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-brand"><i class="bi bi-check-lg me-1"></i>Cập nhật</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Detail -->
+<div class="modal fade" id="detailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Chi tiết mã giảm giá</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-borderless">
+                    <tr><th width="180">Mã giảm giá:</th><td id="detailCode" class="fw-bold"></td></tr>
+                    <tr><th>Mô tả:</th><td id="detailDescription"></td></tr>
+                    <tr><th>Loại giảm giá:</th><td id="detailType"></td></tr>
+                    <tr><th>Giá trị giảm:</th><td id="detailDiscount" class="fw-semibold" style="color:var(--brand)"></td></tr>
+                    <tr><th>Đơn hàng tối thiểu:</th><td id="detailMinOrder"></td></tr>
+                    <tr><th>Số lần sử dụng:</th><td id="detailUsage"></td></tr>
+                    <tr><th>Thời gian hiệu lực:</th><td id="detailValidity"></td></tr>
+                    <tr><th>Trạng thái:</th><td id="detailStatus"></td></tr>
+                    <tr><th>Ngày tạo:</th><td id="detailCreated"></td></tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Delete -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Xác nhận xóa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn xóa mã giảm giá <strong id="deleteItemName"></strong>?</p>
+                <p class="text-danger small mb-0"><i class="bi bi-exclamation-circle me-1"></i>Hành động này không thể hoàn tác!</p>
+            </div>
+            <div class="modal-footer">
+                <input type="hidden" id="deleteItemId">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-danger" onclick="doDelete()"><i class="bi bi-trash3 me-1"></i>Xóa</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index:9999">
+    <div id="toast" class="toast align-items-center border-0" role="alert">
+        <div class="d-flex">
+            <div class="toast-body" id="toastMessage" style="display:flex;align-items:center;gap:8px">
+                <i class="bi" id="toastIcon" style="font-size:20px"></i>
+                <span id="toastText"></span>
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    const baseUrl = '@Url.Action("Index", "Coupon", new { area = "Admin" })'.replace('/Index', '');
+    const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+    function showToast(message, type = 'success') {
+        const toast = document.getElementById('toast');
+        const icon = document.getElementById('toastIcon');
+        const text = document.getElementById('toastText');
+
+        toast.classList.remove('bg-success', 'bg-danger', 'text-white');
+        icon.className = 'bi';
+
+        if (type === 'success') {
+            toast.classList.add('bg-success', 'text-white');
+            icon.classList.add('bi-check-circle-fill');
+        } else {
+            toast.classList.add('bg-danger', 'text-white');
+            icon.classList.add('bi-x-circle-fill');
+        }
+
+        text.textContent = message;
+        new bootstrap.Toast(toast).show();
+    }
+
+    function toggleDiscountType(prefix) {
+        const isPercent = document.getElementById(prefix + 'IsPercent').value === 'true';
+        const hint = document.getElementById(prefix + 'DiscountHint');
+        const input = document.getElementById(prefix + 'DiscountAmount');
+
+        if (isPercent) {
+            hint.textContent = 'VD: 10 = Giảm 10%';
+            input.max = 100;
+        } else {
+            hint.textContent = 'VD: 50000 = Giảm 50,000đ';
+            input.removeAttribute('max');
+        }
+    }
+
+    // Create
+    document.getElementById('createForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+
+        const response = await fetch(`${baseUrl}/Create`, {
+            method: 'POST',
+            body: formData
+        });
+
+        const result = await response.json();
+        showToast(result.message, result.success ? 'success' : 'error');
+
+        if (result.success) {
+            bootstrap.Modal.getInstance(document.getElementById('createModal')).hide();
+            setTimeout(() => location.reload(), 1000);
+        }
+    });
+
+    // Edit Modal
+    async function openEditModal(id) {
+        const response = await fetch(`${baseUrl}/GetById?id=${id}`);
+        const result = await response.json();
+
+        if (result.success) {
+            const data = result.data;
+            document.getElementById('editId').value = data.id;
+            document.getElementById('editCode').value = data.code;
+            document.getElementById('editDescription').value = data.description || '';
+            document.getElementById('editDiscountAmount').value = data.discountAmount;
+            document.getElementById('editIsPercent').value = data.isPercent.toString();
+            document.getElementById('editMinOrderAmount').value = data.minOrderAmount || '';
+            document.getElementById('editMaxUsage').value = data.maxUsage || '';
+            document.getElementById('editStartDate').value = data.startDate || '';
+            document.getElementById('editEndDate').value = data.endDate || '';
+
+            toggleDiscountType('edit');
+
+            new bootstrap.Modal(document.getElementById('editModal')).show();
+        } else {
+            showToast(result.message, 'error');
+        }
+    }
+
+    // Edit Submit
+    document.getElementById('editForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+
+        const response = await fetch(`${baseUrl}/Edit`, {
+            method: 'POST',
+            body: formData
+        });
+
+        const result = await response.json();
+        showToast(result.message, result.success ? 'success' : 'error');
+
+        if (result.success) {
+            bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
+            setTimeout(() => location.reload(), 1000);
+        }
+    });
+
+    // Detail
+    async function showDetail(id) {
+        const response = await fetch(`${baseUrl}/GetById?id=${id}`);
+        const result = await response.json();
+
+        if (result.success) {
+            const data = result.data;
+            document.getElementById('detailCode').textContent = data.code;
+            document.getElementById('detailDescription').textContent = data.description || '—';
+            document.getElementById('detailType').textContent = data.isPercent ? 'Giảm theo phần trăm' : 'Giảm theo số tiền';
+            document.getElementById('detailDiscount').textContent = data.isPercent ? data.discountAmount + '%' : data.discountAmount.toLocaleString() + 'đ';
+            document.getElementById('detailMinOrder').textContent = data.minOrderAmount ? data.minOrderAmount.toLocaleString() + 'đ' : 'Không giới hạn';
+            document.getElementById('detailUsage').textContent = data.usedCount + ' / ' + (data.maxUsage || '∞');
+            
+            let validity = '';
+            if (data.startDate && data.endDate) {
+                validity = new Date(data.startDate).toLocaleDateString('vi-VN') + ' - ' + new Date(data.endDate).toLocaleDateString('vi-VN');
+            } else if (data.startDate) {
+                validity = 'Từ ' + new Date(data.startDate).toLocaleDateString('vi-VN');
+            } else if (data.endDate) {
+                validity = 'Đến ' + new Date(data.endDate).toLocaleDateString('vi-VN');
+            } else {
+                validity = 'Không giới hạn';
+            }
+            document.getElementById('detailValidity').textContent = validity;
+
+            document.getElementById('detailStatus').textContent = data.statusName;
+            document.getElementById('detailCreated').textContent = data.created;
+
+            new bootstrap.Modal(document.getElementById('detailModal')).show();
+        } else {
+            showToast(result.message, 'error');
+        }
+    }
+
+    // Delete
+    function confirmDelete(id, name) {
+        document.getElementById('deleteItemId').value = id;
+        document.getElementById('deleteItemName').textContent = name;
+        new bootstrap.Modal(document.getElementById('deleteModal')).show();
+    }
+
+    async function doDelete() {
+        const id = document.getElementById('deleteItemId').value;
+        const formData = new FormData();
+        formData.append('id', id);
+        formData.append('__RequestVerificationToken', token);
+
+        const response = await fetch(`${baseUrl}/Delete`, {
+            method: 'POST',
+            body: formData
+        });
+
+        const result = await response.json();
+        showToast(result.message, result.success ? 'success' : 'error');
+
+        if (result.success) {
+            bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+            setTimeout(() => location.reload(), 1000);
+        }
+    }
+
+    // Approve
+    async function doApprove(id) {
+        const formData = new FormData();
+        formData.append('id', id);
+        formData.append('__RequestVerificationToken', token);
+
+        const response = await fetch(`${baseUrl}/Approve`, {
+            method: 'POST',
+            body: formData
+        });
+
+        const result = await response.json();
+        showToast(result.message, result.success ? 'success' : 'error');
+
+        if (result.success) {
+            setTimeout(() => location.reload(), 1000);
+        }
+    }
+
+    // Reject
+    async function doReject(id) {
+        const formData = new FormData();
+        formData.append('id', id);
+        formData.append('__RequestVerificationToken', token);
+
+        const response = await fetch(`${baseUrl}/Reject`, {
+            method: 'POST',
+            body: formData
+        });
+
+        const result = await response.json();
+        showToast(result.message, result.success ? 'success' : 'error');
+
+        if (result.success) {
+            setTimeout(() => location.reload(), 1000);
+        }
+    }
+</script>
+}

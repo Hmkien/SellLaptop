@@ -10,8 +10,6 @@ namespace WebsiteSellLaptop.Models.Enums
         Rejected = 2,
         [Description("Đang chờ duyệt")]
         Pending = 3,
-        [Description("Đã xóa")]
-        Deleted = 4,
         [Description("Nháp")]
         Draft = 5
     }

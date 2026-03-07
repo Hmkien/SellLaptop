@@ -13,7 +13,7 @@ namespace WebsiteSellLaptop.Models.Entities
 
         public DateTime Created { get; set; } = DateTime.Now;
         public DateTime LastModified { get; set; } = DateTime.Now;
-        public StatusEntity Status { get; set; } = StatusEntity.Pending;
+        public StatusEntity Status { get; set; } = StatusEntity.Approved;
         public string? CreatedBy { get; set; }
         public string? ModifiedBy { get; set; }
     }

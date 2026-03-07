@@ -11,7 +11,7 @@
 
 <div class="row g-4">
     <div class="col-md-8">
-        <div class="admin-card">
+        <div class="admin-card p-4">
             <h6 class="fw-bold mb-3"><i class="bi bi-person me-1"></i>Thông tin khách hàng</h6>
             <table class="table table-borderless mb-0">
                 <tr><th width="160">Họ tên:</th><td class="fw-semibold">@Model.FullName</td></tr>
@@ -26,7 +26,7 @@
         </div>
 
         <div class="admin-card mt-3 p-0">
-            <div class="p-3 border-bottom">
+            <div class="p-4 border-bottom">
                 <h6 class="fw-bold mb-0"><i class="bi bi-cart me-1"></i>Sản phẩm đặt hàng</h6>
             </div>
             <div class="table-responsive">
@@ -75,18 +75,20 @@
     </div>
 
     <div class="col-md-4">
-        <div class="admin-card">
+        <div class="admin-card p-4">
             <h6 class="fw-bold mb-3"><i class="bi bi-info-circle me-1"></i>Thông tin đơn hàng</h6>
             <table class="table table-borderless mb-0">
-                <tr><th>Mã đơn:</th><td class="fw-bold">#@Model.OrderCode</td></tr>
+                <tr><th width="110">Mã đơn:</th><td class="fw-bold">#@Model.OrderCode</td></tr>
                 <tr>
                     <th>Trạng thái:</th>
                     <td>
-                        @switch (Model.Status)
+                        @switch (Model.OrderStatus)
                         {
-                            case StatusEntity.Approved: <span class="badge-status approved">Đã duyệt</span> break;
-                            case StatusEntity.Pending: <span class="badge-status pending">Chờ duyệt</span> break;
-                            case StatusEntity.Rejected: <span class="badge-status rejected">Hủy duyệt</span> break;
+                            case OrderStatus.Pending: <span class="badge-status pending"><i class="bi bi-clock me-1"></i>Chờ xác nhận</span> break;
+                            case OrderStatus.Confirmed: <span class="badge-status approved"><i class="bi bi-check-circle me-1"></i>Đã xác nhận</span> break;
+                            case OrderStatus.Shipping: <span class="badge bg-info bg-opacity-10 text-info"><i class="bi bi-truck me-1"></i>Đang giao</span> break;
+                            case OrderStatus.Completed: <span class="badge bg-success bg-opacity-10 text-success"><i class="bi bi-check-all me-1"></i>Hoàn thành</span> break;
+                            case OrderStatus.Cancelled: <span class="badge-status rejected"><i class="bi bi-x-circle me-1"></i>Đã hủy</span> break;
                         }
                     </td>
                 </tr>
@@ -111,22 +113,118 @@
             </table>
         </div>
 
-        <div class="admin-card mt-3">
-            <h6 class="fw-bold mb-3">Thao tác</h6>
+        <div class="admin-card mt-3 p-4">
+            <h6 class="fw-bold mb-3"><i class="bi bi-gear me-1"></i>Cập nhật trạng thái</h6>
             <div class="d-grid gap-2">
-                @if (Model.Status != StatusEntity.Approved)
+                @if (Model.OrderStatus == OrderStatus.Pending)
                 {
-                    <form asp-action="Approve" asp-route-id="@Model.Id" method="post">
-                        <button type="submit" class="btn btn-success w-100"><i class="bi bi-check-circle me-1"></i>Duyệt đơn hàng</button>
-                    </form>
+                    <button type="button" class="btn btn-success" onclick="confirmUpdateStatus('@((int)OrderStatus.Confirmed)', 'Xác nhận')">
+                        <i class="bi bi-check-circle me-1"></i>Xác nhận đơn
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="confirmUpdateStatus('@((int)OrderStatus.Cancelled)', 'Hủy')">
+                        <i class="bi bi-x-circle me-1"></i>Hủy đơn
+                    </button>
                 }
-                @if (Model.Status != StatusEntity.Rejected)
+                @if (Model.OrderStatus == OrderStatus.Confirmed)
                 {
-                    <form asp-action="Reject" asp-route-id="@Model.Id" method="post">
-                        <button type="submit" class="btn btn-danger w-100"><i class="bi bi-x-circle me-1"></i>Hủy đơn hàng</button>
-                    </form>
+                    <button type="button" class="btn btn-info" onclick="confirmUpdateStatus('@((int)OrderStatus.Shipping)', 'Đang giao')">
+                        <i class="bi bi-truck me-1"></i>Chuyển sang giao hàng
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="confirmUpdateStatus('@((int)OrderStatus.Cancelled)', 'Hủy')">
+                        <i class="bi bi-x-circle me-1"></i>Hủy đơn
+                    </button>
+                }
+                @if (Model.OrderStatus == OrderStatus.Shipping)
+                {
+                    <button type="button" class="btn btn-success" onclick="confirmUpdateStatus('@((int)OrderStatus.Completed)', 'Hoàn thành')">
+                        <i class="bi bi-check-all me-1"></i>Hoàn thành đơn
+                    </button>
+                }
+                @if (Model.OrderStatus == OrderStatus.Completed || Model.OrderStatus == OrderStatus.Cancelled)
+                {
+                    <div class="alert alert-info mb-0">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Đơn hàng đã hoàn tất
+                    </div>
                 }
             </div>
         </div>
     </div>
 </div>
+
+<!-- Modal Update Status -->
+<div class="modal fade" id="updateStatusModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-arrow-repeat me-2"></i>Cập nhật trạng thái</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn chuyển trạng thái đơn hàng sang: <strong id="statusName"></strong>?</p>
+            </div>
+            <div class="modal-footer">
+                <input type="hidden" id="newStatus">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-brand" onclick="doUpdateStatus()">Cập nhật</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+    <div id="toast" class="toast" role="alert">
+        <div class="toast-header">
+            <i class="bi me-2" id="toastIcon"></i>
+            <strong class="me-auto" id="toastTitle">Thông báo</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+        </div>
+        <div class="toast-body" id="toastMessage"></div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function showToast(message, type = 'success') {
+        const toast = document.getElementById('toast');
+        toast.classList.remove('bg-success', 'bg-danger', 'text-white');
+        document.getElementById('toastIcon').classList.remove('bi-check-circle-fill', 'bi-x-circle-fill');
+        if (type === 'success') {
+            toast.classList.add('bg-success', 'text-white');
+            document.getElementById('toastIcon').classList.add('bi-check-circle-fill');
+            document.getElementById('toastTitle').textContent = 'Thành công';
+        } else {
+            toast.classList.add('bg-danger', 'text-white');
+            document.getElementById('toastIcon').classList.add('bi-x-circle-fill');
+            document.getElementById('toastTitle').textContent = 'Lỗi';
+        }
+        document.getElementById('toastMessage').textContent = message;
+        new bootstrap.Toast(toast).show();
+    }
+
+    function confirmUpdateStatus(status, statusName) {
+        document.getElementById('newStatus').value = status;
+        document.getElementById('statusName').textContent = statusName;
+        new bootstrap.Modal(document.getElementById('updateStatusModal')).show();
+    }
+
+    async function doUpdateStatus() {
+        const formData = new FormData();
+        formData.append('id', '@Model.Id');
+        formData.append('status', document.getElementById('newStatus').value);
+        formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]')?.value || '');
+
+        const r = await fetch('@Url.Action("UpdateStatus", "Order", new { area = "Admin" })', {
+            method: 'POST',
+            body: formData
+        });
+        const result = await r.json();
+        showToast(result.message, result.success ? 'success' : 'error');
+
+        if (result.success) {
+            bootstrap.Modal.getInstance(document.getElementById('updateStatusModal')).hide();
+            setTimeout(() => location.reload(), 1000);
+        }
+    }
+</script>
+}

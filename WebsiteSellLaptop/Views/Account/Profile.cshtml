@@ -1,0 +1,232 @@
+@model AppUser
+@using WebsiteSellLaptop.Models.Enums
+
+@{
+    ViewData["Title"] = "Tài khoản của tôi";
+}
+
+@section Styles {
+<style>
+    .sidebar{background:#fff;border-radius:16px;border:1px solid #e5e7eb;overflow:hidden}
+    .sidebar .user-info{padding:24px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;gap:14px}
+    .sidebar .avatar{width:56px;height:56px;border-radius:50%;background:#eef2ff;display:flex;align-items:center;justify-content:center;font-size:28px;color:var(--brand)}
+    .sidebar .nav-pills .nav-link{color:var(--dark);padding:12px 24px;border-radius:0;font-weight:500;display:flex;align-items:center;gap:10px;border-left:3px solid transparent}
+    .sidebar .nav-pills .nav-link:hover{background:#f8fafc}
+    .sidebar .nav-pills .nav-link.active{background:#eef2ff;color:var(--brand);border-left-color:var(--brand);font-weight:600}
+    .sidebar .nav-pills .nav-link i{width:20px;text-align:center}
+    .content-card{background:#fff;border-radius:16px;border:1px solid #e5e7eb;padding:28px}
+    .content-card h5{font-weight:700;margin-bottom:20px}
+</style>
+}
+
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+            <li class="breadcrumb-item active">Tài khoản</li>
+        </ol>
+    </nav>
+</div>
+
+<main class="container mb-5">
+    <div class="row g-4">
+        <!-- Sidebar -->
+        <div class="col-lg-3">
+            <div class="sidebar">
+                <div class="user-info">
+                    <div class="avatar"><i class="bi bi-person-fill"></i></div>
+                    <div>
+                        <div class="fw-bold">@Model.FullName</div>
+                        <div class="text-muted small">@Model.Email</div>
+                    </div>
+                </div>
+                <nav class="nav nav-pills flex-column">
+                    <a asp-action="Profile" class="nav-link active"><i class="bi bi-person"></i> Thông tin cá nhân</a>
+                    <a asp-action="Orders" class="nav-link"><i class="bi bi-box-seam"></i> Đơn hàng</a>
+                    <form asp-action="Logout" method="post" class="d-inline">
+                        <button type="submit" class="nav-link text-danger border-0 bg-transparent text-start w-100">
+                            <i class="bi bi-box-arrow-left"></i> Đăng xuất
+                        </button>
+                    </form>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="col-lg-9">
+            <div class="content-card">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5><i class="bi bi-person me-2 text-primary"></i>Thông tin cá nhân</h5>
+                    <button type="button" class="btn btn-outline-primary" id="btnEditProfile" onclick="toggleEditMode()">
+                        <i class="bi bi-pencil me-1"></i>Chỉnh sửa
+                    </button>
+                </div>
+
+                <form id="profileForm">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Họ và tên</label>
+                            <input id="fullName" class="form-control" value="@Model.FullName" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Số điện thoại</label>
+                            <input id="phoneNumber" class="form-control" value="@Model.PhoneNumber" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Email</label>
+                            <input class="form-control" value="@Model.Email" disabled>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Tên đăng nhập</label>
+                            <input class="form-control" value="@Model.UserName" disabled>
+                        </div>
+                    </div>
+                    <div id="editButtons" class="mt-4" style="display:none">
+                        <button type="submit" class="btn btn-brand px-4">Lưu thay đổi</button>
+                        <button type="button" class="btn btn-outline-secondary" onclick="cancelEdit()">Hủy</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="content-card mt-4">
+                <h5><i class="bi bi-shield-lock me-2 text-primary"></i>Bảo mật</h5>
+                <p class="text-muted">Quản lý mật khẩu và bảo mật tài khoản của bạn</p>
+                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#passwordModal">
+                    <i class="bi bi-key me-1"></i>Đổi mật khẩu
+                </button>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Password Modal -->
+<div class="modal fade" id="passwordModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-shield-lock me-2"></i>Đổi mật khẩu</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="passwordForm">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Mật khẩu hiện tại</label>
+                        <input type="password" id="currentPassword" class="form-control" placeholder="••••••••">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Mật khẩu mới</label>
+                        <input type="password" id="newPassword" class="form-control" placeholder="••••••••">
+                        <div class="form-text">Tối thiểu 8 ký tự, bao gồm chữ hoa, chữ thường và số</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Xác nhận mật khẩu mới</label>
+                        <input type="password" id="confirmPassword" class="form-control" placeholder="••••••••">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-brand" onclick="submitPasswordChange()">Cập nhật</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+    <div id="toast" class="toast align-items-center border-0" role="alert">
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="bi me-2" id="toastIcon"></i>
+                <span id="toastMessage"></span>
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    let originalFullName = '@Model.FullName';
+    let originalPhoneNumber = '@Model.PhoneNumber';
+
+    function toggleEditMode() {
+        document.getElementById('fullName').removeAttribute('readonly');
+        document.getElementById('phoneNumber').removeAttribute('readonly');
+        document.getElementById('editButtons').style.display = 'block';
+        document.getElementById('btnEditProfile').style.display = 'none';
+    }
+
+    function cancelEdit() {
+        document.getElementById('fullName').value = originalFullName;
+        document.getElementById('phoneNumber').value = originalPhoneNumber;
+        document.getElementById('fullName').setAttribute('readonly', 'readonly');
+        document.getElementById('phoneNumber').setAttribute('readonly', 'readonly');
+        document.getElementById('editButtons').style.display = 'none';
+        document.getElementById('btnEditProfile').style.display = 'block';
+    }
+
+    function submitPasswordChange() {
+        document.getElementById('passwordForm').dispatchEvent(new Event('submit'));
+    }
+
+    function showToast(message, type = 'success') {
+        const toast = document.getElementById('toast');
+        toast.classList.remove('bg-success', 'bg-danger', 'text-white');
+        document.getElementById('toastIcon').classList.remove('bi-check-circle-fill', 'bi-x-circle-fill');
+        if (type === 'success') {
+            toast.classList.add('bg-success', 'text-white');
+            document.getElementById('toastIcon').classList.add('bi-check-circle-fill');
+        } else {
+            toast.classList.add('bg-danger', 'text-white');
+            document.getElementById('toastIcon').classList.add('bi-x-circle-fill');
+        }
+        document.getElementById('toastMessage').textContent = message;
+        new bootstrap.Toast(toast).show();
+    }
+
+    document.getElementById('profileForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const formData = new FormData();
+        formData.append('fullName', document.getElementById('fullName').value);
+        formData.append('phoneNumber', document.getElementById('phoneNumber').value);
+
+        const response = await fetch('@Url.Action("UpdateProfile")', {
+            method: 'POST',
+            body: formData
+        });
+        const result = await response.json();
+        showToast(result.message, result.success ? 'success' : 'error');
+        if (result.success) {
+            originalFullName = document.getElementById('fullName').value;
+            originalPhoneNumber = document.getElementById('phoneNumber').value;
+            setTimeout(() => location.reload(), 1500);
+        }
+    });
+
+    document.getElementById('passwordForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const newPwd = document.getElementById('newPassword').value;
+        const confirmPwd = document.getElementById('confirmPassword').value;
+
+        if (newPwd !== confirmPwd) {
+            showToast('Mật khẩu xác nhận không khớp', 'error');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('currentPassword', document.getElementById('currentPassword').value);
+        formData.append('newPassword', newPwd);
+
+        const response = await fetch('@Url.Action("ChangePassword")', {
+            method: 'POST',
+            body: formData
+        });
+        const result = await response.json();
+        showToast(result.message, result.success ? 'success' : 'error');
+        if (result.success) {
+            document.getElementById('passwordForm').reset();
+            bootstrap.Modal.getInstance(document.getElementById('passwordModal')).hide();
+        }
+    });
+</script>
+}

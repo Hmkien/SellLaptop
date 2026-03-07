@@ -1,0 +1,265 @@
+@using WebsiteSellLaptop.Models.Enums
+
+@{
+    ViewData["Title"] = "Báo cáo & Thống kê";
+    var totalProducts = ViewBag.TotalProducts ?? 0;
+    var totalOrders = ViewBag.TotalOrders ?? 0;
+    var totalRevenue = ViewBag.TotalRevenue ?? 0m;
+    var totalCustomers = ViewBag.TotalCustomers ?? 0;
+    
+    var monthOrders = ViewBag.MonthOrders ?? 0;
+    var monthRevenue = ViewBag.MonthRevenue ?? 0m;
+    var yearOrders = ViewBag.YearOrders ?? 0;
+    var yearRevenue = ViewBag.YearRevenue ?? 0m;
+    
+    var pendingOrders = ViewBag.PendingOrders ?? 0;
+    var confirmedOrders = ViewBag.ConfirmedOrders ?? 0;
+    var shippingOrders = ViewBag.ShippingOrders ?? 0;
+    var completedOrders = ViewBag.CompletedOrders ?? 0;
+    var cancelledOrders = ViewBag.CancelledOrders ?? 0;
+    
+    var topProducts = ViewBag.TopProducts as List<dynamic> ?? new List<dynamic>();
+    var monthlyRevenue = ViewBag.MonthlyRevenue as List<decimal> ?? new List<decimal>();
+    var dailyOrders = ViewBag.DailyOrders as List<int> ?? new List<int>();
+}
+
+@section Styles {
+<style>
+    .stat-card{background:#fff;border-radius:16px;padding:24px;border:1px solid #e5e7eb;transition:all .2s}
+    .stat-card:hover{box-shadow:0 4px 20px rgba(0,0,0,.08);transform:translateY(-2px)}
+    .stat-card .icon{width:56px;height:56px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:16px}
+    .stat-card .icon.blue{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff}
+    .stat-card .icon.green{background:linear-gradient(135deg,#f093fb 0%,#f5576c 100%);color:#fff}
+    .stat-card .icon.orange{background:linear-gradient(135deg,#4facfe 0%,#00f2fe 100%);color:#fff}
+    .stat-card .icon.purple{background:linear-gradient(135deg,#fa709a 0%,#fee140 100%);color:#fff}
+    .stat-card .label{color:#6b7280;font-size:14px;font-weight:500;margin-bottom:8px}
+    .stat-card .value{font-size:28px;font-weight:700;color:#111827;margin-bottom:4px}
+    .stat-card .change{font-size:13px;color:#10b981}
+    .chart-card{background:#fff;border-radius:16px;border:1px solid #e5e7eb;padding:24px}
+    .chart-card h6{font-weight:700;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid #e5e7eb}
+    .order-status-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:24px}
+    .status-card{background:#fff;border-radius:12px;border:1px solid #e5e7eb;padding:16px;text-align:center}
+    .status-card .count{font-size:32px;font-weight:700;margin-bottom:8px}
+    .status-card .label{font-size:13px;color:#6b7280;font-weight:500}
+    .status-card.pending .count{color:#f59e0b}
+    .status-card.confirmed .count{color:#3b82f6}
+    .status-card.shipping .count{color:#8b5cf6}
+    .status-card.completed .count{color:#10b981}
+    .status-card.cancelled .count{color:#ef4444}
+    .product-item{display:flex;gap:12px;padding:12px;border-radius:8px;transition:background .15s}
+    .product-item:hover{background:#f9fafb}
+    .product-item img{width:60px;height:60px;border-radius:8px;object-fit:cover;border:1px solid #e5e7eb}
+    .product-item .info{flex:1}
+    .product-item .name{font-weight:600;font-size:14px;margin-bottom:4px}
+    .product-item .stats{font-size:13px;color:#6b7280}
+</style>
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0"><i class="bi bi-graph-up me-2"></i>Báo cáo & Thống kê</h4>
+    <div class="d-flex gap-2">
+        <button class="btn btn-outline-secondary" onclick="window.print()">
+            <i class="bi bi-printer me-1"></i>In báo cáo
+        </button>
+    </div>
+</div>
+
+<!-- Stats Overview -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="icon blue"><i class="bi bi-box-seam"></i></div>
+            <div class="label">Tổng sản phẩm</div>
+            <div class="value">@totalProducts.ToString("N0")</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="icon green"><i class="bi bi-bag-check"></i></div>
+            <div class="label">Tổng đơn hàng</div>
+            <div class="value">@totalOrders.ToString("N0")</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="icon orange"><i class="bi bi-currency-dollar"></i></div>
+            <div class="label">Tổng doanh thu</div>
+            <div class="value">@totalRevenue.ToString("N0")₫</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="icon purple"><i class="bi bi-people"></i></div>
+            <div class="label">Khách hàng</div>
+            <div class="value">@totalCustomers.ToString("N0")</div>
+        </div>
+    </div>
+</div>
+
+<!-- Period Stats -->
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="chart-card">
+            <h6><i class="bi bi-calendar-month me-2"></i>Tháng này</h6>
+            <div class="row">
+                <div class="col-6">
+                    <div class="text-muted small mb-1">Đơn hàng</div>
+                    <div class="fs-4 fw-bold text-primary">@monthOrders.ToString("N0")</div>
+                </div>
+                <div class="col-6">
+                    <div class="text-muted small mb-1">Doanh thu</div>
+                    <div class="fs-4 fw-bold text-success">@monthRevenue.ToString("N0")₫</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="chart-card">
+            <h6><i class="bi bi-calendar-range me-2"></i>Năm nay</h6>
+            <div class="row">
+                <div class="col-6">
+                    <div class="text-muted small mb-1">Đơn hàng</div>
+                    <div class="fs-4 fw-bold text-primary">@yearOrders.ToString("N0")</div>
+                </div>
+                <div class="col-6">
+                    <div class="text-muted small mb-1">Doanh thu</div>
+                    <div class="fs-4 fw-bold text-success">@yearRevenue.ToString("N0")₫</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Order Status -->
+<div class="chart-card mb-4">
+    <h6><i class="bi bi-pie-chart me-2"></i>Trạng thái đơn hàng</h6>
+    <div class="order-status-grid">
+        <div class="status-card pending">
+            <div class="count">@pendingOrders</div>
+            <div class="label">Chờ xác nhận</div>
+        </div>
+        <div class="status-card confirmed">
+            <div class="count">@confirmedOrders</div>
+            <div class="label">Đã xác nhận</div>
+        </div>
+        <div class="status-card shipping">
+            <div class="count">@shippingOrders</div>
+            <div class="label">Đang giao</div>
+        </div>
+        <div class="status-card completed">
+            <div class="count">@completedOrders</div>
+            <div class="label">Hoàn thành</div>
+        </div>
+        <div class="status-card cancelled">
+            <div class="count">@cancelledOrders</div>
+            <div class="label">Đã hủy</div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts -->
+<div class="row g-4 mb-4">
+    <div class="col-md-8">
+        <div class="chart-card">
+            <h6><i class="bi bi-graph-up-arrow me-2"></i>Doanh thu 12 tháng gần nhất</h6>
+            <div style="height: 300px;">
+                <canvas id="revenueChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="chart-card">
+            <h6><i class="bi bi-bar-chart me-2"></i>Đơn hàng 7 ngày</h6>
+            <div style="height: 300px;">
+                <canvas id="ordersChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Top Products -->
+<div class="chart-card">
+    <h6><i class="bi bi-trophy me-2"></i>Top 5 sản phẩm bán chạy</h6>
+    @if (topProducts.Any())
+    {
+        @foreach (var p in topProducts)
+        {
+            <div class="product-item">
+                @if (!string.IsNullOrEmpty(p.ThumbnailUrl))
+                {
+                    <img src="@p.ThumbnailUrl" alt="@p.Name">
+                }
+                else
+                {
+                    <div style="width:60px;height:60px;border-radius:8px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb">
+                        <i class="bi bi-image text-muted"></i>
+                    </div>
+                }
+                <div class="info">
+                    <div class="name">@p.Name</div>
+                    <div class="stats">
+                        Đã bán: <strong>@p.TotalQuantity</strong> sản phẩm • 
+                        Doanh thu: <strong class="text-success">@((decimal)p.TotalRevenue).ToString("N0")₫</strong>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="text-center text-muted py-4">Chưa có dữ liệu</div>
+    }
+</div>
+
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Revenue Chart
+    const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+    new Chart(revenueCtx, {
+        type: 'line',
+        data: {
+            labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Enumerable.Range(0, 12).Select(i => DateTime.Now.AddMonths(-11 + i).ToString("MM/yyyy")).ToList())),
+            datasets: [{
+                label: 'Doanh thu (₫)',
+                data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(monthlyRevenue)),
+                borderColor: '#667eea',
+                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { callback: function(value) { return value.toLocaleString() + '₫'; } }
+                }
+            }
+        }
+    });
+
+    // Orders Chart
+    const ordersCtx = document.getElementById('ordersChart').getContext('2d');
+    new Chart(ordersCtx, {
+        type: 'bar',
+        data: {
+            labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Enumerable.Range(0, 7).Select(i => DateTime.Now.AddDays(-6 + i).ToString("dd/MM")).ToList())),
+            datasets: [{
+                label: 'Đơn hàng',
+                data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(dailyOrders)),
+                backgroundColor: '#10b981'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
+    });
+</script>
+}

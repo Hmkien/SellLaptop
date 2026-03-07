@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using WebsiteSellLaptop.Data;
 using WebsiteSellLaptop.Models.Entities;
+using WebsiteSellLaptop.Models.Settings;
 using WebsiteSellLaptop.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -43,6 +44,19 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 // Register services
 builder.Services.AddScoped<IFileUploadService, FileUploadService>();
+builder.Services.AddScoped<IVnPayService, VnPayService>();
+
+// Configure VnPay settings
+builder.Services.Configure<VnPaySettings>(builder.Configuration.GetSection("VnPaySettings"));
+
+// Session
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
 
 builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation();
 
@@ -101,6 +115,7 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseRouting();
 
+app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
 

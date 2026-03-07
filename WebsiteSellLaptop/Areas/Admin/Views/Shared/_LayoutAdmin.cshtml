@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Admin LapTopHub</title>
+    <title>@ViewData["Title"] - Admin PQAtech.vn</title>
     <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -11,16 +11,16 @@
     <style>
         :root {
             --sidebar-w: 260px;
-            --brand: #2563eb;
-            --brand-dark: #1d4ed8;
+            --brand: #0ea5e9;
+            --brand-dark: #0284c7;
             --dark: #0f172a;
-            --sidebar-bg: #0f172a;
-            --sidebar-hover: #1e293b;
-            --sidebar-active: #2563eb;
-            --bg: #f1f3f7;
+            --sidebar-bg: linear-gradient(180deg,#0f172a 0%,#1e293b 100%);
+            --sidebar-hover: rgba(14,165,233,.1);
+            --sidebar-active: linear-gradient(135deg,#0ea5e9,#3b82f6);
+            --bg: #f8fafc;
             --card: #ffffff;
-            --muted: #6b7280;
-            --border: #e5e7eb;
+            --muted: #64748b;
+            --border: #e2e8f0;
         }
         * { box-sizing: border-box; }
         body { font-family: 'Manrope', system-ui, sans-serif; margin: 0; background: var(--bg); color: var(--dark); line-height: 1.6; }
@@ -31,7 +31,7 @@
             position: fixed; top: 0; left: 0; bottom: 0;
             width: var(--sidebar-w); background: var(--sidebar-bg);
             display: flex; flex-direction: column; z-index: 1040;
-            transition: transform .25s;
+            transition: transform .25s; box-shadow: 2px 0 20px rgba(14,165,233,.08);
         }
         .sidebar-brand {
             padding: 24px 20px 20px;
@@ -45,7 +45,20 @@
         }
         .sidebar-brand span { color: #fff; font-size: 18px; font-weight: 700; }
 
-        .sidebar-menu { flex: 1; padding: 16px 12px; overflow-y: auto; }
+        .sidebar-menu { flex: 1; padding: 16px 12px; overflow-y: auto; direction: rtl; }
+        .sidebar-menu > * { direction: ltr; }
+
+        /* Custom scrollbar - thin & on left side */
+        .sidebar-menu::-webkit-scrollbar { width: 4px; }
+        .sidebar-menu::-webkit-scrollbar-track { background: transparent; }
+        .sidebar-menu::-webkit-scrollbar-thumb { 
+            background: rgba(255,255,255,.15); 
+            border-radius: 10px;
+        }
+        .sidebar-menu::-webkit-scrollbar-thumb:hover { 
+            background: rgba(255,255,255,.25); 
+        }
+
         .sidebar-menu .menu-label {
             font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
             color: rgba(255,255,255,.35); padding: 12px 12px 6px; font-weight: 700;
@@ -53,10 +66,10 @@
         .sidebar-menu .menu-item {
             display: flex; align-items: center; gap: 10px;
             padding: 10px 14px; border-radius: 10px; color: rgba(255,255,255,.65);
-            font-size: 14px; font-weight: 500; margin-bottom: 2px; transition: all .15s;
+            font-size: 14px; font-weight: 500; margin-bottom: 2px; transition: all .2s;
         }
-        .sidebar-menu .menu-item:hover { background: var(--sidebar-hover); color: #fff; }
-        .sidebar-menu .menu-item.active { background: var(--sidebar-active); color: #fff; font-weight: 600; }
+        .sidebar-menu .menu-item:hover { background: var(--sidebar-hover); color: #fff; transform: translateX(4px); }
+        .sidebar-menu .menu-item.active { background: var(--sidebar-active); color: #fff; font-weight: 600; box-shadow: 0 4px 12px rgba(14,165,233,.25); }
         .sidebar-menu .menu-item i { width: 20px; text-align: center; font-size: 16px; }
 
         .sidebar-footer {
@@ -64,7 +77,8 @@
             display: flex; align-items: center; gap: 10px; color: rgba(255,255,255,.6); font-size: 13px;
         }
         .sidebar-footer .avatar-sm {
-            width: 34px; height: 34px; border-radius: 50%; background: var(--brand);
+            width: 34px; height: 34px; border-radius: 50%; 
+            background: linear-gradient(135deg,#0ea5e9,#3b82f6);
             display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 14px;
         }
 
@@ -260,13 +274,16 @@
     <!-- Sidebar -->
     <aside class="admin-sidebar" id="sidebar">
         <div class="sidebar-brand">
-            <div class="logo-icon">L</div>
-            <span>LapTopHub</span>
+            <div class="logo-icon" style="background:linear-gradient(135deg,#0ea5e9,#3b82f6)">P</div>
+            <span>PQAtech.vn</span>
         </div>
         <nav class="sidebar-menu">
             <div class="menu-label">Tổng quan</div>
             <a href="@Url.Action("Index", "Dashboard", new { area = "Admin" })" class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Dashboard" ? "active" : "")">
                 <i class="bi bi-grid-1x2-fill"></i> Dashboard
+            </a>
+            <a href="@Url.Action("Index", "Report", new { area = "Admin" })" class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Report" ? "active" : "")">
+                <i class="bi bi-graph-up-arrow"></i> Báo cáo
             </a>
 
             <div class="menu-label">Sản phẩm</div>
@@ -294,6 +311,9 @@
             </a>
             <a href="@Url.Action("Index", "Banner", new { area = "Admin" })" class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Banner" ? "active" : "")">
                 <i class="bi bi-images"></i> Banner
+            </a>
+            <a href="@Url.Action("Index", "Contact", new { area = "Admin" })" class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Contact" ? "active" : "")">
+                <i class="bi bi-envelope"></i> Liên hệ
             </a>
 
             <div class="menu-label">Hệ thống</div>

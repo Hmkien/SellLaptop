@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel;
+using System.Reflection;
 using WebsiteSellLaptop.Data;
 using WebsiteSellLaptop.Models.Entities;
 using WebsiteSellLaptop.Models.Enums;
@@ -24,7 +26,7 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
         #region Index - Danh sách
         public async Task<IActionResult> Index(int page = 1, string? keyword = null, int pageSize = 10)
         {
-            var query = _context.Categories.Where(x => x.Status != StatusEntity.Deleted).AsQueryable();
+            IQueryable<Category> query = _context.Categories.AsQueryable();
 
             if (!string.IsNullOrEmpty(keyword))
             {
@@ -32,11 +34,11 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
                 query = query.Where(x => x.Name.ToLower().Contains(keyword) || x.Code.ToLower().Contains(keyword));
             }
 
-            var totalItems = await query.CountAsync();
-            var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+            int totalItems = await query.CountAsync();
+            int totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
             page = Math.Max(1, Math.Min(page, Math.Max(1, totalPages)));
 
-            var data = await query
+            List<Category> data = await query
                 .OrderByDescending(x => x.Created)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
@@ -56,9 +58,11 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
         [HttpGet]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var item = await _context.Categories.FindAsync(id);
+            Category? item = await _context.Categories.FindAsync(id);
             if (item == null)
+            {
                 return Json(new { success = false, message = "Không tìm thấy dữ liệu" });
+            }
 
             return Json(new
             {
@@ -87,20 +91,26 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
         public async Task<IActionResult> Create([FromForm] Category model, IFormFile? imageFile)
         {
             if (string.IsNullOrWhiteSpace(model.Code))
+            {
                 return Json(new { success = false, message = "Mã danh mục không được để trống" });
+            }
 
             if (string.IsNullOrWhiteSpace(model.Name))
+            {
                 return Json(new { success = false, message = "Tên danh mục không được để trống" });
+            }
 
             // Chuẩn hóa Code
-            var normalizedCode = model.Code.Trim().ToUpper();
+            string normalizedCode = model.Code.Trim().ToUpper();
 
             // Kiểm tra trùng mã - dùng ToUpper để so sánh không phân biệt hoa thường
-            var codeExists = await _context.Categories
-                .AnyAsync(x => x.Code.ToUpper() == normalizedCode && x.Status != StatusEntity.Deleted);
+            bool codeExists = await _context.Categories
+                .AnyAsync(x => x.Code.ToUpper() == normalizedCode);
 
             if (codeExists)
+            {
                 return Json(new { success = false, message = $"Mã danh mục '{normalizedCode}' đã tồn tại trong hệ thống" });
+            }
 
             // Upload image if provided
             string? imageUrl = null;
@@ -116,7 +126,7 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
                 }
             }
 
-            var entity = new Category
+            Category entity = new()
             {
                 Code = normalizedCode, // Lưu Code đã chuẩn hóa
                 Name = model.Name.Trim(),
@@ -124,14 +134,13 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
                 Slug = model.Name.Trim().ToLower().Replace(" ", "-"),
                 ImageUrl = imageUrl ?? model.ImageUrl?.Trim(),
                 SortOrder = model.SortOrder,
-                Status = StatusEntity.Pending,
                 CreatedBy = User.Identity?.Name
             };
 
             try
             {
-                _context.Categories.Add(entity);
-                await _context.SaveChangesAsync();
+                _ = _context.Categories.Add(entity);
+                _ = await _context.SaveChangesAsync();
                 return Json(new { success = true, message = "Thêm mới danh mục thành công" });
             }
             catch (DbUpdateException ex)
@@ -141,14 +150,18 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
                 {
                     // Xóa ảnh đã upload nếu có lỗi
                     if (!string.IsNullOrEmpty(imageUrl))
-                        _fileUpload.DeleteImage(imageUrl);
+                    {
+                        _ = _fileUpload.DeleteImage(imageUrl);
+                    }
 
                     return Json(new { success = false, message = $"Mã danh mục '{normalizedCode}' đã tồn tại. Vui lòng chọn mã khác." });
                 }
 
                 // Xóa ảnh đã upload nếu có lỗi khác
                 if (!string.IsNullOrEmpty(imageUrl))
-                    _fileUpload.DeleteImage(imageUrl);
+                {
+                    _ = _fileUpload.DeleteImage(imageUrl);
+                }
 
                 return Json(new { success = false, message = $"Lỗi lưu dữ liệu: {ex.InnerException?.Message ?? ex.Message}" });
             }
@@ -160,30 +173,39 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit([FromForm] Category model, IFormFile? imageFile)
         {
-            var item = await _context.Categories.FindAsync(model.Id);
+            Category? item = await _context.Categories.FindAsync(model.Id);
             if (item == null)
+            {
                 return Json(new { success = false, message = "Không tìm thấy dữ liệu" });
+            }
 
             if (item.Status == StatusEntity.Approved)
+            {
                 return Json(new { success = false, message = "Không thể sửa bản ghi đã duyệt" });
+            }
 
             if (string.IsNullOrWhiteSpace(model.Code))
+            {
                 return Json(new { success = false, message = "Mã danh mục không được để trống" });
+            }
 
             if (string.IsNullOrWhiteSpace(model.Name))
+            {
                 return Json(new { success = false, message = "Tên danh mục không được để trống" });
+            }
 
             // Chuẩn hóa Code
-            var normalizedCode = model.Code.Trim().ToUpper();
+            string normalizedCode = model.Code.Trim().ToUpper();
 
             // Kiểm tra trùng mã (loại trừ bản ghi hiện tại)
-            var codeExists = await _context.Categories
+            bool codeExists = await _context.Categories
                 .AnyAsync(x => x.Code.ToUpper() == normalizedCode
-                            && x.Id != model.Id
-                            && x.Status != StatusEntity.Deleted);
+                            && x.Id != model.Id);
 
             if (codeExists)
+            {
                 return Json(new { success = false, message = $"Mã danh mục '{normalizedCode}' đã tồn tại trong hệ thống" });
+            }
 
             string? newImageUrl = null;
 
@@ -196,7 +218,9 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
 
                     // Delete old image only after successful upload
                     if (!string.IsNullOrEmpty(item.ImageUrl))
-                        _fileUpload.DeleteImage(item.ImageUrl);
+                    {
+                        _ = _fileUpload.DeleteImage(item.ImageUrl);
+                    }
 
                     item.ImageUrl = newImageUrl;
                 }
@@ -213,7 +237,9 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
 
             // Chỉ update ImageUrl nếu không upload file mới
             if (imageFile == null && !string.IsNullOrEmpty(model.ImageUrl))
+            {
                 item.ImageUrl = model.ImageUrl.Trim();
+            }
 
             item.SortOrder = model.SortOrder;
             item.LastModified = DateTime.Now;
@@ -221,17 +247,21 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
 
             try
             {
-                await _context.SaveChangesAsync();
+                _ = await _context.SaveChangesAsync();
                 return Json(new { success = true, message = "Cập nhật danh mục thành công" });
             }
             catch (DbUpdateException ex)
             {
                 // Rollback: xóa ảnh mới upload nếu có lỗi
                 if (!string.IsNullOrEmpty(newImageUrl))
-                    _fileUpload.DeleteImage(newImageUrl);
+                {
+                    _ = _fileUpload.DeleteImage(newImageUrl);
+                }
 
                 if (ex.InnerException?.Message.Contains("duplicate key") == true)
+                {
                     return Json(new { success = false, message = $"Mã danh mục '{normalizedCode}' đã tồn tại. Vui lòng chọn mã khác." });
+                }
 
                 return Json(new { success = false, message = $"Lỗi lưu dữ liệu: {ex.InnerException?.Message ?? ex.Message}" });
             }
@@ -243,14 +273,16 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Approve(Guid id)
         {
-            var item = await _context.Categories.FindAsync(id);
+            Category? item = await _context.Categories.FindAsync(id);
             if (item == null)
+            {
                 return Json(new { success = false, message = "Không tìm thấy dữ liệu" });
+            }
 
             item.Status = StatusEntity.Approved;
             item.LastModified = DateTime.Now;
             item.ModifiedBy = User.Identity?.Name;
-            await _context.SaveChangesAsync();
+            _ = await _context.SaveChangesAsync();
 
             return Json(new { success = true, message = "Duyệt thành công" });
         }
@@ -261,14 +293,16 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Reject(Guid id)
         {
-            var item = await _context.Categories.FindAsync(id);
+            Category? item = await _context.Categories.FindAsync(id);
             if (item == null)
+            {
                 return Json(new { success = false, message = "Không tìm thấy dữ liệu" });
+            }
 
             item.Status = StatusEntity.Rejected;
             item.LastModified = DateTime.Now;
             item.ModifiedBy = User.Identity?.Name;
-            await _context.SaveChangesAsync();
+            _ = await _context.SaveChangesAsync();
 
             return Json(new { success = true, message = "Hủy duyệt thành công" });
         }
@@ -279,22 +313,25 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var item = await _context.Categories.FindAsync(id);
+            Category? item = await _context.Categories.FindAsync(id);
             if (item == null)
+            {
                 return Json(new { success = false, message = "Không tìm thấy danh mục" });
+            }
 
             // Kiểm tra xem có sản phẩm nào thuộc danh mục này không
-            var hasProducts = await _context.Products
-                .AnyAsync(p => p.CategoryId == id && p.Status != StatusEntity.Deleted);
+            bool hasProducts = await _context.Products
+                .AnyAsync(p => p.CategoryId == id);
 
             if (hasProducts)
             {
-                var productCount = await _context.Products
-                    .CountAsync(p => p.CategoryId == id && p.Status != StatusEntity.Deleted);
+                int productCount = await _context.Products
+                    .CountAsync(p => p.CategoryId == id);
 
-                return Json(new { 
-                    success = false, 
-                    message = $"Không thể xóa danh mục '{item.Name}' vì đang có {productCount} sản phẩm. Vui lòng xóa hoặc chuyển sản phẩm sang danh mục khác trước." 
+                return Json(new
+                {
+                    success = false,
+                    message = $"Không thể xóa danh mục '{item.Name}' vì đang có {productCount} sản phẩm. Vui lòng xóa hoặc chuyển sản phẩm sang danh mục khác trước."
                 });
             }
 
@@ -303,20 +340,21 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
                 // Xóa ảnh nếu có
                 if (!string.IsNullOrEmpty(item.ImageUrl))
                 {
-                    _fileUpload.DeleteImage(item.ImageUrl);
+                    _ = _fileUpload.DeleteImage(item.ImageUrl);
                 }
 
                 // Xóa vĩnh viễn khỏi database
-                _context.Categories.Remove(item);
-                await _context.SaveChangesAsync();
+                _ = _context.Categories.Remove(item);
+                _ = await _context.SaveChangesAsync();
 
                 return Json(new { success = true, message = $"Đã xóa danh mục '{item.Name}' vĩnh viễn khỏi hệ thống" });
             }
             catch (Exception ex)
             {
-                return Json(new { 
-                    success = false, 
-                    message = $"Lỗi khi xóa: {ex.InnerException?.Message ?? ex.Message}" 
+                return Json(new
+                {
+                    success = false,
+                    message = $"Lỗi khi xóa: {ex.InnerException?.Message ?? ex.Message}"
                 });
             }
         }
@@ -325,8 +363,8 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
         #region Helper - Lấy Description từ enum
         private static string GetEnumDescription(Enum value)
         {
-            var field = value.GetType().GetField(value.ToString());
-            var attr = field?.GetCustomAttributes(typeof(System.ComponentModel.DescriptionAttribute), false)
+            FieldInfo? field = value.GetType().GetField(value.ToString());
+            DescriptionAttribute? attr = field?.GetCustomAttributes(typeof(System.ComponentModel.DescriptionAttribute), false)
                             .FirstOrDefault() as System.ComponentModel.DescriptionAttribute;
             return attr?.Description ?? value.ToString();
         }

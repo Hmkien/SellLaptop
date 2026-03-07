@@ -1,4 +1,5 @@
 @model X.PagedList.IPagedList<Blog>
+@using WebsiteSellLaptop.Models.Enums
 
 @{
     ViewData["Title"] = "Quản lý bài viết";
@@ -9,37 +10,37 @@
     <a asp-action="Create" class="btn btn-brand"><i class="bi bi-plus-lg me-1"></i>Thêm mới</a>
 </div>
 
+<!-- Search Form -->
 <div class="admin-card mb-4">
-    <form method="get" class="row g-3 align-items-end">
-        <div class="col-md-8">
+    <form method="get" class="row g-3 align-items-end p-3">
+        <div class="col-md-11">
             <label class="form-label fw-semibold">Tìm kiếm</label>
             <input type="text" name="keyword" value="@ViewBag.Keyword" class="form-control" placeholder="Nhập tiêu đề bài viết...">
         </div>
-        <div class="col-md-4">
-            <button type="submit" class="btn btn-brand w-100"><i class="bi bi-search me-1"></i>Tìm kiếm</button>
+        <div class="col-md-1 text-center">
+            <i class="bi bi-search" style="font-size:24px;color:var(--brand);cursor:pointer" onclick="this.closest('form').submit()" title="Tìm kiếm"></i>
         </div>
     </form>
 </div>
 
+<!-- Data Table -->
 <div class="admin-card p-0">
     <div class="table-responsive">
         <table class="admin-table">
             <thead>
                 <tr>
                     <th width="60">STT</th>
-                    <th width="60">Ảnh</th>
+                    <th width="100">Mã</th>
                     <th>Tiêu đề</th>
-                    <th>Chuyên mục</th>
-                    <th width="80">Lượt xem</th>
-                    <th width="130">Trạng thái</th>
-                    <th width="120">Ngày tạo</th>
-                    <th width="180">Thao tác</th>
+                    <th width="80">Ảnh</th>
+                    <th width="150">Trạng thái</th>
+                    <th width="150">Thao tác</th>
                 </tr>
             </thead>
             <tbody>
                 @if (Model.Count == 0)
                 {
-                    <tr><td colspan="8" class="text-center text-muted py-4">Không có dữ liệu</td></tr>
+                    <tr><td colspan="6" class="text-center text-muted py-4">Không có dữ liệu</td></tr>
                 }
                 @for (int i = 0; i < Model.Count; i++)
                 {
@@ -48,50 +49,67 @@
                     <tr>
                         <td class="text-center">@stt</td>
                         <td>
-                            @if (!string.IsNullOrEmpty(item.ThumbnailUrl))
+                            <a asp-action="Detail" asp-route-id="@item.Id" class="text-primary fw-semibold">@item.Code</a>
+                        </td>
+                        <td>
+                            <a asp-action="Detail" asp-route-id="@item.Id" class="text-primary fw-semibold">@item.Title</a>
+                            @if (!string.IsNullOrEmpty(item.Summary))
                             {
-                                <img src="@item.ThumbnailUrl" alt="" style="width: 44px; height: 44px; object-fit: cover; border-radius: 8px;">
+                                <div class="text-muted small mt-1" style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">@item.Summary</div>
+                            }
+                            @if (!string.IsNullOrEmpty(item.Category))
+                            {
+                                <div class="mt-1"><span class="badge bg-light text-secondary border small">@item.Category</span></div>
                             }
                         </td>
                         <td>
-                            <a asp-action="Detail" asp-route-id="@item.Id" class="record-title">@item.Title</a>
-                            @if (!string.IsNullOrEmpty(item.Summary))
+                            @if (!string.IsNullOrEmpty(item.ThumbnailUrl))
                             {
-                                <div class="text-muted small mt-1" style="max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">@item.Summary</div>
+                                <img src="@item.ThumbnailUrl" alt="" style="width:50px;height:50px;object-fit:cover;border-radius:8px;border:1px solid #e5e7eb" />
+                            }
+                            else
+                            {
+                                <div style="width:50px;height:50px;background:#f1f3f7;border-radius:8px;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb">
+                                    <i class="bi bi-image text-muted"></i>
+                                </div>
                             }
                         </td>
-                        <td><span class="text-muted">@(item.Category ?? "—")</span></td>
-                        <td class="text-center">@item.ViewCount</td>
                         <td>
                             @switch (item.Status)
                             {
-                                case StatusEntity.Approved: <span class="badge-status approved"><i class="bi bi-check-circle me-1"></i>Đã duyệt</span> break;
-                                case StatusEntity.Pending: <span class="badge-status pending"><i class="bi bi-clock me-1"></i>Chờ duyệt</span> break;
-                                case StatusEntity.Rejected: <span class="badge-status rejected"><i class="bi bi-x-circle me-1"></i>Hủy duyệt</span> break;
-                                case StatusEntity.Draft: <span class="badge-status draft"><i class="bi bi-pencil me-1"></i>Nháp</span> break;
+                                case StatusEntity.Approved:
+                                    <span style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:20px;font-size:13px;font-weight:600;background:linear-gradient(135deg,#10b981 0%,#059669 100%);color:white;box-shadow:0 2px 8px rgba(16,185,129,0.3)">
+                                        <i class="bi bi-check-circle-fill"></i>Đã duyệt
+                                    </span>
+                                    break;
+                                case StatusEntity.Pending:
+                                    <span style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:20px;font-size:13px;font-weight:600;background:linear-gradient(135deg,#f59e0b 0%,#d97706 100%);color:white;box-shadow:0 2px 8px rgba(245,158,11,0.3)">
+                                        <i class="bi bi-clock-fill"></i>Chờ duyệt
+                                    </span>
+                                    break;
+                                case StatusEntity.Rejected:
+                                    <span style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:20px;font-size:13px;font-weight:600;background:linear-gradient(135deg,#ef4444 0%,#dc2626 100%);color:white;box-shadow:0 2px 8px rgba(239,68,68,0.3)">
+                                        <i class="bi bi-x-circle-fill"></i>Hủy duyệt
+                                    </span>
+                                    break;
+                                case StatusEntity.Draft:
+                                    <span style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:20px;font-size:13px;font-weight:600;background:linear-gradient(135deg,#6b7280 0%,#4b5563 100%);color:white;box-shadow:0 2px 8px rgba(107,114,128,0.3)">
+                                        <i class="bi bi-pencil-fill"></i>Nháp
+                                    </span>
+                                    break;
                             }
                         </td>
-                        <td>@item.Created.ToString("dd/MM/yyyy")</td>
                         <td>
                             <div class="d-flex gap-2 align-items-center">
-                                @if (item.Status != StatusEntity.Approved)
+                                @if (item.Status == StatusEntity.Approved)
                                 {
-                                    <form asp-action="Approve" asp-route-id="@item.Id" method="post" class="d-inline">
-                                        <button type="submit" class="action-icon approve" title="Duyệt"><i class="bi bi-check-circle-fill"></i></button>
-                                    </form>
+                                    <i class="bi bi-x-circle-fill" style="font-size:22px;color:#f59e42;cursor:pointer" title="Hủy duyệt" onclick="doReject('@item.Id')"></i>
                                 }
-                                @if (item.Status != StatusEntity.Rejected)
+                                else
                                 {
-                                    <form asp-action="Reject" asp-route-id="@item.Id" method="post" class="d-inline">
-                                        <button type="submit" class="action-icon reject" title="Hủy duyệt"><i class="bi bi-x-circle-fill"></i></button>
-                                    </form>
-                                }
-                                @if (item.Status == StatusEntity.Rejected)
-                                {
-                                    <a asp-action="Edit" asp-route-id="@item.Id" class="action-icon edit" title="Sửa"><i class="bi bi-pencil-square"></i></a>
-                                    <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa?')">
-                                        <button type="submit" class="action-icon delete" title="Xóa"><i class="bi bi-trash3-fill"></i></button>
-                                    </form>
+                                    <i class="bi bi-check-circle-fill" style="font-size:22px;color:#22c55e;cursor:pointer" title="Duyệt" onclick="doApprove('@item.Id')"></i>
+                                    <a asp-action="Edit" asp-route-id="@item.Id"><i class="bi bi-pencil-square" style="font-size:22px;color:#2563eb" title="Sửa"></i></a>
+                                    <i class="bi bi-trash3-fill" style="font-size:22px;color:#ef4444;cursor:pointer" title="Xóa" onclick="confirmDelete('@item.Id', '@Html.Raw(item.Title.Replace("'", "\\'"))')"></i>
                                 }
                             </div>
                         </td>
@@ -100,6 +118,7 @@
             </tbody>
         </table>
     </div>
+
     @if (Model.PageCount > 1)
     {
         <div class="admin-pagination">
@@ -113,3 +132,98 @@
         </div>
     }
 </div>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-exclamation-triangle text-danger me-2"></i>Xác nhận xóa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger mb-0">
+                    <i class="bi bi-exclamation-circle me-2"></i>
+                    Bạn có chắc chắn muốn xóa bài viết <strong id="deleteItemName"></strong>?
+                </div>
+            </div>
+            <div class="modal-footer">
+                <input type="hidden" id="deleteItemId">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-lg"></i></button>
+                <button type="button" class="btn btn-danger" onclick="doDelete()"><i class="bi bi-trash3-fill"></i></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index:9999">
+    <div id="toast" class="toast align-items-center border-0" role="alert">
+        <div class="d-flex">
+            <div class="toast-body d-flex align-items-center gap-2">
+                <i class="bi" id="toastIcon" style="font-size:20px"></i>
+                <span id="toastMessage"></span>
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+
+@Html.AntiForgeryToken()
+
+@section Scripts {
+<script>
+    const baseUrl = '@Url.Action("Index", "Blog", new { area = "Admin" })'.replace('/Index', '');
+    const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+    function showToast(message, type = 'success') {
+        const toast = document.getElementById('toast');
+        const icon = document.getElementById('toastIcon');
+        const msg = document.getElementById('toastMessage');
+        toast.classList.remove('bg-success', 'bg-danger', 'bg-warning', 'text-white', 'text-dark');
+        icon.className = 'bi';
+        if (type === 'success') { toast.classList.add('bg-success', 'text-white'); icon.classList.add('bi-check-circle-fill'); }
+        else { toast.classList.add('bg-danger', 'text-white'); icon.classList.add('bi-x-circle-fill'); }
+        msg.textContent = message;
+        new bootstrap.Toast(toast).show();
+    }
+
+    async function doApprove(id) {
+        const fd = new FormData();
+        fd.append('id', id);
+        fd.append('__RequestVerificationToken', token);
+        const r = await fetch(`${baseUrl}/Approve`, { method: 'POST', body: fd });
+        const d = await r.json();
+        if (d.success) { showToast(d.message); setTimeout(() => location.reload(), 800); }
+        else showToast('Có lỗi xảy ra', 'error');
+    }
+
+    async function doReject(id) {
+        const fd = new FormData();
+        fd.append('id', id);
+        fd.append('__RequestVerificationToken', token);
+        const r = await fetch(`${baseUrl}/Reject`, { method: 'POST', body: fd });
+        const d = await r.json();
+        if (d.success) { showToast(d.message); setTimeout(() => location.reload(), 800); }
+        else showToast('Có lỗi xảy ra', 'error');
+    }
+
+    function confirmDelete(id, name) {
+        document.getElementById('deleteItemId').value = id;
+        document.getElementById('deleteItemName').textContent = name;
+        new bootstrap.Modal(document.getElementById('deleteModal')).show();
+    }
+
+    async function doDelete() {
+        const id = document.getElementById('deleteItemId').value;
+        const fd = new FormData();
+        fd.append('id', id);
+        fd.append('__RequestVerificationToken', token);
+        const r = await fetch(`${baseUrl}/Delete`, { method: 'POST', body: fd });
+        const d = await r.json();
+        bootstrap.Modal.getInstance(document.getElementById('deleteModal'))?.hide();
+        if (d.success) { showToast(d.message); setTimeout(() => location.reload(), 800); }
+        else showToast('Có lỗi xảy ra', 'error');
+    }
+</script>
+}
