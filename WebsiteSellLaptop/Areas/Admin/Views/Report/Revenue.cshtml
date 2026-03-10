@@ -1,0 +1,309 @@
+@using WebsiteSellLaptop.Models.Enums
+@using WebsiteSellLaptop.Models.Entities
+
+@{
+    ViewData["Title"] = "Báo cáo doanh thu";
+    DateTime fromDate = ViewBag.FromDate;
+    DateTime toDate = ViewBag.ToDate;
+    string groupBy = ViewBag.GroupBy ?? "day";
+
+    var totalRevenue = (decimal)(ViewBag.TotalRevenue ?? 0m);
+    var totalOrders = (int)(ViewBag.TotalOrders ?? 0);
+    var avgOrderValue = (decimal)(ViewBag.AvgOrderValue ?? 0m);
+    var maxOrder = (decimal)(ViewBag.MaxOrder ?? 0m);
+
+    var labels = ViewBag.Labels as List<string> ?? new List<string>();
+    var values = ViewBag.Values as List<decimal> ?? new List<decimal>();
+    var orderCounts = ViewBag.OrderCounts as List<int> ?? new List<int>();
+    var revenueByPayment = ViewBag.RevenueByPayment as List<dynamic> ?? new List<dynamic>();
+    var revenueDetails = ViewBag.RevenueDetails as List<Order> ?? new List<Order>();
+}
+
+@section Styles {
+<style>
+    .report-stat{background:#fff;border-radius:16px;padding:24px;border:1px solid #e5e7eb;transition:all .2s}
+    .report-stat:hover{box-shadow:0 4px 20px rgba(0,0,0,.08);transform:translateY(-2px)}
+    .report-stat .icon{width:56px;height:56px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:16px}
+    .report-stat .icon.blue{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff}
+    .report-stat .icon.green{background:linear-gradient(135deg,#10b981 0%,#059669 100%);color:#fff}
+    .report-stat .icon.orange{background:linear-gradient(135deg,#4facfe 0%,#00f2fe 100%);color:#fff}
+    .report-stat .icon.purple{background:linear-gradient(135deg,#fa709a 0%,#fee140 100%);color:#fff}
+    .report-stat .label{color:#6b7280;font-size:14px;font-weight:500;margin-bottom:8px}
+    .report-stat .value{font-size:28px;font-weight:700;color:#111827;margin-bottom:4px}
+    .chart-card{background:#fff;border-radius:16px;border:1px solid #e5e7eb;padding:24px}
+    .chart-card h6{font-weight:700;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid #e5e7eb}
+    .date-filter{background:#fff;border-radius:16px;border:1px solid #e5e7eb;padding:20px;margin-bottom:24px}
+    .date-filter .btn-quick{border-radius:8px;font-size:13px;font-weight:600;padding:6px 16px;border:1px solid #e5e7eb;background:#f9fafb;color:#374151;transition:all .15s}
+    .date-filter .btn-quick:hover,.date-filter .btn-quick.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+    .report-nav{display:flex;gap:8px;margin-bottom:24px}
+    .report-nav a{padding:10px 20px;border-radius:10px;font-weight:600;font-size:14px;border:1px solid #e5e7eb;color:#374151;transition:all .15s}
+    .report-nav a:hover{border-color:var(--brand);color:var(--brand)}
+    .report-nav a.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+    .group-btn{border-radius:8px;font-size:13px;font-weight:600;padding:6px 16px;border:1px solid #e5e7eb;background:#f9fafb;color:#374151;transition:all .15s}
+    .group-btn:hover,.group-btn.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+    .payment-bar{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #f3f4f6}
+    .payment-bar:last-child{border-bottom:none}
+    .payment-bar .bar-fill{height:24px;border-radius:6px;min-width:4px;transition:width .3s}
+</style>
+}
+
+<!-- Navigation -->
+<div class="report-nav">
+    <a href="@Url.Action("Index", "Report", new { area = "Admin" })">
+        <i class="bi bi-grid-1x2 me-1"></i>Tổng quan
+    </a>
+    <a href="@Url.Action("Revenue", "Report", new { area = "Admin", fromDate = fromDate.ToString("yyyy-MM-dd"), toDate = toDate.ToString("yyyy-MM-dd"), groupBy })" class="active">
+        <i class="bi bi-currency-dollar me-1"></i>Doanh thu
+    </a>
+    <a href="@Url.Action("Inventory", "Report", new { area = "Admin" })">
+        <i class="bi bi-box-seam me-1"></i>Tồn kho
+    </a>
+</div>
+
+<!-- Date Filter -->
+<div class="date-filter">
+    <form method="get" class="d-flex flex-wrap align-items-end gap-3">
+        <div>
+            <label class="form-label small fw-semibold mb-1">Từ ngày</label>
+            <input type="date" name="fromDate" class="form-control" value="@fromDate.ToString("yyyy-MM-dd")" />
+        </div>
+        <div>
+            <label class="form-label small fw-semibold mb-1">Đến ngày</label>
+            <input type="date" name="toDate" class="form-control" value="@toDate.ToString("yyyy-MM-dd")" />
+        </div>
+        <div>
+            <label class="form-label small fw-semibold mb-1">Nhóm theo</label>
+            <select name="groupBy" class="form-select">
+                <option value="day" selected="@(groupBy == "day")">Ngày</option>
+                <option value="week" selected="@(groupBy == "week")">Tuần</option>
+                <option value="month" selected="@(groupBy == "month")">Tháng</option>
+            </select>
+        </div>
+        <div>
+            <button type="submit" class="btn btn-brand px-4" style="height:38px">
+                <i class="bi bi-funnel me-1"></i>Lọc
+            </button>
+        </div>
+        <div class="d-flex gap-2 ms-auto">
+            <a href="@Url.Action("Revenue", "Report", new { area = "Admin", fromDate = DateTime.Now.Date.AddDays(-6).ToString("yyyy-MM-dd"), toDate = DateTime.Now.Date.ToString("yyyy-MM-dd"), groupBy = "day" })" class="btn-quick">7 ngày</a>
+            <a href="@Url.Action("Revenue", "Report", new { area = "Admin", fromDate = DateTime.Now.Date.AddDays(-29).ToString("yyyy-MM-dd"), toDate = DateTime.Now.Date.ToString("yyyy-MM-dd"), groupBy = "day" })" class="btn-quick">30 ngày</a>
+            <a href="@Url.Action("Revenue", "Report", new { area = "Admin", fromDate = new DateTime(DateTime.Now.Year, 1, 1).ToString("yyyy-MM-dd"), toDate = DateTime.Now.Date.ToString("yyyy-MM-dd"), groupBy = "month" })" class="btn-quick">Năm nay</a>
+            <a href="@Url.Action("Revenue", "Report", new { area = "Admin", fromDate = DateTime.Now.Date.AddYears(-1).ToString("yyyy-MM-dd"), toDate = DateTime.Now.Date.ToString("yyyy-MM-dd"), groupBy = "month" })" class="btn-quick">12 tháng</a>
+        </div>
+    </form>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0">
+        <i class="bi bi-currency-dollar me-2"></i>Báo cáo doanh thu
+        <small class="text-muted fs-6 fw-normal">(@fromDate.ToString("dd/MM/yyyy") - @toDate.ToString("dd/MM/yyyy"))</small>
+    </h4>
+    <div class="d-flex gap-2">
+        <a href="@Url.Action("ExportRevenue", "Report", new { area = "Admin", fromDate = fromDate.ToString("yyyy-MM-dd"), toDate = toDate.ToString("yyyy-MM-dd"), groupBy })"
+           class="btn btn-success px-4">
+            <i class="bi bi-file-earmark-excel me-1"></i>Xuất Excel
+        </a>
+        <button class="btn btn-outline-secondary" onclick="window.print()">
+            <i class="bi bi-printer me-1"></i>In báo cáo
+        </button>
+    </div>
+</div>
+
+<!-- Stats -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="report-stat">
+            <div class="icon orange"><i class="bi bi-cash-stack"></i></div>
+            <div class="label">Tổng doanh thu</div>
+            <div class="value">@totalRevenue.ToString("N0")₫</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="report-stat">
+            <div class="icon blue"><i class="bi bi-bag-check"></i></div>
+            <div class="label">Đơn hoàn thành</div>
+            <div class="value">@totalOrders.ToString("N0")</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="report-stat">
+            <div class="icon green"><i class="bi bi-calculator"></i></div>
+            <div class="label">Giá trị TB/đơn</div>
+            <div class="value">@avgOrderValue.ToString("N0")₫</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="report-stat">
+            <div class="icon purple"><i class="bi bi-arrow-up-circle"></i></div>
+            <div class="label">Đơn cao nhất</div>
+            <div class="value">@maxOrder.ToString("N0")₫</div>
+        </div>
+    </div>
+</div>
+
+<!-- Revenue Chart -->
+<div class="chart-card mb-4">
+    <h6><i class="bi bi-graph-up-arrow me-2"></i>Biểu đồ doanh thu</h6>
+    <div style="height: 350px;">
+        <canvas id="revenueChart"></canvas>
+    </div>
+</div>
+
+<!-- Revenue by Payment & Order count chart -->
+<div class="row g-4 mb-4">
+    <div class="col-md-5">
+        <div class="chart-card">
+            <h6><i class="bi bi-credit-card me-2"></i>Doanh thu theo phương thức thanh toán</h6>
+            @if (revenueByPayment.Any())
+            {
+                var maxPayment = (decimal)revenueByPayment.Max(p => (decimal)p.Total);
+                @foreach (var p in revenueByPayment)
+                {
+                    var percent = maxPayment > 0 ? (decimal)p.Total / maxPayment * 100 : 0;
+                    string methodName = p.Method switch
+                    {
+                        "COD" => "Thanh toán khi nhận hàng",
+                        "BankTransfer" => "Chuyển khoản ngân hàng",
+                        "CreditCard" => "Thẻ tín dụng",
+                        "EWallet" => "Ví điện tử",
+                        _ => p.Method
+                    };
+                    <div class="payment-bar">
+                        <div style="flex:1">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="fw-semibold" style="font-size:13px">@methodName</span>
+                                <span class="text-muted" style="font-size:13px">@((int)p.Count) đơn</span>
+                            </div>
+                            <div style="background:#f3f4f6;border-radius:6px;height:24px;overflow:hidden">
+                                <div class="bar-fill" style="width:@percent%;background:linear-gradient(135deg,#667eea,#764ba2)"></div>
+                            </div>
+                            <div class="text-end mt-1" style="font-size:12px;color:#6b7280">@((decimal)p.Total).ToString("N0")₫</div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="text-center text-muted py-4">Chưa có dữ liệu</div>
+            }
+        </div>
+    </div>
+    <div class="col-md-7">
+        <div class="chart-card">
+            <h6><i class="bi bi-bar-chart me-2"></i>Số đơn hàng hoàn thành</h6>
+            <div style="height: 280px;">
+                <canvas id="ordersChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Detail Table -->
+<div class="admin-card">
+    <div class="admin-card-header">
+        <h5><i class="bi bi-table me-2"></i>Chi tiết đơn hàng hoàn thành (@revenueDetails.Count)</h5>
+    </div>
+    <div class="admin-card-body">
+        <div class="table-responsive">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Mã đơn</th>
+                        <th>Khách hàng</th>
+                        <th>Ngày đặt</th>
+                        <th>Phương thức TT</th>
+                        <th class="text-end">Giảm giá</th>
+                        <th class="text-end">Tổng tiền</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var order in revenueDetails)
+                    {
+                        string paymentLabel = order.PaymentMethod switch
+                        {
+                            PaymentMethod.COD => "COD",
+                            PaymentMethod.BankTransfer => "Chuyển khoản",
+                            PaymentMethod.CreditCard => "Thẻ tín dụng",
+                            PaymentMethod.EWallet => "Ví điện tử",
+                            _ => order.PaymentMethod.ToString()
+                        };
+                        <tr>
+                            <td><span class="record-title">@order.OrderCode</span></td>
+                            <td>@order.FullName</td>
+                            <td>@order.Created.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@paymentLabel</td>
+                            <td class="text-end">@((order.DiscountAmount ?? 0).ToString("N0"))₫</td>
+                            <td class="text-end fw-bold text-success">@order.TotalAmount.ToString("N0")₫</td>
+                        </tr>
+                    }
+                    @if (!revenueDetails.Any())
+                    {
+                        <tr><td colspan="6" class="text-center text-muted py-4">Không có đơn hàng trong khoảng thời gian này</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+    new Chart(revenueCtx, {
+        type: 'line',
+        data: {
+            labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(labels)),
+            datasets: [{
+                label: 'Doanh thu (₫)',
+                data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(values)),
+                borderColor: '#667eea',
+                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                tension: 0.4,
+                fill: true,
+                pointBackgroundColor: '#667eea',
+                pointRadius: 4,
+                pointHoverRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) { return ctx.parsed.y.toLocaleString() + '₫'; }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { callback: function(value) { return value.toLocaleString() + '₫'; } }
+                }
+            }
+        }
+    });
+
+    const ordersCtx = document.getElementById('ordersChart').getContext('2d');
+    new Chart(ordersCtx, {
+        type: 'bar',
+        data: {
+            labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(labels)),
+            datasets: [{
+                label: 'Đơn hàng',
+                data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(orderCounts)),
+                backgroundColor: '#10b981',
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
+    });
+</script>
+}

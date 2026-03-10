@@ -1,0 +1,144 @@
+wwwroot\css\site.css
+wwwroot\favicon.ico
+wwwroot\js\site.js
+wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css
+wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css.map
+wwwroot\lib\bootstrap\dist\css\bootstrap-grid.min.css
+wwwroot\lib\bootstrap\dist\css\bootstrap-grid.min.css.map
+wwwroot\lib\bootstrap\dist\css\bootstrap-grid.rtl.css
+wwwroot\lib\bootstrap\dist\css\bootstrap-grid.rtl.css.map
+wwwroot\lib\bootstrap\dist\css\bootstrap-grid.rtl.min.css
+wwwroot\lib\bootstrap\dist\css\bootstrap-grid.rtl.min.css.map
+wwwroot\lib\bootstrap\dist\css\bootstrap-reboot.css
+wwwroot\lib\bootstrap\dist\css\bootstrap-reboot.css.map
+wwwroot\lib\bootstrap\dist\css\bootstrap-reboot.min.css
+wwwroot\lib\bootstrap\dist\css\bootstrap-reboot.min.css.map
+wwwroot\lib\bootstrap\dist\css\bootstrap-reboot.rtl.css
+wwwroot\lib\bootstrap\dist\css\bootstrap-reboot.rtl.css.map
+wwwroot\lib\bootstrap\dist\css\bootstrap-reboot.rtl.min.css
+wwwroot\lib\bootstrap\dist\css\bootstrap-reboot.rtl.min.css.map
+wwwroot\lib\bootstrap\dist\css\bootstrap-utilities.css
+wwwroot\lib\bootstrap\dist\css\bootstrap-utilities.css.map
+wwwroot\lib\bootstrap\dist\css\bootstrap-utilities.min.css
+wwwroot\lib\bootstrap\dist\css\bootstrap-utilities.min.css.map
+wwwroot\lib\bootstrap\dist\css\bootstrap-utilities.rtl.css
+wwwroot\lib\bootstrap\dist\css\bootstrap-utilities.rtl.css.map
+wwwroot\lib\bootstrap\dist\css\bootstrap-utilities.rtl.min.css
+wwwroot\lib\bootstrap\dist\css\bootstrap-utilities.rtl.min.css.map
+wwwroot\lib\bootstrap\dist\css\bootstrap.css
+wwwroot\lib\bootstrap\dist\css\bootstrap.css.map
+wwwroot\lib\bootstrap\dist\css\bootstrap.min.css
+wwwroot\lib\bootstrap\dist\css\bootstrap.min.css.map
+wwwroot\lib\bootstrap\dist\css\bootstrap.rtl.css
+wwwroot\lib\bootstrap\dist\css\bootstrap.rtl.css.map
+wwwroot\lib\bootstrap\dist\css\bootstrap.rtl.min.css
+wwwroot\lib\bootstrap\dist\css\bootstrap.rtl.min.css.map
+wwwroot\lib\bootstrap\dist\js\bootstrap.bundle.js
+wwwroot\lib\bootstrap\dist\js\bootstrap.bundle.js.map
+wwwroot\lib\bootstrap\dist\js\bootstrap.bundle.min.js
+wwwroot\lib\bootstrap\dist\js\bootstrap.bundle.min.js.map
+wwwroot\lib\bootstrap\dist\js\bootstrap.esm.js
+wwwroot\lib\bootstrap\dist\js\bootstrap.esm.js.map
+wwwroot\lib\bootstrap\dist\js\bootstrap.esm.min.js
+wwwroot\lib\bootstrap\dist\js\bootstrap.esm.min.js.map
+wwwroot\lib\bootstrap\dist\js\bootstrap.js
+wwwroot\lib\bootstrap\dist\js\bootstrap.js.map
+wwwroot\lib\bootstrap\dist\js\bootstrap.min.js
+wwwroot\lib\bootstrap\dist\js\bootstrap.min.js.map
+wwwroot\lib\bootstrap\LICENSE
+wwwroot\lib\jquery-validation-unobtrusive\dist\jquery.validate.unobtrusive.js
+wwwroot\lib\jquery-validation-unobtrusive\dist\jquery.validate.unobtrusive.min.js
+wwwroot\lib\jquery-validation-unobtrusive\LICENSE.txt
+wwwroot\lib\jquery-validation\dist\additional-methods.js
+wwwroot\lib\jquery-validation\dist\additional-methods.min.js
+wwwroot\lib\jquery-validation\dist\jquery.validate.js
+wwwroot\lib\jquery-validation\dist\jquery.validate.min.js
+wwwroot\lib\jquery-validation\LICENSE.md
+wwwroot\lib\jquery\dist\jquery.js
+wwwroot\lib\jquery\dist\jquery.min.js
+wwwroot\lib\jquery\dist\jquery.min.map
+wwwroot\lib\jquery\dist\jquery.slim.js
+wwwroot\lib\jquery\dist\jquery.slim.min.js
+wwwroot\lib\jquery\dist\jquery.slim.min.map
+wwwroot\lib\jquery\LICENSE.txt
+wwwroot\uploads\banner.png
+wwwroot\uploads\banner2.jpg
+wwwroot\uploads\bannerLaptop.jpg
+wwwroot\uploads\banners\2dc62066-6e28-4534-8178-242311060c60.png
+wwwroot\uploads\banners\3090995c-b186-4719-a082-2b75d4fa2a00.jpg
+wwwroot\uploads\banners\5596e494-8a47-4f5e-a9df-16dedb0677c3.png
+wwwroot\uploads\banners\a762a80f-a0e4-4f62-8063-e9b49be55699.jpg
+wwwroot\uploads\banners\f3c174f9-120d-4125-8838-cc7ea1c5605f.jpg
+wwwroot\uploads\blogs\4bbdbdfa-54eb-4244-b3c2-b57722ae9858.png
+wwwroot\uploads\brands\b7f3ee72-2768-4997-b536-b917fb77ed9e.png
+wwwroot\uploads\categories\b0596df6-2303-4347-92d8-4e4c076bc1f6.jpg
+wwwroot\uploads\categories\b4bd90b0-0685-4dec-be2b-b68f03817f27.jpg
+wwwroot\uploads\partners\176790f0-41f6-49c0-8774-8f5e53a98a02.jpg
+wwwroot\uploads\products\31a44819-54be-4a90-8916-18237df6b912.webp
+wwwroot\uploads\products\55a92fdb-6106-4992-bdce-f24ea879d499.webp
+wwwroot\uploads\products\6afe3e23-c7ef-4435-9563-ea2baaf5342e.webp
+wwwroot\uploads\products\d5a28411-2499-49a6-9593-95d17fc52d43.webp
+wwwroot\uploads\products\d6e038d7-2635-4cee-ad19-0ed974bea9b2.png
+wwwroot\uploads\products\a7cca34a-b293-41bd-876e-e5e3515f2c5b.webp
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\css\site.css
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\favicon.ico
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\js\site.js
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css.map
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\bootstrap\dist\css\bootstrap-grid.min.css
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\bootstrap\dist\css\bootstrap-grid.min.css.map
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\bootstrap\dist\css\bootstrap-grid.rtl.css
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\bootstrap\dist\css\bootstrap-grid.rtl.css.map
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\bootstrap\dist\css\bootstrap-grid.rtl.min.css
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\bootstrap\dist\css\bootstrap-grid.rtl.min.css.map
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\bootstrap\dist\css\bootstrap-reboot.css
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\bootstrap\dist\css\bootstrap-reboot.css.map
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\bootstrap\dist\css\bootstrap-reboot.min.css
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\bootstrap\dist\css\bootstrap-reboot.min.css.map
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\bootstrap\dist\css\bootstrap-reboot.rtl.css
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\bootstrap\dist\css\bootstrap-reboot.rtl.css.map
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\bootstrap\dist\css\bootstrap-reboot.rtl.min.css
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\bootstrap\dist\css\bootstrap-reboot.rtl.min.css.map
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\bootstrap\dist\css\bootstrap-utilities.css
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\bootstrap\dist\css\bootstrap-utilities.css.map
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\bootstrap\dist\css\bootstrap-utilities.min.css
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\bootstrap\dist\css\bootstrap-utilities.min.css.map
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\bootstrap\dist\css\bootstrap-utilities.rtl.css
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\bootstrap\dist\css\bootstrap-utilities.rtl.css.map
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\bootstrap\dist\css\bootstrap-utilities.rtl.min.css
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\bootstrap\dist\css\bootstrap-utilities.rtl.min.css.map
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\bootstrap\dist\css\bootstrap.css
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\bootstrap\dist\css\bootstrap.css.map
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\bootstrap\dist\css\bootstrap.min.css
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\bootstrap\dist\css\bootstrap.min.css.map
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\bootstrap\dist\css\bootstrap.rtl.css
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\bootstrap\dist\css\bootstrap.rtl.css.map
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\bootstrap\dist\css\bootstrap.rtl.min.css
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\bootstrap\dist\css\bootstrap.rtl.min.css.map
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\bootstrap\dist\js\bootstrap.bundle.js
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\bootstrap\dist\js\bootstrap.bundle.js.map
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\bootstrap\dist\js\bootstrap.bundle.min.js
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\bootstrap\dist\js\bootstrap.bundle.min.js.map
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\bootstrap\dist\js\bootstrap.esm.js
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\bootstrap\dist\js\bootstrap.esm.js.map
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\bootstrap\dist\js\bootstrap.esm.min.js
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\bootstrap\dist\js\bootstrap.esm.min.js.map
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\bootstrap\dist\js\bootstrap.js
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\bootstrap\dist\js\bootstrap.js.map
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\bootstrap\dist\js\bootstrap.min.js
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\bootstrap\dist\js\bootstrap.min.js.map
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\jquery-validation-unobtrusive\dist\jquery.validate.unobtrusive.js
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\jquery-validation-unobtrusive\dist\jquery.validate.unobtrusive.min.js
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\jquery-validation-unobtrusive\LICENSE.txt
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\jquery-validation\dist\additional-methods.js
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\jquery-validation\dist\additional-methods.min.js
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\jquery-validation\dist\jquery.validate.js
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\jquery-validation\dist\jquery.validate.min.js
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\jquery-validation\LICENSE.md
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\jquery\dist\jquery.js
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\jquery\dist\jquery.min.js
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\jquery\dist\jquery.min.map
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\jquery\dist\jquery.slim.js
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\jquery\dist\jquery.slim.min.js
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\jquery\dist\jquery.slim.min.map
+C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\lib\jquery\LICENSE.txt

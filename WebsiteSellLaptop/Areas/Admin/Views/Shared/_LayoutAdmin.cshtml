@@ -282,8 +282,16 @@
             <a href="@Url.Action("Index", "Dashboard", new { area = "Admin" })" class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Dashboard" ? "active" : "")">
                 <i class="bi bi-grid-1x2-fill"></i> Dashboard
             </a>
-            <a href="@Url.Action("Index", "Report", new { area = "Admin" })" class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Report" ? "active" : "")">
-                <i class="bi bi-graph-up-arrow"></i> Báo cáo
+
+            <div class="menu-label">Báo cáo</div>
+            <a href="@Url.Action("Index", "Report", new { area = "Admin" })" class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Report" && ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")">
+                <i class="bi bi-graph-up-arrow"></i> Tổng quan
+            </a>
+            <a href="@Url.Action("Revenue", "Report", new { area = "Admin" })" class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Report" && ViewContext.RouteData.Values["action"]?.ToString() == "Revenue" ? "active" : "")">
+                <i class="bi bi-currency-dollar"></i> Doanh thu
+            </a>
+            <a href="@Url.Action("Inventory", "Report", new { area = "Admin" })" class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Report" && ViewContext.RouteData.Values["action"]?.ToString() == "Inventory" ? "active" : "")">
+                <i class="bi bi-box-seam"></i> Tồn kho
             </a>
 
             <div class="menu-label">Sản phẩm</div>

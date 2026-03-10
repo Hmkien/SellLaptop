@@ -1,0 +1,248 @@
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using OfficeOpenXml;
+using OfficeOpenXml.Style;
+using System.Drawing;
+using WebsiteSellLaptop.Data;
+using WebsiteSellLaptop.Models.Enums;
+
+namespace WebsiteSellLaptop.Areas.Admin.Controllers
+{
+    [Area("Admin")]
+    [Authorize(Roles = "Admin")]
+    public class ReportController : Controller
+    {
+        private readonly AppDbContext _context;
+        public ReportController(AppDbContext context)
+        {
+            _context = context;
+        }
+
+        public async Task<IActionResult> Index(DateTime? fromDate, DateTime? toDate)
+        {
+            var to = toDate?.Date.AddDays(1) ?? DateTime.Now.Date.AddDays(1);
+            var from = fromDate?.Date ?? to.AddDays(-30);
+
+            ViewBag.FromDate = from;
+            ViewBag.ToDate = to.AddDays(-1);
+
+            // Thống kê trong khoảng thời gian
+            ViewBag.TotalOrders = await _context.Orders
+                .Where(o => o.Created >= from && o.Created < to)
+                .CountAsync();
+            ViewBag.TotalRevenue = await _context.Orders
+                .Where(o => o.Created >= from && o.Created < to && o.OrderStatus == OrderStatus.Completed)
+                .SumAsync(o => o.TotalAmount);
+            ViewBag.CompletedOrders = await _context.Orders
+                .Where(o => o.Created >= from && o.Created < to && o.OrderStatus == OrderStatus.Completed)
+                .CountAsync();
+            ViewBag.CancelledOrders = await _context.Orders
+                .Where(o => o.Created >= from && o.Created < to && o.OrderStatus == OrderStatus.Cancelled)
+                .CountAsync();
+
+            // Trạng thái đơn hàng trong khoảng
+            ViewBag.PendingOrders = await _context.Orders.Where(o => o.Created >= from && o.Created < to && o.OrderStatus == OrderStatus.Pending).CountAsync();
+            ViewBag.ConfirmedOrders = await _context.Orders.Where(o => o.Created >= from && o.Created < to && o.OrderStatus == OrderStatus.Confirmed).CountAsync();
+            ViewBag.ShippingOrders = await _context.Orders.Where(o => o.Created >= from && o.Created < to && o.OrderStatus == OrderStatus.Shipping).CountAsync();
+
+            // Top sản phẩm bán chạy trong khoảng
+            var topProducts = await _context.OrderDetails
+                .Include(od => od.Order)
+                .Include(od => od.Product)
+                .Where(od => od.Order != null && od.Order.Created >= from && od.Order.Created < to
+                    && od.Order.OrderStatus == OrderStatus.Completed
+                    && od.Product != null)
+                .GroupBy(od => new { od.ProductId, od.Product!.Name, od.Product.ThumbnailUrl })
+                .Select(g => new
+                {
+                    g.Key.ProductId,
+                    g.Key.Name,
+                    g.Key.ThumbnailUrl,
+                    TotalQuantity = g.Sum(od => od.Quantity),
+                    TotalRevenue = g.Sum(od => od.TotalPrice)
+                })
+                .OrderByDescending(x => x.TotalQuantity)
+                .Take(10)
+                .ToListAsync();
+            ViewBag.TopProducts = topProducts;
+
+            // Doanh thu theo ngày trong khoảng (cho biểu đồ)
+            List<string> chartLabels = [];
+            List<decimal> chartValues = [];
+            List<int> chartOrders = [];
+
+            int totalDays = (to - from).Days;
+            if (totalDays <= 31)
+            {
+                var currentDate = from;
+                while (currentDate < to)
+                {
+                    var nextDate = currentDate.AddDays(1);
+                    var dayOrders = await _context.Orders
+                        .Where(o => o.Created >= currentDate && o.Created < nextDate && o.OrderStatus == OrderStatus.Completed)
+                        .ToListAsync();
+                    chartLabels.Add(currentDate.ToString("dd/MM"));
+                    chartValues.Add(dayOrders.Sum(o => o.TotalAmount));
+                    chartOrders.Add(dayOrders.Count);
+                    currentDate = nextDate;
+                }
+            }
+            else
+            {
+                var currentDate = from;
+                while (currentDate < to)
+                {
+                    var monthEnd = new DateTime(currentDate.Year, currentDate.Month, 1).AddMonths(1);
+                    if (monthEnd > to) monthEnd = to;
+                    var monthOrders = await _context.Orders
+                        .Where(o => o.Created >= currentDate && o.Created < monthEnd && o.OrderStatus == OrderStatus.Completed)
+                        .ToListAsync();
+                    chartLabels.Add(currentDate.ToString("MM/yyyy"));
+                    chartValues.Add(monthOrders.Sum(o => o.TotalAmount));
+                    chartOrders.Add(monthOrders.Count);
+                    currentDate = monthEnd;
+                }
+            }
+
+            ViewBag.ChartLabels = chartLabels;
+            ViewBag.ChartValues = chartValues;
+            ViewBag.ChartOrders = chartOrders;
+
+            return View();
+        }
+
+        public async Task<IActionResult> Revenue(DateTime? fromDate, DateTime? toDate, string groupBy = "day")
+        {
+            var to = toDate?.Date.AddDays(1) ?? DateTime.Now.Date.AddDays(1);
+            var from = fromDate?.Date ?? to.AddDays(-30);
+
+            ViewBag.FromDate = from;
+            ViewBag.ToDate = to.AddDays(-1);
+            ViewBag.GroupBy = groupBy;
+
+            var orders = await _context.Orders
+                .Where(o => o.Created >= from && o.Created < to && o.OrderStatus == OrderStatus.Completed)
+                .OrderBy(o => o.Created)
+                .ToListAsync();
+
+            ViewBag.TotalRevenue = orders.Sum(o => o.TotalAmount);
+            ViewBag.TotalOrders = orders.Count;
+            ViewBag.AvgOrderValue = orders.Count > 0 ? orders.Average(o => o.TotalAmount) : 0m;
+            ViewBag.MaxOrder = orders.Count > 0 ? orders.Max(o => o.TotalAmount) : 0m;
+
+            List<string> labels = [];
+            List<decimal> values = [];
+            List<int> orderCounts = [];
+
+            if (groupBy == "month")
+            {
+                var grouped = orders.GroupBy(o => new { o.Created.Year, o.Created.Month })
+                    .OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Month);
+                foreach (var g in grouped)
+                {
+                    labels.Add($"{g.Key.Month:D2}/{g.Key.Year}");
+                    values.Add(g.Sum(o => o.TotalAmount));
+                    orderCounts.Add(g.Count());
+                }
+            }
+            else if (groupBy == "week")
+            {
+                var startDate = from;
+                while (startDate < to)
+                {
+                    var weekEnd = startDate.AddDays(7) < to ? startDate.AddDays(7) : to;
+                    var weekOrders = orders.Where(o => o.Created >= startDate && o.Created < weekEnd);
+                    labels.Add($"{startDate:dd/MM} - {weekEnd.AddDays(-1):dd/MM}");
+                    values.Add(weekOrders.Sum(o => o.TotalAmount));
+                    orderCounts.Add(weekOrders.Count());
+                    startDate = weekEnd;
+                }
+            }
+            else
+            {
+                var currentDate = from;
+                while (currentDate < to)
+                {
+                    var nextDate = currentDate.AddDays(1);
+                    var dayOrders = orders.Where(o => o.Created >= currentDate && o.Created < nextDate);
+                    labels.Add(currentDate.ToString("dd/MM"));
+                    values.Add(dayOrders.Sum(o => o.TotalAmount));
+                    orderCounts.Add(dayOrders.Count());
+                    currentDate = nextDate;
+                }
+            }
+
+            ViewBag.Labels = labels;
+            ViewBag.Values = values;
+            ViewBag.OrderCounts = orderCounts;
+
+            // Doanh thu theo phương thức thanh toán
+            ViewBag.RevenueByPayment = orders
+                .GroupBy(o => o.PaymentMethod)
+                .Select(g => new { Method = g.Key.ToString(), Total = g.Sum(o => o.TotalAmount), Count = g.Count() })
+                .OrderByDescending(x => x.Total)
+                .ToList();
+
+            // Chi tiết đơn hàng
+            ViewBag.RevenueDetails = orders.OrderByDescending(o => o.Created).ToList();
+
+            return View();
+        }
+
+        public async Task<IActionResult> Inventory(Guid? categoryId, Guid? brandId, string? search, string sortBy = "name")
+        {
+            ViewBag.CategoryId = categoryId;
+            ViewBag.BrandId = brandId;
+            ViewBag.Search = search;
+            ViewBag.SortBy = sortBy;
+
+            var query = _context.Products
+                .Include(p => p.Category)
+                .Include(p => p.Brand)
+                .Where(p => p.Status == StatusEntity.Approved);
+
+            if (categoryId.HasValue)
+                query = query.Where(p => p.CategoryId == categoryId.Value);
+            if (brandId.HasValue)
+                query = query.Where(p => p.BrandId == brandId.Value);
+            if (!string.IsNullOrEmpty(search))
+                query = query.Where(p => p.Name.Contains(search));
+
+            var products = sortBy switch
+            {
+                "stock_asc" => await query.OrderBy(p => p.StockQuantity).ToListAsync(),
+                "stock_desc" => await query.OrderByDescending(p => p.StockQuantity).ToListAsync(),
+                "price_asc" => await query.OrderBy(p => p.Price).ToListAsync(),
+                "price_desc" => await query.OrderByDescending(p => p.Price).ToListAsync(),
+                _ => await query.OrderBy(p => p.Name).ToListAsync()
+            };
+
+            ViewBag.Products = products;
+            ViewBag.TotalProducts = products.Count;
+            ViewBag.TotalStockValue = products.Sum(p => p.Price * p.StockQuantity);
+            ViewBag.TotalStockQuantity = products.Sum(p => p.StockQuantity);
+            ViewBag.OutOfStock = products.Count(p => p.StockQuantity == 0);
+            ViewBag.LowStock = products.Count(p => p.StockQuantity > 0 && p.StockQuantity <= 5);
+
+            ViewBag.Categories = await _context.Categories.Where(c => c.Status == StatusEntity.Approved).OrderBy(c => c.Name).ToListAsync();
+            ViewBag.Brands = await _context.Brands.Where(b => b.Status == StatusEntity.Approved).OrderBy(b => b.Name).ToListAsync();
+
+            // Tồn kho theo danh mục
+            ViewBag.StockByCategory = products
+                .GroupBy(p => p.Category?.Name ?? "Không phân loại")
+                .Select(g => new { Category = g.Key, TotalStock = g.Sum(p => p.StockQuantity), Count = g.Count() })
+                .OrderByDescending(x => x.TotalStock)
+                .ToList();
+
+            // Tồn kho theo thương hiệu
+            ViewBag.StockByBrand = products
+                .GroupBy(p => p.Brand?.Name ?? "Không phân loại")
+                .Select(g => new { Brand = g.Key, TotalStock = g.Sum(p => p.StockQuantity), Count = g.Count() })
+                .OrderByDescending(x => x.TotalStock)
+                .ToList();
+
+            return View();
+        }
+    }
+}

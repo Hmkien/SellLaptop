@@ -1,0 +1,296 @@
+﻿# Phân tích Hệ thống – Trả lời câu hỏi bảo vệ đồ án
+
+> Tất cả các nhận định dưới đây đều dẫn chiếu trực tiếp đến code nguồn trong dự án.
+
+---
+
+## Câu 1 – Thống kê có theo tiêu chí thời gian không?
+
+### ✅ CÓ – hỗ trợ đầy đủ lọc theo thời gian linh hoạt
+
+#### Cơ chế hoạt động (ReportController.cs)
+
+Tất cả 3 action báo cáo đều nhận tham số thời gian:
+
+```csharp
+// ReportController.cs – Index
+public async Task<IActionResult> Index(DateTime? fromDate, DateTime? toDate)
+{
+    var to = toDate?.Date.AddDays(1) ?? DateTime.Now.Date.AddDays(1);
+    var from = fromDate?.Date ?? to.AddDays(-30);  // Mặc định: 30 ngày gần nhất
+    ...
+}
+
+// ReportController.cs – Revenue
+public async Task<IActionResult> Revenue(DateTime? fromDate, DateTime? toDate, string groupBy = "day")
+```
+
+#### Dữ liệu được lọc theo khoảng thời gian:
+
+| Chỉ số | Điều kiện lọc |
+|---|---|
+| Tổng đơn hàng | `o.Created >= from && o.Created < to` |
+| Doanh thu | `o.Created >= from && o.Created < to && o.OrderStatus == Completed` |
+| Đơn hoàn thành | `o.Created >= from && o.Created < to && o.OrderStatus == Completed` |
+| Đơn đã hủy | `o.Created >= from && o.Created < to && o.OrderStatus == Cancelled` |
+| Top sản phẩm | `od.Order.Created >= from && od.Order.Created < to && od.Order.OrderStatus == Completed` |
+
+#### Nhóm dữ liệu tự động theo khoảng:
+
+```csharp
+// ReportController.cs – Index, dòng 76
+int totalDays = (to - from).Days;
+if (totalDays <= 31)
+    // Nhóm theo NGÀY: chartLabels.Add(currentDate.ToString("dd/MM"))
+else
+    // Nhóm theo THÁNG: chartLabels.Add(currentDate.ToString("MM/yyyy"))
+```
+
+#### Trang Revenue – nhóm theo 3 mức:
+
+```csharp
+// ReportController.cs – Revenue, groupBy parameter
+groupBy == "day"   → nhóm theo ngày:  labels.Add(currentDate.ToString("dd/MM"))
+groupBy == "week"  → nhóm theo tuần:  labels.Add($"{startDate:dd/MM} - {weekEnd.AddDays(-1):dd/MM}")
+groupBy == "month" → nhóm theo tháng: labels.Add($"{g.Key.Month:D2}/{g.Key.Year}")
+```
+
+#### Nút lọc nhanh trên giao diện (Index.cshtml):
+
+| Nút | fromDate | toDate |
+|---|---|---|
+| 7 ngày | `DateTime.Now.Date.AddDays(-6)` | `DateTime.Now.Date` |
+| 30 ngày | `DateTime.Now.Date.AddDays(-29)` | `DateTime.Now.Date` |
+| Tháng này | `new DateTime(Year, Month, 1)` | `DateTime.Now.Date` |
+| Năm nay | `new DateTime(Year, 1, 1)` | `DateTime.Now.Date` |
+
+> **Kết luận:** Người dùng có thể nhập bất kỳ ngày bắt đầu / kết thúc nào qua input `type="date"`, hoặc dùng nút lọc nhanh. Mọi con số thống kê đều được tính lại theo khoảng đã chọn.
+
+---
+
+## Câu 2 – Hàng tồn kho được quản lý như thế nào?
+
+### Trường lưu trữ (Product.cs)
+
+```csharp
+public class Product : BaseEntity
+{
+    public int StockQuantity { get; set; }   // Số lượng tồn kho thực tế
+    public decimal Price { get; set; }        // Giá bán (dùng tính giá trị tồn)
+}
+```
+
+### Tồn kho giảm khi đặt hàng (CheckoutController.cs – PlaceOrder)
+
+```csharp
+// CheckoutController.cs, dòng 92–106
+var product = await _context.Products.FindAsync(item.ProductId);
+
+// Kiểm tra tồn kho trước khi tạo đơn
+if (product == null || product.StockQuantity < item.Quantity)
+{
+    return Json(new { success = false, message = $"Sản phẩm {item.ProductName} không đủ hàng" });
+}
+
+// Trừ tồn kho ngay lúc đặt hàng (OrderStatus = Pending)
+product.StockQuantity -= item.Quantity;
+```
+
+> ⚠️ **Lưu ý quan trọng:** Tồn kho bị trừ **ngay tại thời điểm đặt hàng** (khi đơn còn ở trạng thái `Pending`), **không phải** khi xác nhận hay giao hàng. Điều này đảm bảo không oversell.
+
+### Tồn kho KHÔNG được hoàn lại khi hủy (OrderController.cs – UpdateStatus)
+
+```csharp
+// OrderController.cs, dòng 62–84 – KHÔNG có logic hoàn kho
+public async Task<IActionResult> UpdateStatus(Guid id, OrderStatus status)
+{
+    Order? item = await _context.Orders.FindAsync(id);
+    item.OrderStatus = status;          // Chỉ đổi trạng thái
+    item.LastModified = DateTime.Now;
+    await _context.SaveChangesAsync();  // Không có product.StockQuantity += ...
+}
+```
+
+> ⚠️ **Hạn chế đã biết:** Khi đơn bị hủy (`Cancelled`), hệ thống **chưa hoàn lại số lượng** vào `StockQuantity`. Đây là điểm cần cải thiện trong phiên bản sau.
+
+### Báo cáo tồn kho (ReportController.cs – Inventory)
+
+```csharp
+// ReportController.cs – Inventory
+ViewBag.OutOfStock  = products.Count(p => p.StockQuantity == 0);         // Hết hàng
+ViewBag.LowStock    = products.Count(p => p.StockQuantity > 0 && p.StockQuantity <= 5); // Sắp hết
+ViewBag.TotalStockValue = products.Sum(p => p.Price * p.StockQuantity);  // Giá trị tồn kho
+```
+
+Phân loại trạng thái tồn kho:
+
+| Điều kiện | Nhãn | Màu |
+|---|---|---|
+| `StockQuantity == 0` | Hết hàng | 🔴 Đỏ |
+| `StockQuantity > 0 && <= 5` | Sắp hết | 🟡 Vàng |
+| `StockQuantity > 5` | Còn hàng | 🟢 Xanh |
+
+---
+
+## Câu 3 – Hoàn, hủy, đổi, trả, bảo hành được quản lý như thế nào?
+
+### Cơ chế hiện tại trong code
+
+Hệ thống hiện tại **chỉ có cơ chế hủy đơn** thông qua:
+
+**Cách 1 – Admin từ chối (Reject):**
+```csharp
+// OrderController.cs, dòng 105–121
+public async Task<IActionResult> Reject(Guid id)
+{
+    item.Status = StatusEntity.Rejected;       // Trạng thái entity = Từ chối
+    item.OrderStatus = OrderStatus.Cancelled;  // Trạng thái đơn = Hủy
+    await _context.SaveChangesAsync();
+    // Không hoàn kho, không ghi nhận lý do
+}
+```
+
+**Cách 2 – Cập nhật trạng thái thủ công:**
+```csharp
+// OrderController.cs, dòng 61–85
+public async Task<IActionResult> UpdateStatus(Guid id, OrderStatus status)
+{
+    item.OrderStatus = status;  // Admin có thể đặt thành Cancelled
+    await _context.SaveChangesAsync();
+    // Không có bước kiểm tra điều kiện, không hoàn kho
+}
+```
+
+### Điều kiện xóa đơn hàng
+
+```csharp
+// OrderController.cs, dòng 132–135
+if (item.Status == StatusEntity.Approved 
+    && item.OrderStatus != OrderStatus.Completed 
+    && item.OrderStatus != OrderStatus.Cancelled)
+{
+    return Json(new { success = false, message = "Không thể xóa đơn hàng đang xử lý" });
+}
+// Chỉ xóa được đơn đã Completed hoặc Cancelled
+```
+
+### Tổng kết những gì ĐÃ có và CHƯA có:
+
+| Nghiệp vụ | Trạng thái trong code | Ghi chú |
+|---|---|---|
+| **Hủy đơn** | ✅ Có – `OrderStatus.Cancelled` | Admin thực hiện qua `Reject` hoặc `UpdateStatus` |
+| **Hoàn tiền** | ❌ Chưa có | Không có logic refund, không có trạng thái Refunded |
+| **Đổi/trả hàng** | ❌ Chưa có | Không có trạng thái Return/Exchange trong enum |
+| **Bảo hành** | ❌ Chưa có | Không có module bảo hành |
+| **Hoàn kho khi hủy** | ❌ Chưa có | `StockQuantity` không được cộng lại khi hủy |
+| **Lý do hủy** | ❌ Chưa có | Không lưu lý do hủy đơn |
+
+> **Kết luận:** Hệ thống hiện tại quản lý hủy đơn ở mức cơ bản. Các nghiệp vụ phức tạp hơn (hoàn trả, đổi hàng, bảo hành) chưa được triển khai – đây là phạm vi mở rộng cho các phiên bản tiếp theo.
+
+---
+
+## Câu 4 – Trạng thái đơn hàng: sự khác nhau và ảnh hưởng đến tồn kho & doanh thu
+
+### Định nghĩa enum (StatusEntity.cs)
+
+```csharp
+public enum OrderStatus
+{
+    Pending   = 1,  // Chờ xác nhận
+    Confirmed = 2,  // Đã xác nhận
+    Shipping  = 3,  // Đang giao
+    Completed = 4,  // Hoàn thành
+    Cancelled = 5   // Đã hủy
+}
+```
+
+### Ý nghĩa từng trạng thái và cách chuyển đổi
+
+| Trạng thái | Ý nghĩa | Nơi thiết lập trong code |
+|---|---|---|
+| **Pending** | Khách vừa đặt hàng, chờ admin xem xét | `CheckoutController.PlaceOrder` – mặc định khi tạo đơn |
+| **Confirmed** | Admin đã xác nhận / VNPay thanh toán thành công | `OrderController.Approve` hoặc `CheckoutController.PaymentCallback` |
+| **Shipping** | Đơn hàng đang được vận chuyển | `OrderController.UpdateStatus(Shipping)` |
+| **Completed** | Khách nhận hàng thành công, kết thúc đơn | `OrderController.UpdateStatus(Completed)` |
+| **Cancelled** | Đơn bị hủy (bởi admin hoặc hệ thống) | `OrderController.Reject` hoặc `UpdateStatus(Cancelled)` |
+
+### Luồng chuyển trạng thái đơn hàng
+
+```
+[Khách đặt hàng]
+       │
+       ▼
+  PENDING (1)  ──────────────────────────────────────► CANCELLED (5)
+       │         Admin: Reject()                        (không hoàn kho)
+       │
+       │ Admin: Approve() hoặc VNPay callback
+       ▼
+  CONFIRMED (2) ─────────────────────────────────────► CANCELLED (5)
+       │         Admin: UpdateStatus(Cancelled)          (không hoàn kho)
+       │
+       │ Admin: UpdateStatus(Shipping)
+       ▼
+  SHIPPING (3)
+       │
+       │ Admin: UpdateStatus(Completed)
+       ▼
+  COMPLETED (4)  ◄── Doanh thu được ghi nhận tại đây
+```
+
+### Ảnh hưởng đến TỒN KHO khi đổi trạng thái
+
+```csharp
+// CheckoutController.cs – PlaceOrder (dòng 106)
+// Tồn kho chỉ thay đổi TẠI ĐÂY – khi tạo đơn (Pending)
+product.StockQuantity -= item.Quantity;
+
+// OrderController.cs – UpdateStatus
+// KHÔNG có dòng nào thay đổi StockQuantity khi chuyển trạng thái
+```
+
+| Chuyển trạng thái | Tồn kho thay đổi? |
+|---|---|
+| Tạo đơn → **Pending** | ✅ **Giảm ngay** `StockQuantity -= Quantity` |
+| Pending → **Confirmed** | ❌ Không thay đổi |
+| Confirmed → **Shipping** | ❌ Không thay đổi |
+| Shipping → **Completed** | ❌ Không thay đổi |
+| Bất kỳ → **Cancelled** | ❌ Không hoàn lại (hạn chế của hệ thống) |
+
+### Ảnh hưởng đến DOANH THU khi đổi trạng thái
+
+```csharp
+// ReportController.cs – tất cả query tính doanh thu
+ViewBag.TotalRevenue = await _context.Orders
+    .Where(o => o.Created >= from && o.Created < to
+             && o.OrderStatus == OrderStatus.Completed)  // Chỉ tính Completed
+    .SumAsync(o => o.TotalAmount);
+```
+
+| Trạng thái | Có tính vào doanh thu? |
+|---|---|
+| **Pending** | ❌ Không |
+| **Confirmed** | ❌ Không |
+| **Shipping** | ❌ Không |
+| **Completed** | ✅ **CÓ** – doanh thu được ghi nhận |
+| **Cancelled** | ❌ Không (bị loại khỏi mọi query doanh thu) |
+
+> **Kết luận:** Doanh thu **chỉ được tính khi đơn hàng ở trạng thái `Completed`**. Đơn `Pending`, `Confirmed`, `Shipping` chưa tính vào doanh thu. Đơn `Cancelled` không bao giờ được tính vào doanh thu.
+
+---
+
+## Tóm tắt điểm mạnh & hạn chế
+
+### ✅ Điểm mạnh
+
+1. Thống kê theo thời gian linh hoạt – lọc ngày bất kỳ, tự động nhóm theo ngày/tuần/tháng
+2. Tồn kho được trừ tức thời khi đặt hàng – tránh oversell
+3. Doanh thu chỉ tính đơn `Completed` – số liệu chính xác
+4. Báo cáo tồn kho cảnh báo sắp hết / hết hàng
+5. Xuất Excel đầy đủ cho 3 loại báo cáo
+
+### ⚠️ Hạn chế cần biết khi trình bày
+
+1. **Không hoàn kho khi hủy đơn** – `StockQuantity` không được cộng lại
+2. **Không có trạng thái hoàn/trả** – enum `OrderStatus` chưa có `Returned`, `Refunded`
+3. **Không có module bảo hành/đổi trả** – chưa triển khai
+4. **Không lưu lý do hủy đơn** – không có trường `CancelReason`

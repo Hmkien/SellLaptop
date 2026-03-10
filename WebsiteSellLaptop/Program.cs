@@ -1,11 +1,14 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using OfficeOpenXml;
 using WebsiteSellLaptop.Data;
 using WebsiteSellLaptop.Models.Entities;
 using WebsiteSellLaptop.Models.Settings;
 using WebsiteSellLaptop.Services;
 
-var builder = WebApplication.CreateBuilder(args);
+ExcelPackage.License.SetNonCommercialPersonal("Laptop");
+
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 // DbContext with retry policy
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -13,7 +16,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         builder.Configuration.GetConnectionString("DefaultConnection"),
         sqlServerOptionsAction: sqlOptions =>
         {
-            sqlOptions.EnableRetryOnFailure(
+            _ = sqlOptions.EnableRetryOnFailure(
                 maxRetryCount: 5,
                 maxRetryDelay: TimeSpan.FromSeconds(30),
                 errorNumbersToAdd: null);
@@ -60,56 +63,58 @@ builder.Services.AddSession(options =>
 
 builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation();
 
-var app = builder.Build();
+WebApplication app = builder.Build();
 
 // Auto migrate database
-using (var scope = app.Services.CreateScope())
+using (IServiceScope scope = app.Services.CreateScope())
 {
-    var services = scope.ServiceProvider;
+    IServiceProvider services = scope.ServiceProvider;
     try
     {
-        var dbContext = services.GetRequiredService<AppDbContext>();
+        AppDbContext dbContext = services.GetRequiredService<AppDbContext>();
         dbContext.Database.Migrate();
     }
     catch (Exception ex)
     {
-        var logger = services.GetRequiredService<ILogger<Program>>();
+        ILogger<Program> logger = services.GetRequiredService<ILogger<Program>>();
         logger.LogError(ex, "An error occurred while migrating the database.");
     }
 }
 
 // Seed roles and admin user
-using (var scope = app.Services.CreateScope())
+using (IServiceScope scope = app.Services.CreateScope())
 {
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    RoleManager<IdentityRole> roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     string[] roles = { "Admin", "User" };
-    foreach (var role in roles)
+    foreach (string role in roles)
     {
         if (!await roleManager.RoleExistsAsync(role))
-            await roleManager.CreateAsync(new IdentityRole(role));
+        {
+            _ = await roleManager.CreateAsync(new IdentityRole(role));
+        }
     }
 
     // Seed admin user
-    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
-    var adminEmail = "admin@laptophub.vn";
+    UserManager<AppUser> userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
+    string adminEmail = "admin@laptophub.vn";
     if (await userManager.FindByEmailAsync(adminEmail) == null)
     {
-        var admin = new AppUser
+        AppUser admin = new()
         {
             UserName = adminEmail,
             Email = adminEmail,
             FullName = "Quản trị viên",
             EmailConfirmed = true
         };
-        await userManager.CreateAsync(admin, "Admin@123");
-        await userManager.AddToRoleAsync(admin, "Admin");
+        _ = await userManager.CreateAsync(admin, "Admin@123");
+        _ = await userManager.AddToRoleAsync(admin, "Admin");
     }
 }
 
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
-    app.UseHsts();
+    _ = app.UseExceptionHandler("/Home/Error");
+    _ = app.UseHsts();
 }
 
 app.UseHttpsRedirection();
