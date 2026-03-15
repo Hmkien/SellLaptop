@@ -17,6 +17,18 @@ namespace WebsiteSellLaptop.Models.Entities
 
         public int SortOrder { get; set; }
 
+        // CategoryType: 0 = Laptop, 1 = Accessory (Phụ kiện)
+        // Keep SortOrder for ordering; expose IsAccessory for easier binding in UI
+        public int CategoryType => SortOrder;
+
+        // For admin forms it's more convenient to use a boolean checkbox.
+        // Map IsAccessory to SortOrder: true => 1, false => 0
+        public bool IsAccessory
+        {
+            get => SortOrder == 1;
+            set => SortOrder = value ? 1 : 0;
+        }
+
         // Navigation
         public virtual ICollection<Product> Products { get; set; } = new List<Product>();
     }

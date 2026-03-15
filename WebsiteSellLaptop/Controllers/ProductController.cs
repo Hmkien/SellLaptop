@@ -136,28 +136,35 @@ namespace WebsiteSellLaptop.Controllers
             return View(product);
         }
 
-        public async Task<IActionResult> Accessories(string? search, List<Guid>? brandIds, Guid? categoryId,
+        public async Task<IActionResult> Accessories(string? search, string? brand, string? category,
             decimal? minPrice, decimal? maxPrice, string? sort, int page = 1)
         {
             ViewData["Title"] = "Phụ kiện Laptop";
+            ViewBag.IsAccessory = true;
 
             IQueryable<Product> query = _context.Products
                 .Include(p => p.Brand)
                 .Include(p => p.Category)
                 .Where(p => p.Status == StatusEntity.Approved && p.IsAccessory)
                 .AsQueryable();
+
+            // Apply text search only when provided
+            if (!string.IsNullOrWhiteSpace(search))
             {
-                query = query.Where(p => p.Name.Contains(search) || p.Description.Contains(search));
+                query = query.Where(p => p.Name.Contains(search) || (p.Description != null && p.Description.Contains(search)));
             }
 
-            if (brandIds != null && brandIds.Any())
+            // brand and category parameters are comma-separated ids (same as Index)
+            if (!string.IsNullOrEmpty(brand))
             {
+                List<Guid> brandIds = brand.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(Guid.Parse).ToList();
                 query = query.Where(p => brandIds.Contains(p.BrandId));
             }
 
-            if (categoryId.HasValue)
+            if (!string.IsNullOrEmpty(category))
             {
-                query = query.Where(p => p.CategoryId == categoryId.Value);
+                List<Guid> categoryIds = category.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(Guid.Parse).ToList();
+                query = query.Where(p => categoryIds.Contains(p.CategoryId));
             }
 
             if (minPrice.HasValue && minPrice.Value > 0)
@@ -188,15 +195,26 @@ namespace WebsiteSellLaptop.Controllers
                 .ToListAsync();
 
             ViewBag.Brands = await _context.Brands.Where(b => b.Status == StatusEntity.Approved).ToListAsync();
-            ViewBag.Categories = await _context.Categories.Where(c => c.Status == StatusEntity.Approved).ToListAsync();
+            // Show only accessory categories on accessories page
+            ViewBag.Categories = await _context.Categories.Where(c => c.Status == StatusEntity.Approved && c.SortOrder == 1).ToListAsync();
             ViewBag.Search = search;
-            ViewBag.SelectedBrands = brandIds ?? [];
-            ViewBag.SelectedCategory = categoryId;
+            // Index view expects selected brand/category as comma-separated strings
+            ViewBag.SelectedBrand = !string.IsNullOrEmpty(brand) ? brand : string.Empty;
+            ViewBag.SelectedCategory = !string.IsNullOrEmpty(category) ? category : string.Empty;
             ViewBag.MinPrice = minPrice;
             ViewBag.MaxPrice = maxPrice;
             ViewBag.Sort = sort;
 
-            return View("Index", products);
+            // Pass products via ViewBag (Index.cshtml reads ViewBag.Products)
+            ViewBag.Products = products;
+
+            // If AJAX request, return partial grid only
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return PartialView("_ProductGridPartial", products);
+            }
+
+            return View("Index");
         }
     }
 }

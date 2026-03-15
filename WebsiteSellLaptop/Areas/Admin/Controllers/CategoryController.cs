@@ -76,6 +76,7 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
                     item.Slug,
                     item.ImageUrl,
                     item.SortOrder,
+                    item.IsAccessory,
                     item.Status,
                     StatusName = GetEnumDescription(item.Status),
                     Created = item.Created.ToString("dd/MM/yyyy HH:mm"),
@@ -133,7 +134,8 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
                 Description = model.Description?.Trim(),
                 Slug = model.Name.Trim().ToLower().Replace(" ", "-"),
                 ImageUrl = imageUrl ?? model.ImageUrl?.Trim(),
-                SortOrder = model.SortOrder,
+                // Use boolean IsAccessory to determine SortOrder (0 = Laptop, 1 = Accessory)
+                SortOrder = model.IsAccessory ? 1 : 0,
                 CreatedBy = User.Identity?.Name
             };
 
@@ -241,7 +243,8 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
                 item.ImageUrl = model.ImageUrl.Trim();
             }
 
-            item.SortOrder = model.SortOrder;
+            // Map boolean IsAccessory to SortOrder
+            item.SortOrder = model.IsAccessory ? 1 : 0;
             item.LastModified = DateTime.Now;
             item.ModifiedBy = User.Identity?.Name;
 

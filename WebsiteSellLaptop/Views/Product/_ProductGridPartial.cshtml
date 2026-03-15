@@ -1,0 +1,84 @@
+@model List<WebsiteSellLaptop.Models.Entities.Product>
+@using WebsiteSellLaptop.Models.Enums
+@{
+    var products = Model ?? new List<WebsiteSellLaptop.Models.Entities.Product>();
+}
+@if (products.Count == 0)
+{
+    <div class="col-12">
+        <div class="empty-state">
+            <div class="empty-icon"><i class="bi bi-search"></i></div>
+            <h5 class="fw-bold mb-2">Không tìm thấy sản phẩm</h5>
+            <p class="text-muted mb-3">Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm</p>
+            <a href="@Url.Action("Index")" class="btn btn-outline-primary rounded-pill px-4">
+                <i class="bi bi-arrow-counterclockwise me-1"></i>Xóa bộ lọc
+            </a>
+        </div>
+    </div>
+}
+else
+{
+    @foreach (var product in products)
+    {
+        var discount = product.DiscountPrice.HasValue && product.DiscountPrice > 0
+            ? (int)Math.Round((1 - product.Price / product.DiscountPrice.Value) * 100)
+            : 0;
+
+        <div class="col-md-4 col-6">
+            <div class="card-wrap">
+                @if (product.IsFeatured)
+                {
+                    <span class="product-badge badge bg-primary">🔥 Nổi bật</span>
+                }
+                else if (discount > 0)
+                {
+                    <span class="product-badge badge bg-danger">-@discount%</span>
+                }
+                else if ((DateTime.Now - product.Created).TotalDays < 7)
+                {
+                    <span class="product-badge badge bg-success">Mới</span>
+                }
+
+                <div class="product-card" onclick="location.href='@Url.Action("Detail", new { id = product.Id })'">
+                    <div class="product-img-wrap">
+                        <img src="@(!string.IsNullOrEmpty(product.ThumbnailUrl) ? product.ThumbnailUrl : "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=900&q=80")"
+                             class="product-img" alt="@product.Name">
+                    </div>
+                    <div class="product-body">
+                        @if (product.Brand != null)
+                        {
+                            <div class="product-brand">@product.Brand.Name</div>
+                        }
+                        <div class="product-title">@product.Name</div>
+                        <div class="product-spec">
+                            @product.CPU
+                            @if (!string.IsNullOrEmpty(product.RAM)) { <text> · @product.RAM</text> }
+                            @if (!string.IsNullOrEmpty(product.Storage)) { <text> · @product.Storage</text> }
+                        </div>
+                        <div class="product-meta">
+                            <div class="price-block">
+                                <span class="price">@product.Price.ToString("N0")₫</span>
+                                @if (product.DiscountPrice.HasValue && product.DiscountPrice > 0)
+                                {
+                                    <span class="old-price">@product.DiscountPrice.Value.ToString("N0")₫</span>
+                                    if (discount > 0)
+                                    {
+                                        <span class="discount-tag">-@discount%</span>
+                                    }
+                                }
+                            </div>
+                            <div class="btn-actions" onclick="event.stopPropagation()">
+                                <button class="btn-buy" onclick="buyNow('@product.Id')">
+                                    <i class="bi bi-bag-check me-1"></i>Mua ngay
+                                </button>
+                                <button class="btn-add-cart" title="Thêm vào giỏ" onclick="addToCart('@product.Id')">
+                                    <i class="bi bi-bag-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}

@@ -63,6 +63,16 @@
                                 <a href="javascript:void(0)" onclick="showDetail('@item.Id')" class="text-primary fw-semibold">@item.Code</a>
                             </td>
                             <td>
+                                @if (item.SortOrder == 1)
+                                {
+                                    <span class="badge bg-info text-white">Phụ kiện</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary text-white">Laptop</span>
+                                }
+                            </td>
+                            <td>
                                 <a href="javascript:void(0)" onclick="showDetail('@item.Id')" class="text-primary fw-semibold">@item.Name</a>
                                 @if (!string.IsNullOrEmpty(item.Description))
                                 {
@@ -200,8 +210,12 @@
                             <input type="text" name="Name" class="form-control" required maxlength="200" placeholder="Nhập tên danh mục">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Thứ tự</label>
-                            <input type="number" name="SortOrder" class="form-control" value="0" min="0">
+                            <label class="form-label fw-semibold">Là phụ kiện?</label>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="createIsAccessory" name="IsAccessory">
+                                <label class="form-check-label" for="createIsAccessory">Bật nếu đây là danh mục phụ kiện</label>
+                            </div>
+                            <input type="hidden" name="SortOrder" id="createSortOrder" value="0">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Ảnh URL (Tùy chọn)</label>
@@ -257,8 +271,12 @@
                             <input type="text" name="Name" id="editName" class="form-control" required maxlength="200">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Thứ tự</label>
-                            <input type="number" name="SortOrder" id="editSortOrder" class="form-control" min="0">
+                            <label class="form-label fw-semibold">Là phụ kiện?</label>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="editIsAccessory" name="IsAccessory">
+                                <label class="form-check-label" for="editIsAccessory">Bật nếu đây là danh mục phụ kiện</label>
+                            </div>
+                            <input type="hidden" name="SortOrder" id="editSortOrder" class="form-control" min="0">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Ảnh URL (Tùy chọn)</label>
@@ -511,6 +529,9 @@
 
     document.getElementById('createForm').addEventListener('submit', async function(e) {
         e.preventDefault();
+        // Map IsAccessory checkbox to SortOrder hidden field
+        const isAcc = document.getElementById('createIsAccessory').checked;
+        document.getElementById('createSortOrder').value = isAcc ? '1' : '0';
         const formData = new FormData(this);
 
         const response = await fetch(`${baseUrl}/Create`, {
@@ -537,6 +558,8 @@
             document.getElementById('editCode').value = result.data.code;
             document.getElementById('editName').value = result.data.name;
             document.getElementById('editImageUrl').value = result.data.imageUrl || '';
+            // Set IsAccessory checkbox and hidden sort order
+            document.getElementById('editIsAccessory').checked = result.data.sortOrder == 1;
             document.getElementById('editSortOrder').value = result.data.sortOrder;
             document.getElementById('editDescription').value = result.data.description || '';
 
@@ -560,6 +583,9 @@
 
     document.getElementById('editForm').addEventListener('submit', async function(e) {
         e.preventDefault();
+        // Ensure hidden SortOrder matches checkbox
+        const isAcc = document.getElementById('editIsAccessory').checked;
+        document.getElementById('editSortOrder').value = isAcc ? '1' : '0';
         const formData = new FormData(this);
 
         const response = await fetch(`${baseUrl}/Edit`, {
