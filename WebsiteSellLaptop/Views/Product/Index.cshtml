@@ -274,10 +274,8 @@
                 </select>
             </div>
 
-            <div class="row g-3">
-                <div id="productGrid">
-                    @await Html.PartialAsync("_ProductGridPartial", products)
-                </div>
+            <div id="productGrid" class="row g-3">
+                @await Html.PartialAsync("_ProductGridPartial", products)
             </div>
 
             <!-- Pagination -->

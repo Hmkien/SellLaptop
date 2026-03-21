@@ -1,4 +1,5 @@
 @using WebsiteSellLaptop.Models.Entities
+@using WebsiteSellLaptop.Models.Dto
 
 @{
     ViewData["Title"] = "Báo cáo tồn kho";
@@ -16,37 +17,170 @@
 
     var categories = ViewBag.Categories as List<Category> ?? new List<Category>();
     var brands = ViewBag.Brands as List<Brand> ?? new List<Brand>();
-    var stockByCategory = ViewBag.StockByCategory as List<dynamic> ?? new List<dynamic>();
-    var stockByBrand = ViewBag.StockByBrand as List<dynamic> ?? new List<dynamic>();
+
+    // FIX: Ép kiểu chính xác về List<StockGroup> thay vì List<dynamic> để tránh lỗi Runtime
+    var stockByCategory = ViewBag.StockByCategory as List<StockGroup> ?? new List<StockGroup>();
+    var stockByBrand = ViewBag.StockByBrand as List<StockGroup> ?? new List<StockGroup>();
 }
 
 @section Styles {
-<style>
-    .report-stat{background:#fff;border-radius:16px;padding:24px;border:1px solid #e5e7eb;transition:all .2s}
-    .report-stat:hover{box-shadow:0 4px 20px rgba(0,0,0,.08);transform:translateY(-2px)}
-    .report-stat .icon{width:56px;height:56px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:16px}
-    .report-stat .icon.blue{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff}
-    .report-stat .icon.green{background:linear-gradient(135deg,#10b981 0%,#059669 100%);color:#fff}
-    .report-stat .icon.orange{background:linear-gradient(135deg,#4facfe 0%,#00f2fe 100%);color:#fff}
-    .report-stat .icon.red{background:linear-gradient(135deg,#ef4444 0%,#dc2626 100%);color:#fff}
-    .report-stat .icon.yellow{background:linear-gradient(135deg,#f59e0b 0%,#d97706 100%);color:#fff}
-    .report-stat .label{color:#6b7280;font-size:14px;font-weight:500;margin-bottom:8px}
-    .report-stat .value{font-size:28px;font-weight:700;color:#111827;margin-bottom:4px}
-    .chart-card{background:#fff;border-radius:16px;border:1px solid #e5e7eb;padding:24px}
-    .chart-card h6{font-weight:700;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid #e5e7eb}
-    .filter-bar{background:#fff;border-radius:16px;border:1px solid #e5e7eb;padding:20px;margin-bottom:24px}
-    .report-nav{display:flex;gap:8px;margin-bottom:24px}
-    .report-nav a{padding:10px 20px;border-radius:10px;font-weight:600;font-size:14px;border:1px solid #e5e7eb;color:#374151;transition:all .15s}
-    .report-nav a:hover{border-color:var(--brand);color:var(--brand)}
-    .report-nav a.active{background:var(--brand);color:#fff;border-color:var(--brand)}
-    .stock-badge{padding:4px 12px;border-radius:50rem;font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:4px}
-    .stock-ok{background:#dcfce7;color:#16a34a}
-    .stock-low{background:#fef3c7;color:#d97706}
-    .stock-out{background:#fee2e2;color:#dc2626}
-    .stock-bar{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #f3f4f6}
-    .stock-bar:last-child{border-bottom:none}
-    .stock-bar .bar-fill{height:20px;border-radius:6px;min-width:4px;transition:width .3s}
-</style>
+    <style>
+        .report-stat {
+            background: #fff;
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid #e5e7eb;
+            transition: all .2s
+        }
+
+            .report-stat:hover {
+                box-shadow: 0 4px 20px rgba(0,0,0,.08);
+                transform: translateY(-2px)
+            }
+
+            .report-stat .icon {
+                width: 56px;
+                height: 56px;
+                border-radius: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 24px;
+                margin-bottom: 16px
+            }
+
+                .report-stat .icon.blue {
+                    background: linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+                    color: #fff
+                }
+
+                .report-stat .icon.green {
+                    background: linear-gradient(135deg,#10b981 0%,#059669 100%);
+                    color: #fff
+                }
+
+                .report-stat .icon.orange {
+                    background: linear-gradient(135deg,#4facfe 0%,#00f2fe 100%);
+                    color: #fff
+                }
+
+                .report-stat .icon.red {
+                    background: linear-gradient(135deg,#ef4444 0%,#dc2626 100%);
+                    color: #fff
+                }
+
+                .report-stat .icon.yellow {
+                    background: linear-gradient(135deg,#f59e0b 0%,#d97706 100%);
+                    color: #fff
+                }
+
+            .report-stat .label {
+                color: #6b7280;
+                font-size: 14px;
+                font-weight: 500;
+                margin-bottom: 8px
+            }
+
+            .report-stat .value {
+                font-size: 28px;
+                font-weight: 700;
+                color: #111827;
+                margin-bottom: 4px
+            }
+
+        .chart-card {
+            background: #fff;
+            border-radius: 16px;
+            border: 1px solid #e5e7eb;
+            padding: 24px
+        }
+
+            .chart-card h6 {
+                font-weight: 700;
+                margin-bottom: 20px;
+                padding-bottom: 16px;
+                border-bottom: 1px solid #e5e7eb
+            }
+
+        .filter-bar {
+            background: #fff;
+            border-radius: 16px;
+            border: 1px solid #e5e7eb;
+            padding: 20px;
+            margin-bottom: 24px
+        }
+
+        .report-nav {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px
+        }
+
+            .report-nav a {
+                padding: 10px 20px;
+                border-radius: 10px;
+                font-weight: 600;
+                font-size: 14px;
+                border: 1px solid #e5e7eb;
+                color: #374151;
+                transition: all .15s
+            }
+
+                .report-nav a:hover {
+                    border-color: var(--brand);
+                    color: var(--brand)
+                }
+
+                .report-nav a.active {
+                    background: var(--brand);
+                    color: #fff;
+                    border-color: var(--brand)
+                }
+
+        .stock-badge {
+            padding: 4px 12px;
+            border-radius: 50rem;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px
+        }
+
+        .stock-ok {
+            background: #dcfce7;
+            color: #16a34a
+        }
+
+        .stock-low {
+            background: #fef3c7;
+            color: #d97706
+        }
+
+        .stock-out {
+            background: #fee2e2;
+            color: #dc2626
+        }
+
+        .stock-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid #f3f4f6
+        }
+
+            .stock-bar:last-child {
+                border-bottom: none
+            }
+
+            .stock-bar .bar-fill {
+                height: 20px;
+                border-radius: 6px;
+                min-width: 4px;
+                transition: width .3s
+            }
+    </style>
 }
 
 <!-- Navigation -->
@@ -134,7 +268,7 @@
     <div class="col-md-3 col-6">
         <div class="report-stat">
             <div class="icon green"><i class="bi bi-stack"></i></div>
-            <div class="label">Tổng tồn kho</div>
+            <div class="label">Tổng sản phẩm còn lại</div>
             <div class="value">@totalStockQuantity.ToString("N0")</div>
         </div>
     </div>
@@ -158,7 +292,7 @@
     <div class="col-md-12">
         <div class="report-stat">
             <div class="icon orange"><i class="bi bi-cash-coin"></i></div>
-            <div class="label">Tổng giá trị tồn kho (Giá bán × Số lượng)</div>
+            <div class="label">Tổng giá trị sản phẩm tồn đọng (Giá bán × Số lượng)</div>
             <div class="value">@totalStockValue.ToString("N0")₫</div>
         </div>
     </div>
@@ -168,21 +302,22 @@
 <div class="row g-4 mb-4">
     <div class="col-md-6">
         <div class="chart-card">
-            <h6><i class="bi bi-folder me-2"></i>Tồn kho theo danh mục</h6>
+            <h6><i class="bi bi-folder me-2"></i>Sản phẩm còn lại theo danh mục</h6>
             @if (stockByCategory.Any())
             {
-                var maxCatStock = (int)stockByCategory.Max(s => (int)s.TotalStock);
+                var maxCatStock = stockByCategory.Max(s => s.TotalStock);
                 @foreach (var s in stockByCategory)
                 {
-                    var pct = maxCatStock > 0 ? (double)(int)s.TotalStock / maxCatStock * 100 : 0;
+                    var pct = maxCatStock > 0 ? (double)s.TotalStock / maxCatStock * 100 : 0;
                     <div class="stock-bar">
                         <div style="flex:1">
                             <div class="d-flex justify-content-between mb-1">
-                                <span class="fw-semibold" style="font-size:13px">@s.Category</span>
-                                <span class="text-muted" style="font-size:13px">@((int)s.Count) SP • @((int)s.TotalStock) cái</span>
+                                <!-- FIX: Sử dụng s.Name thay vì s.Category -->
+                                <span class="fw-semibold" style="font-size:13px">@s.Name</span>
+                                <span class="text-muted" style="font-size:13px">@s.Count SP • @s.TotalStock cái</span>
                             </div>
                             <div style="background:#f3f4f6;border-radius:6px;height:20px;overflow:hidden">
-                                <div class="bar-fill" style="width:@pct%;background:linear-gradient(135deg,#10b981,#059669)"></div>
+                                <div class="bar-fill" style="width:@pct.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)%;background:linear-gradient(135deg,#10b981,#059669)"></div>
                             </div>
                         </div>
                     </div>
@@ -192,25 +327,29 @@
             {
                 <div class="text-center text-muted py-4">Chưa có dữ liệu</div>
             }
+            <div style="margin-top:18px">
+                <canvas id="categoryChart" height="140"></canvas>
+            </div>
         </div>
     </div>
     <div class="col-md-6">
         <div class="chart-card">
-            <h6><i class="bi bi-award me-2"></i>Tồn kho theo thương hiệu</h6>
+            <h6><i class="bi bi-award me-2"></i>Sản phẩm còn lại theo thương hiệu</h6>
             @if (stockByBrand.Any())
             {
-                var maxBrandStock = (int)stockByBrand.Max(s => (int)s.TotalStock);
+                var maxBrandStock = stockByBrand.Max(s => s.TotalStock);
                 @foreach (var s in stockByBrand)
                 {
-                    var pct = maxBrandStock > 0 ? (double)(int)s.TotalStock / maxBrandStock * 100 : 0;
+                    var pct = maxBrandStock > 0 ? (double)s.TotalStock / maxBrandStock * 100 : 0;
                     <div class="stock-bar">
                         <div style="flex:1">
                             <div class="d-flex justify-content-between mb-1">
-                                <span class="fw-semibold" style="font-size:13px">@s.Brand</span>
-                                <span class="text-muted" style="font-size:13px">@((int)s.Count) SP • @((int)s.TotalStock) cái</span>
+                                <!-- FIX: Sử dụng s.Name thay vì s.Brand -->
+                                <span class="fw-semibold" style="font-size:13px">@s.Name</span>
+                                <span class="text-muted" style="font-size:13px">@s.Count SP • @s.TotalStock cái</span>
                             </div>
                             <div style="background:#f3f4f6;border-radius:6px;height:20px;overflow:hidden">
-                                <div class="bar-fill" style="width:@pct%;background:linear-gradient(135deg,#667eea,#764ba2)"></div>
+                                <div class="bar-fill" style="width:@pct.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)%;background:linear-gradient(135deg,#667eea,#764ba2)"></div>
                             </div>
                         </div>
                     </div>
@@ -220,6 +359,9 @@
             {
                 <div class="text-center text-muted py-4">Chưa có dữ liệu</div>
             }
+            <div style="margin-top:18px">
+                <canvas id="brandChart" height="140"></canvas>
+            </div>
         </div>
     </div>
 </div>
@@ -231,7 +373,7 @@
     </div>
     <div class="admin-card-body">
         <div class="table-responsive">
-            <table class="admin-table">
+            <table class="admin-table table table-hover">
                 <thead>
                     <tr>
                         <th style="width:50px">#</th>
@@ -245,7 +387,9 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @{ int idx = 0; }
+                    @{
+                        int idx = 0;
+                    }
                     @foreach (var p in products)
                     {
                         idx++;
@@ -281,9 +425,61 @@
 </div>
 
 @section Scripts {
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    var categoryLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(stockByCategory.Select(s => (string)s.Category).ToList()));
-    var categoryData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(stockByCategory.Select(s => (int)s.TotalStock).ToList()));
-</script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Ép Json truyền PropertyNamingPolicy = null để giữ nguyên chữ in hoa (PascalCase) như ở DTO
+        var stockByCategoryJs = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(stockByCategory, new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = null }));
+        var stockByBrandJs = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(stockByBrand, new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = null }));
+
+        // Helper to create a simple bar chart
+        function createBarChart(ctxId, labels, data, colorFrom, colorTo) {
+            const ctx = document.getElementById(ctxId);
+            if (!ctx) return null;
+            const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, ctx.canvas.height || 140);
+            gradient.addColorStop(0, colorFrom);
+            gradient.addColorStop(1, colorTo);
+
+            return new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Số lượng (cái)',
+                        data: data,
+                        backgroundColor: gradient,
+                        borderRadius: 6,
+                        maxBarThickness: 40
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: '#374151' } },
+                        y: { beginAtZero: true, ticks: { color: '#374151' } }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        // Initialize charts when DOM is ready
+        document.addEventListener('DOMContentLoaded', function () {
+            var cat = stockByCategoryJs || [];
+            var br = stockByBrandJs || [];
+
+            // FIX: Xử lý linh hoạt trường hợp JSON serialize ra chữ thường (name) hoặc hoa (Name)
+            if (cat.length > 0) {
+                var labels = cat.map(c => c.Name || c.name);
+                var data = cat.map(c => c.TotalStock || c.totalStock);
+                createBarChart('categoryChart', labels, data, '#10b981', '#059669');
+            }
+
+            if (br.length > 0) {
+                var labels = br.map(b => b.Name || b.name);
+                var data = br.map(b => b.TotalStock || b.totalStock);
+                createBarChart('brandChart', labels, data, '#667eea', '#764ba2');
+            }
+        });
+    </script>
 }

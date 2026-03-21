@@ -1,0 +1,442 @@
+﻿@using WebsiteSellLaptop.Models.Enums
+@{
+    // Title may be overridden by controller (Accessories sets "Phụ kiện Laptop")
+    ViewData["Title"] = ViewBag.IsAccessory == true ? "Phụ kiện Laptop" : "Tất cả Laptop";
+    var products = ViewBag.Products as List<Product> ?? new List<Product>();
+    var brands = ViewBag.Brands as List<Brand> ?? new List<Brand>();
+    var categories = ViewBag.Categories as List<Category> ?? new List<Category>();
+    var currentPage = ViewBag.CurrentPage ?? 1;
+    var totalPages = ViewBag.TotalPages ?? 1;
+    var totalItems = ViewBag.TotalItems ?? 0;
+    var pageSize = ViewBag.PageSize ?? 9;
+    var keyword = ViewBag.Keyword as string;
+    var selectedBrand = ViewBag.SelectedBrand as string ?? "";
+    var selectedCategory = ViewBag.SelectedCategory as string ?? "";
+    var sort = ViewBag.Sort as string ?? "newest";
+    var minPrice = ViewBag.MinPrice as decimal? ?? 0;
+    var maxPrice = ViewBag.MaxPrice as decimal? ?? 0;
+    var currentPriceRange = (minPrice > 0 || maxPrice > 0) && maxPrice > 0 ? $"{minPrice}-{maxPrice}" : "";
+}
+
+@section Styles {
+<style>
+/* ===== PAGE HEADER ===== */
+.page-header{background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 100%);padding:28px 0;margin-bottom:0}
+.page-header .breadcrumb-item a{color:rgba(255,255,255,.65);text-decoration:none}
+.page-header .breadcrumb-item.active{color:rgba(255,255,255,.9)}
+.page-header .breadcrumb-item+.breadcrumb-item::before{color:rgba(255,255,255,.4)}
+.page-header h2{color:#fff;font-size:1.6rem}
+.page-header .total-badge{background:rgba(255,255,255,.15);color:#fff;font-size:.8rem;padding:4px 12px;border-radius:20px;border:1px solid rgba(255,255,255,.2)}
+
+/* ===== FILTER SIDEBAR ===== */
+.filter-wrap{position:sticky;top:90px}
+.filter-card{background:#fff;border-radius:14px;border:1px solid #e5e7eb;margin-bottom:10px;overflow:hidden}
+.filter-card-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer;user-select:none;font-weight:700;font-size:.85rem;color:#1e293b;border-bottom:1px solid #f1f5f9}
+.filter-card-header i.toggle-icon{transition:transform .2s;color:#94a3b8}
+.filter-card-body{padding:12px 16px 14px}
+.filter-check-item{display:flex;align-items:center;gap:8px;padding:5px 0;cursor:pointer}
+.filter-check-item input[type=checkbox]{width:16px;height:16px;cursor:pointer;accent-color:var(--brand)}
+.filter-check-item label{font-size:.84rem;color:#334155;cursor:pointer;flex:1}
+.filter-check-item:hover label{color:var(--brand)}
+.price-radio-item{display:flex;align-items:center;gap:8px;padding:5px 0;cursor:pointer}
+.price-radio-item input[type=radio]{width:16px;height:16px;cursor:pointer;accent-color:var(--brand)}
+.price-radio-item label{font-size:.84rem;color:#334155;cursor:pointer}
+.price-radio-item:hover label{color:var(--brand)}
+.range-label{font-size:.78rem;color:#64748b;display:flex;justify-content:space-between;margin-bottom:2px}
+.range-val{font-weight:700;color:var(--brand)}
+.filter-apply-btn{background:linear-gradient(135deg,var(--brand),#1d4ed8);color:#fff;border:none;border-radius:10px;padding:10px;font-size:.88rem;font-weight:700;width:100%;transition:opacity .2s}
+.filter-apply-btn:hover{opacity:.88;color:#fff}
+.filter-clear-btn{background:#f8fafc;color:#64748b;border:1px solid #e2e8f0;border-radius:10px;padding:8px;font-size:.82rem;width:100%;margin-top:6px;transition:all .2s}
+.filter-clear-btn:hover{background:#fee2e2;color:#ef4444;border-color:#fca5a5}
+
+/* ===== ACTIVE FILTER CHIPS ===== */
+.filter-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.filter-chip{display:inline-flex;align-items:center;gap:5px;background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;border-radius:20px;padding:4px 10px;font-size:.78rem;font-weight:600}
+.filter-chip .chip-close{background:none;border:none;padding:0;color:#93c5fd;cursor:pointer;line-height:1;font-size:.9rem;display:flex;align-items:center}
+.filter-chip .chip-close:hover{color:#1d4ed8}
+
+/* ===== TOOLBAR ===== */
+.toolbar{background:#fff;border-radius:14px;border:1px solid #e5e7eb;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.result-count{font-size:.85rem;color:#64748b}
+.result-count strong{color:#1e293b}
+.sort-select{border-radius:10px;border:1px solid #e5e7eb;padding:7px 14px;font-size:.84rem;background:#f8fafc;cursor:pointer;outline:none}
+.sort-select:focus{border-color:var(--brand);background:#fff}
+
+/* ===== PRODUCT CARDS ===== */
+.card-wrap{position:relative;height:100%}
+.product-card{background:#fff;border:1.5px solid #e5e7eb;border-radius:14px;display:flex;flex-direction:column;height:100%;overflow:hidden;cursor:pointer;transition:all .22s}
+.product-card:hover{border-color:#3b82f6;box-shadow:0 10px 36px rgba(59,130,246,.14);transform:translateY(-4px)}
+.product-img-wrap{position:relative;background:#f8fafc;overflow:hidden}
+.product-img{width:100%;height:190px;object-fit:contain;padding:8px;transition:transform .3s}
+.product-card:hover .product-img{transform:scale(1.05)}
+.product-body{padding:14px;display:flex;flex-direction:column;flex:1}
+.product-brand{font-size:.72rem;font-weight:700;color:#0ea5e9;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.product-title{font-weight:700;font-size:.85rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:40px;margin-bottom:5px;color:#1e293b;line-height:1.4}
+.product-spec{color:#94a3b8;font-size:.75rem;margin-bottom:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.product-meta{margin-top:auto}
+.price-block{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
+.price{font-weight:800;color:#e53e3e;font-size:1.05rem}
+.old-price{color:#94a3b8;text-decoration:line-through;font-size:.8rem}
+.discount-tag{background:#fee2e2;color:#e53e3e;font-size:.7rem;font-weight:700;border-radius:4px;padding:1px 5px}
+.btn-actions{display:flex;gap:6px;margin-top:10px}
+.btn-buy{background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;border:none;border-radius:9px;padding:8px 0;font-weight:700;font-size:.82rem;flex:1;transition:all .18s}
+.btn-buy:hover{opacity:.88;color:#fff;transform:translateY(-1px)}
+.btn-add-cart{background:#f1f5f9;color:#475569;border:1.5px solid #e2e8f0;border-radius:9px;width:40px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;transition:all .18s}
+.btn-add-cart:hover{background:#eff6ff;color:#2563eb;border-color:#93c5fd}
+
+/* ===== BADGE ===== */
+.product-badge{position:absolute;top:10px;left:10px;z-index:2;font-size:.7rem;padding:3px 9px;border-radius:20px;font-weight:700;line-height:1.4}
+
+/* ===== EMPTY STATE ===== */
+.empty-state{text-align:center;padding:60px 20px;background:#fff;border-radius:14px;border:1px solid #e5e7eb}
+.empty-icon{width:72px;height:72px;background:#f1f5f9;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2rem;color:#94a3b8;margin:0 auto 16px}
+
+/* ===== PAGINATION ===== */
+.custom-pagination{display:flex;align-items:center;justify-content:center;gap:5px;margin-top:32px}
+.pg-btn{width:38px;height:38px;border-radius:10px;border:1.5px solid #e5e7eb;background:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:.85rem;color:#475569;transition:all .15s;cursor:pointer;text-decoration:none}
+.pg-btn:hover{background:#eff6ff;border-color:#93c5fd;color:#2563eb}
+.pg-btn.active{background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;border-color:#2563eb;box-shadow:0 4px 12px rgba(37,99,235,.3)}
+.pg-btn.disabled{color:#d1d5db;pointer-events:none;background:#fafafa;border-color:#f1f5f9}
+</style>
+}
+
+<div class="page-header">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-2">
+                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+                <li class="breadcrumb-item active">Laptop</li>
+            </ol>
+        </nav>
+        <div class="d-flex align-items-center gap-3">
+            <h2 class="fw-bold mb-0">Tất cả Laptop</h2>
+            <span class="total-badge">@totalItems sản phẩm</span>
+        </div>
+    </div>
+</div>
+
+<main class="container my-4">
+    <div class="row g-4">
+        <!-- Sidebar Filter - Sticky -->
+        <div class="col-lg-3">
+            <form id="filterForm" method="get">
+                <input type="hidden" name="keyword" value="@keyword">
+                <input type="hidden" name="search" value="@(ViewBag.Search ?? keyword)">
+                <input type="hidden" name="sort" value="@sort">
+
+                <div class="filter-wrap">
+                    <!-- Thương hiệu -->
+                    <div class="filter-card">
+                        <div class="filter-card-header" onclick="toggleFilter('brandBody', this)">
+                            <span><i class="bi bi-building me-2 text-primary"></i>Thương hiệu</span>
+                            <i class="bi bi-chevron-up toggle-icon"></i>
+                        </div>
+                        <div class="filter-card-body" id="brandBody">
+                            @foreach (var brand in brands)
+                            {
+                                var isChecked = selectedBrand.Split(',', StringSplitOptions.RemoveEmptyEntries).Contains(brand.Id.ToString());
+                                <div class="filter-check-item">
+                                    <input class="filter-checkbox" type="checkbox" value="@brand.Id"
+                                           id="brand_@brand.Id" name="brandCheck" @(isChecked ? "checked" : "")>
+                                    <label for="brand_@brand.Id">@brand.Name</label>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Danh mục -->
+                    <div class="filter-card">
+                        <div class="filter-card-header" onclick="toggleFilter('catBody', this)">
+                            <span><i class="bi bi-grid me-2 text-primary"></i>Danh mục</span>
+                            <i class="bi bi-chevron-up toggle-icon"></i>
+                        </div>
+                        <div class="filter-card-body" id="catBody">
+                            @foreach (var cat in categories)
+                            {
+                                var isChecked = selectedCategory.Split(',', StringSplitOptions.RemoveEmptyEntries).Contains(cat.Id.ToString());
+                                <div class="filter-check-item">
+                                    <input class="filter-checkbox" type="checkbox" value="@cat.Id"
+                                           id="cat_@cat.Id" name="categoryCheck" @(isChecked ? "checked" : "")>
+                                    <label for="cat_@cat.Id">@cat.Name</label>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Mức giá -->
+                    <div class="filter-card">
+                        <div class="filter-card-header" onclick="toggleFilter('priceBody', this)">
+                            <span><i class="bi bi-tag me-2 text-primary"></i>Mức giá</span>
+                            <i class="bi bi-chevron-up toggle-icon"></i>
+                        </div>
+                        <div class="filter-card-body" id="priceBody">
+                            <div class="range-label mb-1">
+                                <span>Từ: <span id="minRangeValue" class="range-val">@(minPrice > 0 ? minPrice.ToString("N0") : "0")đ</span></span>
+                            </div>
+                            <input type="range" class="form-range mb-2" id="minPriceSlider" min="0" max="60000000" step="500000" value="@(minPrice > 0 ? minPrice : 0)">
+                            <div class="range-label mb-1">
+                                <span>Đến: <span id="maxRangeValue" class="range-val">@(maxPrice > 0 ? maxPrice.ToString("N0") : "60,000,000")đ</span></span>
+                            </div>
+                            <input type="range" class="form-range mb-3" id="maxPriceSlider" min="0" max="60000000" step="500000" value="@(maxPrice > 0 ? maxPrice : 60000000)">
+                            <input type="hidden" id="minPriceInput" value="@(minPrice > 0 ? minPrice.ToString("N0") : "")">
+                            <input type="hidden" id="maxPriceInput" value="@(maxPrice > 0 ? maxPrice.ToString("N0") : "")">
+                            <div style="border-top:1px solid #f1f5f9;padding-top:10px;margin-top:4px">
+                                <div class="price-radio-item">
+                                    <input type="radio" name="priceRange" value="0-15000000" id="p1" @(currentPriceRange == "0-15000000" ? "checked" : "")>
+                                    <label for="p1">Dưới 15 triệu</label>
+                                </div>
+                                <div class="price-radio-item">
+                                    <input type="radio" name="priceRange" value="15000000-25000000" id="p2" @(currentPriceRange == "15000000-25000000" ? "checked" : "")>
+                                    <label for="p2">15 – 25 triệu</label>
+                                </div>
+                                <div class="price-radio-item">
+                                    <input type="radio" name="priceRange" value="25000000-40000000" id="p3" @(currentPriceRange == "25000000-40000000" ? "checked" : "")>
+                                    <label for="p3">25 – 40 triệu</label>
+                                </div>
+                                <div class="price-radio-item">
+                                    <input type="radio" name="priceRange" value="40000000-999999999" id="p4" @(currentPriceRange == "40000000-999999999" ? "checked" : "")>
+                                    <label for="p4">Trên 40 triệu</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="filter-apply-btn">
+                        <i class="bi bi-funnel me-1"></i>Áp dụng bộ lọc
+                    </button>
+                    <a href="@Url.Action("Index")" class="filter-clear-btn d-block text-center text-decoration-none">
+                        <i class="bi bi-x-circle me-1"></i>Xóa bộ lọc
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Product Grid -->
+        <div class="col-lg-9">
+            <!-- Active filter chips -->
+            @{
+                var selectedBrandIds = selectedBrand.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                var selectedCatIds   = selectedCategory.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                bool hasFilters = selectedBrandIds.Length > 0 || selectedCatIds.Length > 0 || minPrice > 0 || maxPrice > 0 || !string.IsNullOrEmpty(keyword);
+            }
+            @if (hasFilters)
+            {
+                <div class="filter-chips">
+                    @if (!string.IsNullOrEmpty(keyword))
+                    {
+                        <span class="filter-chip">
+                            <i class="bi bi-search"></i> @keyword
+                            <a href="@Url.Action("Index", new { brand = selectedBrand, category = selectedCategory, sort, minPrice = minPrice > 0 ? minPrice : (decimal?)null, maxPrice = maxPrice > 0 ? maxPrice : (decimal?)null })" class="chip-close"><i class="bi bi-x"></i></a>
+                        </span>
+                    }
+                    @foreach (var bid in selectedBrandIds)
+                    {
+                        var bname = brands.FirstOrDefault(b => b.Id.ToString() == bid)?.Name ?? bid;
+                        var remainBrands = string.Join(",", selectedBrandIds.Where(x => x != bid));
+                        <span class="filter-chip">
+                            <i class="bi bi-building"></i> @bname
+                            <a href="@Url.Action("Index", new { keyword, brand = remainBrands, category = selectedCategory, sort, minPrice = minPrice > 0 ? minPrice : (decimal?)null, maxPrice = maxPrice > 0 ? maxPrice : (decimal?)null })" class="chip-close"><i class="bi bi-x"></i></a>
+                        </span>
+                    }
+                    @foreach (var cid in selectedCatIds)
+                    {
+                        var cname = categories.FirstOrDefault(c => c.Id.ToString() == cid)?.Name ?? cid;
+                        var remainCats = string.Join(",", selectedCatIds.Where(x => x != cid));
+                        <span class="filter-chip">
+                            <i class="bi bi-grid"></i> @cname
+                            <a href="@Url.Action("Index", new { keyword, brand = selectedBrand, category = remainCats, sort, minPrice = minPrice > 0 ? minPrice : (decimal?)null, maxPrice = maxPrice > 0 ? maxPrice : (decimal?)null })" class="chip-close"><i class="bi bi-x"></i></a>
+                        </span>
+                    }
+                    @if (minPrice > 0 || maxPrice > 0)
+                    {
+                        <span class="filter-chip">
+                            <i class="bi bi-tag"></i> @minPrice.ToString("N0")đ – @maxPrice.ToString("N0")đ
+                            <a href="@Url.Action("Index", new { keyword, brand = selectedBrand, category = selectedCategory, sort })" class="chip-close"><i class="bi bi-x"></i></a>
+                        </span>
+                    }
+                </div>
+            }
+
+            <!-- Toolbar -->
+            <div class="toolbar">
+                <span class="result-count">
+                    Tìm thấy <strong>@totalItems</strong> sản phẩm
+                    @if (totalPages > 1)
+                    {
+                        <span class="text-muted"> · Trang @currentPage / @totalPages</span>
+                    }
+                </span>
+                <select class="sort-select" onchange="changeSort(this.value)">
+                    <option value="newest"     selected="@(sort == "newest"     ? "selected" : null)">🕒 Mới nhất</option>
+                    <option value="price_asc"  selected="@(sort == "price_asc"  ? "selected" : null)">💰 Giá tăng dần</option>
+                    <option value="price_desc" selected="@(sort == "price_desc" ? "selected" : null)">💎 Giá giảm dần</option>
+                    <option value="bestseller" selected="@(sort == "bestseller" ? "selected" : null)">🔥 Bán chạy</option>
+                </select>
+            </div>
+
+            <div class="row g-3">
+                <div id="productGrid">
+                    @await Html.PartialAsync("_ProductGridPartial", products)
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            @if (totalPages > 1)
+            {
+                <div class="custom-pagination">
+                    @if (currentPage > 1)
+                    {
+                        <a href="@Url.Action("Index", new { page = 1, keyword, brand = selectedBrand, category = selectedCategory, sort })" class="pg-btn" title="Trang đầu">«</a>
+                        <a href="@Url.Action("Index", new { page = currentPage - 1, keyword, brand = selectedBrand, category = selectedCategory, sort })" class="pg-btn">‹</a>
+                    }
+                    else
+                    {
+                        <span class="pg-btn disabled">«</span>
+                        <span class="pg-btn disabled">‹</span>
+                    }
+
+                    @{
+                        var start = Math.Max(1, currentPage - 2);
+                        var end = Math.Min(totalPages, currentPage + 2);
+                    }
+                    @for (int p = start; p <= end; p++)
+                    {
+                        if (p == currentPage)
+                        {
+                            <span class="pg-btn active">@p</span>
+                        }
+                        else
+                        {
+                            <a href="@Url.Action("Index", new { page = p, keyword, brand = selectedBrand, category = selectedCategory, sort })" class="pg-btn">@p</a>
+                        }
+                    }
+
+                    @if (currentPage < totalPages)
+                    {
+                        <a href="@Url.Action("Index", new { page = currentPage + 1, keyword, brand = selectedBrand, category = selectedCategory, sort })" class="pg-btn">›</a>
+                        <a href="@Url.Action("Index", new { page = totalPages, keyword, brand = selectedBrand, category = selectedCategory, sort })" class="pg-btn" title="Trang cuối">»</a>
+                    }
+                    else
+                    {
+                        <span class="pg-btn disabled">›</span>
+                        <span class="pg-btn disabled">»</span>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</main>
+
+<!-- Toast -->
+<div class="position-fixed top-0 end-0 p-3" style="z-index:9999">
+    <div id="cartToast" class="toast align-items-center border-0 text-white" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body d-flex align-items-center gap-2">
+                <i class="bi" id="cartToastIcon" style="font-size:1.1rem"></i>
+                <span id="cartToastMsg"></span>
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    // ===== Toggle filter sections =====
+    function toggleFilter(bodyId, header) {
+        const body = document.getElementById(bodyId);
+        const icon = header.querySelector('.toggle-icon');
+        const isOpen = body.style.display !== 'none';
+        body.style.display = isOpen ? 'none' : 'block';
+        icon.style.transform = isOpen ? 'rotate(-90deg)' : 'rotate(0deg)';
+    }
+
+    // ===== Range sliders =====
+    const minSlider = document.getElementById('minPriceSlider');
+    const maxSlider = document.getElementById('maxPriceSlider');
+    const minLabel  = document.getElementById('minRangeValue');
+    const maxLabel  = document.getElementById('maxRangeValue');
+    const minInput  = document.getElementById('minPriceInput');
+    const maxInput  = document.getElementById('maxPriceInput');
+
+    function fmt(n) { return parseInt(n).toLocaleString('vi-VN'); }
+    function parseVal(s) { return parseInt((s || '0').replace(/\D/g, '')) || 0; }
+
+    minSlider.addEventListener('input', function () {
+        let v = parseInt(this.value), mx = parseInt(maxSlider.value);
+        if (v > mx) { v = mx; this.value = v; }
+        minLabel.textContent = fmt(v) + 'đ';
+        minInput.value = fmt(v);
+        document.querySelectorAll('input[name="priceRange"]').forEach(r => r.checked = false);
+    });
+    maxSlider.addEventListener('input', function () {
+        let v = parseInt(this.value), mn = parseInt(minSlider.value);
+        if (v < mn) { v = mn; this.value = v; }
+        maxLabel.textContent = fmt(v) + 'đ';
+        maxInput.value = fmt(v);
+        document.querySelectorAll('input[name="priceRange"]').forEach(r => r.checked = false);
+    });
+
+    // ===== Apply / sort =====
+    function changeSort() { applyFilters(); }
+
+    function applyFilters() {
+        const url = new URL(window.location);
+        url.searchParams.set('sort', document.querySelector('.sort-select').value);
+
+        const br = [...document.querySelectorAll('input[name="brandCheck"]:checked')].map(c => c.value).join(',');
+        br ? url.searchParams.set('brand', br) : url.searchParams.delete('brand');
+
+        const ct = [...document.querySelectorAll('input[name="categoryCheck"]:checked')].map(c => c.value).join(',');
+        ct ? url.searchParams.set('category', ct) : url.searchParams.delete('category');
+
+        const radio = document.querySelector('input[name="priceRange"]:checked');
+        if (radio) {
+            const [mn, mx] = radio.value.split('-');
+            url.searchParams.set('minPrice', mn);
+            url.searchParams.set('maxPrice', mx);
+        } else {
+            const mn = parseVal(minInput.value), mx = parseVal(maxInput.value);
+            if (mn > 0 || mx > 0) { url.searchParams.set('minPrice', mn); url.searchParams.set('maxPrice', mx); }
+            else { url.searchParams.delete('minPrice'); url.searchParams.delete('maxPrice'); }
+        }
+        url.searchParams.set('page', 1);
+        window.location.href = url.toString();
+    }
+
+    document.querySelectorAll('.filter-checkbox').forEach(cb => cb.addEventListener('change', applyFilters));
+    document.querySelectorAll('input[name="priceRange"]').forEach(r => r.addEventListener('change', applyFilters));
+    document.getElementById('filterForm').addEventListener('submit', e => { e.preventDefault(); applyFilters(); });
+
+    // ===== Toast helper =====
+    function showToast(msg, ok = true) {
+        const el = document.getElementById('cartToast');
+        const icon = document.getElementById('cartToastIcon');
+        const text = document.getElementById('cartToastMsg');
+        el.classList.remove('bg-success', 'bg-danger');
+        el.classList.add(ok ? 'bg-success' : 'bg-danger');
+        icon.className = 'bi ' + (ok ? 'bi-check-circle-fill' : 'bi-x-circle-fill');
+        text.textContent = msg;
+        new bootstrap.Toast(el, { delay: 2800 }).show();
+    }
+
+    // ===== Cart =====
+    function addToCart(productId) {
+        $.post('@Url.Action("AddToCart", "Cart")', { productId, quantity: 1 }, function (res) {
+            if (res.success) {
+                showToast(res.message, true);
+                $('.icon-badge').text(res.cartCount);
+            } else {
+                showToast(res.message || 'Có lỗi xảy ra', false);
+            }
+        }).fail(() => showToast('Không thể thêm vào giỏ hàng', false));
+    }
+
+    function buyNow(productId) {
+        $.post('@Url.Action("AddToCart", "Cart")', { productId, quantity: 1 }, function (res) {
+            if (res.success) window.location.href = '@Url.Action("Index", "Cart")';
+            else showToast(res.message || 'Có lỗi xảy ra', false);
+        }).fail(() => showToast('Không thể thực hiện. Vui lòng thử lại.', false));
+    }
+</script>
+}

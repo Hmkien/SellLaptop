@@ -1,0 +1,289 @@
+﻿@using WebsiteSellLaptop.Models.Entities
+
+@{
+    ViewData["Title"] = "Báo cáo tồn kho";
+    var categoryId = ViewBag.CategoryId as Guid?;
+    var brandId = ViewBag.BrandId as Guid?;
+    var search = ViewBag.Search as string;
+    var sortBy = ViewBag.SortBy as string ?? "name";
+
+    var products = ViewBag.Products as List<Product> ?? new List<Product>();
+    var totalProducts = (int)(ViewBag.TotalProducts ?? 0);
+    var totalStockValue = (decimal)(ViewBag.TotalStockValue ?? 0m);
+    var totalStockQuantity = (int)(ViewBag.TotalStockQuantity ?? 0);
+    var outOfStock = (int)(ViewBag.OutOfStock ?? 0);
+    var lowStock = (int)(ViewBag.LowStock ?? 0);
+
+    var categories = ViewBag.Categories as List<Category> ?? new List<Category>();
+    var brands = ViewBag.Brands as List<Brand> ?? new List<Brand>();
+    var stockByCategory = ViewBag.StockByCategory as List<dynamic> ?? new List<dynamic>();
+    var stockByBrand = ViewBag.StockByBrand as List<dynamic> ?? new List<dynamic>();
+}
+
+@section Styles {
+<style>
+    .report-stat{background:#fff;border-radius:16px;padding:24px;border:1px solid #e5e7eb;transition:all .2s}
+    .report-stat:hover{box-shadow:0 4px 20px rgba(0,0,0,.08);transform:translateY(-2px)}
+    .report-stat .icon{width:56px;height:56px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:16px}
+    .report-stat .icon.blue{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff}
+    .report-stat .icon.green{background:linear-gradient(135deg,#10b981 0%,#059669 100%);color:#fff}
+    .report-stat .icon.orange{background:linear-gradient(135deg,#4facfe 0%,#00f2fe 100%);color:#fff}
+    .report-stat .icon.red{background:linear-gradient(135deg,#ef4444 0%,#dc2626 100%);color:#fff}
+    .report-stat .icon.yellow{background:linear-gradient(135deg,#f59e0b 0%,#d97706 100%);color:#fff}
+    .report-stat .label{color:#6b7280;font-size:14px;font-weight:500;margin-bottom:8px}
+    .report-stat .value{font-size:28px;font-weight:700;color:#111827;margin-bottom:4px}
+    .chart-card{background:#fff;border-radius:16px;border:1px solid #e5e7eb;padding:24px}
+    .chart-card h6{font-weight:700;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid #e5e7eb}
+    .filter-bar{background:#fff;border-radius:16px;border:1px solid #e5e7eb;padding:20px;margin-bottom:24px}
+    .report-nav{display:flex;gap:8px;margin-bottom:24px}
+    .report-nav a{padding:10px 20px;border-radius:10px;font-weight:600;font-size:14px;border:1px solid #e5e7eb;color:#374151;transition:all .15s}
+    .report-nav a:hover{border-color:var(--brand);color:var(--brand)}
+    .report-nav a.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+    .stock-badge{padding:4px 12px;border-radius:50rem;font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:4px}
+    .stock-ok{background:#dcfce7;color:#16a34a}
+    .stock-low{background:#fef3c7;color:#d97706}
+    .stock-out{background:#fee2e2;color:#dc2626}
+    .stock-bar{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #f3f4f6}
+    .stock-bar:last-child{border-bottom:none}
+    .stock-bar .bar-fill{height:20px;border-radius:6px;min-width:4px;transition:width .3s}
+</style>
+}
+
+<!-- Navigation -->
+<div class="report-nav">
+    <a href="@Url.Action("Index", "Report", new { area = "Admin" })">
+        <i class="bi bi-grid-1x2 me-1"></i>Tổng quan
+    </a>
+    <a href="@Url.Action("Revenue", "Report", new { area = "Admin" })">
+        <i class="bi bi-currency-dollar me-1"></i>Doanh thu
+    </a>
+    <a href="@Url.Action("Inventory", "Report", new { area = "Admin", categoryId, brandId, search, sortBy })" class="active">
+        <i class="bi bi-box-seam me-1"></i>Tồn kho
+    </a>
+</div>
+
+<!-- Filter -->
+<div class="filter-bar">
+    <form method="get" class="d-flex flex-wrap align-items-end gap-3">
+        <div>
+            <label class="form-label small fw-semibold mb-1">Tìm kiếm</label>
+            <input type="text" name="search" class="form-control" placeholder="Tên sản phẩm..." value="@search" style="width:220px" />
+        </div>
+        <div>
+            <label class="form-label small fw-semibold mb-1">Danh mục</label>
+            <select name="categoryId" class="form-select" style="width:180px">
+                <option value="">-- Tất cả --</option>
+                @foreach (var c in categories)
+                {
+                    <option value="@c.Id" selected="@(categoryId == c.Id)">@c.Name</option>
+                }
+            </select>
+        </div>
+        <div>
+            <label class="form-label small fw-semibold mb-1">Thương hiệu</label>
+            <select name="brandId" class="form-select" style="width:180px">
+                <option value="">-- Tất cả --</option>
+                @foreach (var b in brands)
+                {
+                    <option value="@b.Id" selected="@(brandId == b.Id)">@b.Name</option>
+                }
+            </select>
+        </div>
+        <div>
+            <label class="form-label small fw-semibold mb-1">Sắp xếp</label>
+            <select name="sortBy" class="form-select" style="width:180px">
+                <option value="name" selected="@(sortBy == "name")">Tên A-Z</option>
+                <option value="stock_asc" selected="@(sortBy == "stock_asc")">Tồn kho tăng</option>
+                <option value="stock_desc" selected="@(sortBy == "stock_desc")">Tồn kho giảm</option>
+                <option value="price_asc" selected="@(sortBy == "price_asc")">Giá tăng</option>
+                <option value="price_desc" selected="@(sortBy == "price_desc")">Giá giảm</option>
+            </select>
+        </div>
+        <div>
+            <button type="submit" class="btn btn-brand px-4" style="height:38px">
+                <i class="bi bi-funnel me-1"></i>Lọc
+            </button>
+        </div>
+    </form>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0">
+        <i class="bi bi-box-seam me-2"></i>Báo cáo tồn kho
+    </h4>
+    <div class="d-flex gap-2">
+        <a href="@Url.Action("ExportInventory", "Report", new { area = "Admin", categoryId, brandId, search, sortBy })"
+           class="btn btn-success px-4">
+            <i class="bi bi-file-earmark-excel me-1"></i>Xuất Excel
+        </a>
+        <button class="btn btn-outline-secondary" onclick="window.print()">
+            <i class="bi bi-printer me-1"></i>In báo cáo
+        </button>
+    </div>
+</div>
+
+<!-- Stats -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3 col-6">
+        <div class="report-stat">
+            <div class="icon blue"><i class="bi bi-box-seam"></i></div>
+            <div class="label">Tổng sản phẩm</div>
+            <div class="value">@totalProducts.ToString("N0")</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="report-stat">
+            <div class="icon green"><i class="bi bi-stack"></i></div>
+            <div class="label">Tổng sản phẩm còn lại</div>
+            <div class="value">@totalStockQuantity.ToString("N0")</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="report-stat">
+            <div class="icon yellow"><i class="bi bi-exclamation-triangle"></i></div>
+            <div class="label">Sắp hết hàng (≤5)</div>
+            <div class="value">@lowStock</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="report-stat">
+            <div class="icon red"><i class="bi bi-x-octagon"></i></div>
+            <div class="label">Hết hàng</div>
+            <div class="value">@outOfStock</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-12">
+        <div class="report-stat">
+            <div class="icon orange"><i class="bi bi-cash-coin"></i></div>
+            <div class="label">Tổng giá trị sản phẩm tồn đọng (Giá bán × Số lượng)</div>
+            <div class="value">@totalStockValue.ToString("N0")₫</div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts -->
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="chart-card">
+            <h6><i class="bi bi-folder me-2"></i>Sản phẩm còn lại theo danh mục</h6>
+            @if (stockByCategory.Any())
+            {
+                var maxCatStock = (int)stockByCategory.Max(s => (int)s.TotalStock);
+                @foreach (var s in stockByCategory)
+                {
+                    var pct = maxCatStock > 0 ? (double)(int)s.TotalStock / maxCatStock * 100 : 0;
+                    <div class="stock-bar">
+                        <div style="flex:1">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="fw-semibold" style="font-size:13px">@s.Category</span>
+                                <span class="text-muted" style="font-size:13px">@((int)s.Count) SP • @((int)s.TotalStock) cái</span>
+                            </div>
+                            <div style="background:#f3f4f6;border-radius:6px;height:20px;overflow:hidden">
+                                <div class="bar-fill" style="width:@pct%;background:linear-gradient(135deg,#10b981,#059669)"></div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="text-center text-muted py-4">Chưa có dữ liệu</div>
+            }
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="chart-card">
+            <h6><i class="bi bi-award me-2"></i>Sản phẩm còn lại theo thương hiệu</h6>
+            @if (stockByBrand.Any())
+            {
+                var maxBrandStock = (int)stockByBrand.Max(s => (int)s.TotalStock);
+                @foreach (var s in stockByBrand)
+                {
+                    var pct = maxBrandStock > 0 ? (double)(int)s.TotalStock / maxBrandStock * 100 : 0;
+                    <div class="stock-bar">
+                        <div style="flex:1">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="fw-semibold" style="font-size:13px">@s.Brand</span>
+                                <span class="text-muted" style="font-size:13px">@((int)s.Count) SP • @((int)s.TotalStock) cái</span>
+                            </div>
+                            <div style="background:#f3f4f6;border-radius:6px;height:20px;overflow:hidden">
+                                <div class="bar-fill" style="width:@pct%;background:linear-gradient(135deg,#667eea,#764ba2)"></div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="text-center text-muted py-4">Chưa có dữ liệu</div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Product Table -->
+<div class="admin-card">
+    <div class="admin-card-header">
+        <h5><i class="bi bi-table me-2"></i>Chi tiết tồn kho (@products.Count sản phẩm)</h5>
+    </div>
+    <div class="admin-card-body">
+        <div class="table-responsive">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th style="width:50px">#</th>
+                        <th>Sản phẩm</th>
+                        <th>Danh mục</th>
+                        <th>Thương hiệu</th>
+                        <th class="text-end">Giá bán</th>
+                        <th class="text-center">Tồn kho</th>
+                        <th class="text-end">Giá trị tồn</th>
+                        <th class="text-center">Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{ int idx = 0; }
+                    @foreach (var p in products)
+                    {
+                        idx++;
+                        string stockClass = p.StockQuantity == 0 ? "stock-out" : p.StockQuantity <= 5 ? "stock-low" : "stock-ok";
+                        string stockLabel = p.StockQuantity == 0 ? "Hết hàng" : p.StockQuantity <= 5 ? "Sắp hết" : "Còn hàng";
+                        <tr>
+                            <td>@idx</td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    @if (!string.IsNullOrEmpty(p.ThumbnailUrl))
+                                    {
+                                        <img src="@p.ThumbnailUrl" alt="" style="width:40px;height:40px;border-radius:8px;object-fit:cover;border:1px solid #e5e7eb" />
+                                    }
+                                    <span class="record-title">@p.Name</span>
+                                </div>
+                            </td>
+                            <td>@(p.Category?.Name ?? "—")</td>
+                            <td>@(p.Brand?.Name ?? "—")</td>
+                            <td class="text-end">@p.Price.ToString("N0")₫</td>
+                            <td class="text-center fw-bold">@p.StockQuantity</td>
+                            <td class="text-end">@((p.Price * p.StockQuantity).ToString("N0"))₫</td>
+                            <td class="text-center"><span class="stock-badge @stockClass">@stockLabel</span></td>
+                        </tr>
+                    }
+                    @if (!products.Any())
+                    {
+                        <tr><td colspan="8" class="text-center text-muted py-4">Không tìm thấy sản phẩm</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    var categoryLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(stockByCategory.Select(s => (string)s.Category).ToList()));
+    var categoryData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(stockByCategory.Select(s => (int)s.TotalStock).ToList()));
+</script>
+}

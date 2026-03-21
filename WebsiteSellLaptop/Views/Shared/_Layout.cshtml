@@ -63,9 +63,10 @@
                     <li class="nav-item"><a class="nav-link" asp-controller="Blog" asp-action="Index">Blog</a></li>
                 </ul>
                 <div class="d-flex align-items-center gap-2">
-                    <div class="nav-search d-none d-lg-block">
+                    <div class="nav-search d-none d-lg-block" style="position:relative">
                         <i class="bi bi-search search-icon"></i>
-                        <input type="search" class="form-control" placeholder="Tìm laptop, phụ kiện...">
+                        <input type="search" id="globalSearchInput" class="form-control" placeholder="Tìm laptop, phụ kiện..." aria-label="Tìm kiếm">
+                        <div id="searchSuggestions" style="position:absolute;left:0;right:0;z-index:1050;display:none;background:#fff;border:1px solid #e5e7eb;border-radius:8px;margin-top:6px;max-height:360px;overflow:auto;box-shadow:0 10px 30px rgba(2,6,23,0.08)"></div>
                     </div>
                     <a asp-controller="Cart" asp-action="Index" class="nav-icon" title="Giỏ hàng">
                         <i class="bi bi-bag"></i>
@@ -172,6 +173,80 @@
             }
             updateCartBadge();
         });
+
+        // Suggestion (autocomplete) for global search
+        (function () {
+            const input = document.getElementById('globalSearchInput');
+            const box = document.getElementById('searchSuggestions');
+            let timer = 0;
+
+            input.addEventListener('input', function () {
+                const v = this.value.trim();
+                clearTimeout(timer);
+                if (!v) { box.style.display = 'none'; box.innerHTML = ''; return; }
+                timer = setTimeout(() => fetchSuggestions(v), 250);
+            });
+
+            input.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') {
+                    // Prevent default submit/navigation. Avoid navigating before suggestions load.
+                    e.preventDefault();
+                    const q = this.value.trim();
+                    if (!q) return;
+                    // If suggestion box is visible and has items, navigate to the first suggestion.
+                    if (box.style.display === 'block' && box.children.length > 0) {
+                        const first = box.children[0];
+                        const id = first.getAttribute('data-id');
+                        if (id) {
+                            window.location.href = '/Product/Detail?id=' + encodeURIComponent(id);
+                        }
+                    }
+                    // Otherwise do nothing — user can click a suggestion or continue typing.
+                }
+            });
+
+            document.addEventListener('click', function (e) {
+                if (!box.contains(e.target) && e.target !== input) {
+                    box.style.display = 'none';
+                }
+            });
+
+            function fetchSuggestions(q) {
+                fetch('/Product/Suggest?q=' + encodeURIComponent(q))
+                    .then(r => r.json())
+                    .then(data => renderSuggestions(data))
+                    .catch(() => { box.style.display = 'none'; });
+            }
+
+            function renderSuggestions(items) {
+                if (!items || items.length === 0) { box.style.display = 'none'; box.innerHTML = ''; return; }
+                box.innerHTML = items.map(i => `
+                    <div class="p-2" style="border-bottom:1px solid #f1f5f9;cursor:pointer;display:flex;gap:10px;align-items:center" data-id="${i.id}" data-accessory="${i.isAccessory}">
+                        <img src="${i.thumbnailUrl || 'https://via.placeholder.com/64'}" style="width:56px;height:40px;object-fit:cover;border-radius:6px">
+                        <div style="flex:1">
+                            <div style="font-weight:700">${escapeHtml(i.name)}</div>
+                            <div style="font-size:13px;color:#64748b">${i.price ? i.price.toLocaleString() + '₫' : ''}</div>
+                        </div>
+                    </div>
+                `).join('');
+
+                // attach click handlers
+                Array.from(box.children).forEach(child => {
+                    child.addEventListener('click', function () {
+                        const id = this.getAttribute('data-id');
+                        const isAcc = this.getAttribute('data-accessory') === 'True' || this.getAttribute('data-accessory') === 'true' || this.getAttribute('data-accessory') === '1';
+                        // if accessory, go to detail; otherwise go to product detail as well
+                        window.location.href = '/Product/Detail?id=' + encodeURIComponent(id);
+                    });
+                });
+
+                box.style.display = 'block';
+            }
+
+            function escapeHtml(str) {
+                return String(str).replace(/[&<>"']/g, function (s) { return ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[s]; });
+            }
+        })();
     </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

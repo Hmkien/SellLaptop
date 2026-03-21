@@ -5,6 +5,7 @@ using OfficeOpenXml;
 using OfficeOpenXml.Style;
 using System.Drawing;
 using WebsiteSellLaptop.Data;
+using WebsiteSellLaptop.Models.Entities;
 using WebsiteSellLaptop.Models.Enums;
 
 namespace WebsiteSellLaptop.Areas.Admin.Controllers
@@ -14,15 +15,18 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
     public class ReportController : Controller
     {
         private readonly AppDbContext _context;
-        public ReportController(AppDbContext context)
+        private readonly ILogger<ReportController> _logger;
+
+        public ReportController(AppDbContext context, ILogger<ReportController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         public async Task<IActionResult> Index(DateTime? fromDate, DateTime? toDate)
         {
-            var to = toDate?.Date.AddDays(1) ?? DateTime.Now.Date.AddDays(1);
-            var from = fromDate?.Date ?? to.AddDays(-30);
+            DateTime to = toDate?.Date.AddDays(1) ?? DateTime.Now.Date.AddDays(1);
+            DateTime from = fromDate?.Date ?? to.AddDays(-30);
 
             ViewBag.FromDate = from;
             ViewBag.ToDate = to.AddDays(-1);
@@ -75,11 +79,11 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
             int totalDays = (to - from).Days;
             if (totalDays <= 31)
             {
-                var currentDate = from;
+                DateTime currentDate = from;
                 while (currentDate < to)
                 {
-                    var nextDate = currentDate.AddDays(1);
-                    var dayOrders = await _context.Orders
+                    DateTime nextDate = currentDate.AddDays(1);
+                    List<Order> dayOrders = await _context.Orders
                         .Where(o => o.Created >= currentDate && o.Created < nextDate && o.OrderStatus == OrderStatus.Completed)
                         .ToListAsync();
                     chartLabels.Add(currentDate.ToString("dd/MM"));
@@ -90,12 +94,16 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
             }
             else
             {
-                var currentDate = from;
+                DateTime currentDate = from;
                 while (currentDate < to)
                 {
-                    var monthEnd = new DateTime(currentDate.Year, currentDate.Month, 1).AddMonths(1);
-                    if (monthEnd > to) monthEnd = to;
-                    var monthOrders = await _context.Orders
+                    DateTime monthEnd = new DateTime(currentDate.Year, currentDate.Month, 1).AddMonths(1);
+                    if (monthEnd > to)
+                    {
+                        monthEnd = to;
+                    }
+
+                    List<Order> monthOrders = await _context.Orders
                         .Where(o => o.Created >= currentDate && o.Created < monthEnd && o.OrderStatus == OrderStatus.Completed)
                         .ToListAsync();
                     chartLabels.Add(currentDate.ToString("MM/yyyy"));
@@ -114,14 +122,14 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
 
         public async Task<IActionResult> Revenue(DateTime? fromDate, DateTime? toDate, string groupBy = "day")
         {
-            var to = toDate?.Date.AddDays(1) ?? DateTime.Now.Date.AddDays(1);
-            var from = fromDate?.Date ?? to.AddDays(-30);
+            DateTime to = toDate?.Date.AddDays(1) ?? DateTime.Now.Date.AddDays(1);
+            DateTime from = fromDate?.Date ?? to.AddDays(-30);
 
             ViewBag.FromDate = from;
             ViewBag.ToDate = to.AddDays(-1);
             ViewBag.GroupBy = groupBy;
 
-            var orders = await _context.Orders
+            List<Order> orders = await _context.Orders
                 .Where(o => o.Created >= from && o.Created < to && o.OrderStatus == OrderStatus.Completed)
                 .OrderBy(o => o.Created)
                 .ToListAsync();
@@ -148,11 +156,11 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
             }
             else if (groupBy == "week")
             {
-                var startDate = from;
+                DateTime startDate = from;
                 while (startDate < to)
                 {
-                    var weekEnd = startDate.AddDays(7) < to ? startDate.AddDays(7) : to;
-                    var weekOrders = orders.Where(o => o.Created >= startDate && o.Created < weekEnd);
+                    DateTime weekEnd = startDate.AddDays(7) < to ? startDate.AddDays(7) : to;
+                    IEnumerable<Order> weekOrders = orders.Where(o => o.Created >= startDate && o.Created < weekEnd);
                     labels.Add($"{startDate:dd/MM} - {weekEnd.AddDays(-1):dd/MM}");
                     values.Add(weekOrders.Sum(o => o.TotalAmount));
                     orderCounts.Add(weekOrders.Count());
@@ -161,11 +169,11 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
             }
             else
             {
-                var currentDate = from;
+                DateTime currentDate = from;
                 while (currentDate < to)
                 {
-                    var nextDate = currentDate.AddDays(1);
-                    var dayOrders = orders.Where(o => o.Created >= currentDate && o.Created < nextDate);
+                    DateTime nextDate = currentDate.AddDays(1);
+                    IEnumerable<Order> dayOrders = orders.Where(o => o.Created >= currentDate && o.Created < nextDate);
                     labels.Add(currentDate.ToString("dd/MM"));
                     values.Add(dayOrders.Sum(o => o.TotalAmount));
                     orderCounts.Add(dayOrders.Count());
@@ -197,50 +205,73 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
             ViewBag.Search = search;
             ViewBag.SortBy = sortBy;
 
-            var query = _context.Products
+            IQueryable<Product> query = _context.Products
                 .Include(p => p.Category)
                 .Include(p => p.Brand)
                 .Where(p => p.Status == StatusEntity.Approved);
 
             if (categoryId.HasValue)
-                query = query.Where(p => p.CategoryId == categoryId.Value);
-            if (brandId.HasValue)
-                query = query.Where(p => p.BrandId == brandId.Value);
-            if (!string.IsNullOrEmpty(search))
-                query = query.Where(p => p.Name.Contains(search));
-
-            var products = sortBy switch
             {
-                "stock_asc" => await query.OrderBy(p => p.StockQuantity).ToListAsync(),
-                "stock_desc" => await query.OrderByDescending(p => p.StockQuantity).ToListAsync(),
-                "price_asc" => await query.OrderBy(p => p.Price).ToListAsync(),
-                "price_desc" => await query.OrderByDescending(p => p.Price).ToListAsync(),
-                _ => await query.OrderBy(p => p.Name).ToListAsync()
+                query = query.Where(p => p.CategoryId == categoryId.Value);
+            }
+
+            if (brandId.HasValue)
+            {
+                query = query.Where(p => p.BrandId == brandId.Value);
+            }
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                query = query.Where(p => p.Name.Contains(search));
+            }
+
+            // Order the query first, then execute ToListAsync once.
+            IQueryable<Product> orderedQuery = sortBy switch
+            {
+                "stock_asc" => query.OrderBy(p => p.StockQuantity),
+                "stock_desc" => query.OrderByDescending(p => p.StockQuantity),
+                "price_asc" => query.OrderBy(p => p.Price),
+                "price_desc" => query.OrderByDescending(p => p.Price),
+                _ => query.OrderBy(p => p.Name),
             };
+            List<Product> products = await orderedQuery.ToListAsync();
 
             ViewBag.Products = products;
             ViewBag.TotalProducts = products.Count;
             ViewBag.TotalStockValue = products.Sum(p => p.Price * p.StockQuantity);
             ViewBag.TotalStockQuantity = products.Sum(p => p.StockQuantity);
             ViewBag.OutOfStock = products.Count(p => p.StockQuantity == 0);
-            ViewBag.LowStock = products.Count(p => p.StockQuantity > 0 && p.StockQuantity <= 5);
+            ViewBag.LowStock = products.Count(p => p.StockQuantity is > 0 and <= 5);
 
             ViewBag.Categories = await _context.Categories.Where(c => c.Status == StatusEntity.Approved).OrderBy(c => c.Name).ToListAsync();
             ViewBag.Brands = await _context.Brands.Where(b => b.Status == StatusEntity.Approved).OrderBy(b => b.Name).ToListAsync();
 
             // Tồn kho theo danh mục
-            ViewBag.StockByCategory = products
+            var stockByCategory = products
                 .GroupBy(p => p.Category?.Name ?? "Không phân loại")
-                .Select(g => new { Category = g.Key, TotalStock = g.Sum(p => p.StockQuantity), Count = g.Count() })
+                .Select(g => new WebsiteSellLaptop.Models.Dto.StockGroup { Name = g.Key, TotalStock = g.Sum(p => p.StockQuantity), Count = g.Count() })
                 .OrderByDescending(x => x.TotalStock)
                 .ToList();
 
             // Tồn kho theo thương hiệu
-            ViewBag.StockByBrand = products
+            var stockByBrand = products
                 .GroupBy(p => p.Brand?.Name ?? "Không phân loại")
-                .Select(g => new { Brand = g.Key, TotalStock = g.Sum(p => p.StockQuantity), Count = g.Count() })
+                .Select(g => new WebsiteSellLaptop.Models.Dto.StockGroup { Name = g.Key, TotalStock = g.Sum(p => p.StockQuantity), Count = g.Count() })
                 .OrderByDescending(x => x.TotalStock)
                 .ToList();
+
+            ViewBag.StockByCategory = stockByCategory;
+            ViewBag.StockByBrand = stockByBrand;
+
+            // Log for debugging counts
+            try
+            {
+                _logger.LogInformation("Inventory report generated: products={count}, stockByCategory={catCount}, stockByBrand={brandCount}", products.Count, stockByCategory.Count, stockByBrand.Count);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error logging inventory report counts");
+            }
 
             return View();
         }
@@ -251,16 +282,16 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
 
         public async Task<IActionResult> ExportOverview(DateTime? fromDate, DateTime? toDate)
         {
-            var to = toDate?.Date.AddDays(1) ?? DateTime.Now.Date.AddDays(1);
-            var from = fromDate?.Date ?? to.AddDays(-30);
+            DateTime to = toDate?.Date.AddDays(1) ?? DateTime.Now.Date.AddDays(1);
+            DateTime from = fromDate?.Date ?? to.AddDays(-30);
 
-            var totalOrders = await _context.Orders.Where(o => o.Created >= from && o.Created < to).CountAsync();
-            var completedOrders = await _context.Orders.Where(o => o.Created >= from && o.Created < to && o.OrderStatus == OrderStatus.Completed).CountAsync();
-            var cancelledOrders = await _context.Orders.Where(o => o.Created >= from && o.Created < to && o.OrderStatus == OrderStatus.Cancelled).CountAsync();
-            var pendingOrders = await _context.Orders.Where(o => o.Created >= from && o.Created < to && o.OrderStatus == OrderStatus.Pending).CountAsync();
-            var confirmedOrders = await _context.Orders.Where(o => o.Created >= from && o.Created < to && o.OrderStatus == OrderStatus.Confirmed).CountAsync();
-            var shippingOrders = await _context.Orders.Where(o => o.Created >= from && o.Created < to && o.OrderStatus == OrderStatus.Shipping).CountAsync();
-            var totalRevenue = await _context.Orders.Where(o => o.Created >= from && o.Created < to && o.OrderStatus == OrderStatus.Completed).SumAsync(o => o.TotalAmount);
+            int totalOrders = await _context.Orders.Where(o => o.Created >= from && o.Created < to).CountAsync();
+            int completedOrders = await _context.Orders.Where(o => o.Created >= from && o.Created < to && o.OrderStatus == OrderStatus.Completed).CountAsync();
+            int cancelledOrders = await _context.Orders.Where(o => o.Created >= from && o.Created < to && o.OrderStatus == OrderStatus.Cancelled).CountAsync();
+            int pendingOrders = await _context.Orders.Where(o => o.Created >= from && o.Created < to && o.OrderStatus == OrderStatus.Pending).CountAsync();
+            int confirmedOrders = await _context.Orders.Where(o => o.Created >= from && o.Created < to && o.OrderStatus == OrderStatus.Confirmed).CountAsync();
+            int shippingOrders = await _context.Orders.Where(o => o.Created >= from && o.Created < to && o.OrderStatus == OrderStatus.Shipping).CountAsync();
+            decimal totalRevenue = await _context.Orders.Where(o => o.Created >= from && o.Created < to && o.OrderStatus == OrderStatus.Completed).SumAsync(o => o.TotalAmount);
 
             var topProducts = await _context.OrderDetails
                 .Include(od => od.Order)
@@ -273,8 +304,8 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
                 .Take(10)
                 .ToListAsync();
 
-            using var package = new ExcelPackage();
-            var ws = package.Workbook.Worksheets.Add("Tổng quan");
+            using ExcelPackage package = new();
+            ExcelWorksheet ws = package.Workbook.Worksheets.Add("Tổng quan");
 
             // ── Title ──
             ExcelSetTitle(ws, "BÁO CÁO TỔNG QUAN", 1, 4);
@@ -315,13 +346,16 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
                 ws.Cells[r, 3].Value = topProducts[i].TotalQuantity;
                 ws.Cells[r, 4].Value = (double)topProducts[i].TotalRevenue;
                 ws.Cells[r, 4].Style.Numberformat.Format = "#,##0";
-                if (i % 2 == 1) ExcelSetStripedRow(ws, r, 4);
+                if (i % 2 == 1)
+                {
+                    ExcelSetStripedRow(ws, r, 4);
+                }
             }
 
             ws.Cells[ws.Dimension.Address].AutoFitColumns(12, 60);
             ws.Column(2).Width = 40;
 
-            var stream = new MemoryStream();
+            MemoryStream stream = new();
             package.SaveAs(stream);
             stream.Position = 0;
             return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -330,18 +364,18 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
 
         public async Task<IActionResult> ExportRevenue(DateTime? fromDate, DateTime? toDate, string groupBy = "day")
         {
-            var to = toDate?.Date.AddDays(1) ?? DateTime.Now.Date.AddDays(1);
-            var from = fromDate?.Date ?? to.AddDays(-30);
+            DateTime to = toDate?.Date.AddDays(1) ?? DateTime.Now.Date.AddDays(1);
+            DateTime from = fromDate?.Date ?? to.AddDays(-30);
 
-            var orders = await _context.Orders
+            List<Order> orders = await _context.Orders
                 .Where(o => o.Created >= from && o.Created < to && o.OrderStatus == OrderStatus.Completed)
                 .OrderBy(o => o.Created)
                 .ToListAsync();
 
-            using var package = new ExcelPackage();
+            using ExcelPackage package = new();
 
             // ── Sheet 1: Tóm tắt ──
-            var ws1 = package.Workbook.Worksheets.Add("Tóm tắt");
+            ExcelWorksheet ws1 = package.Workbook.Worksheets.Add("Tóm tắt");
             ExcelSetTitle(ws1, "BÁO CÁO DOANH THU", 1, 4);
             ws1.Cells[2, 1].Value = $"Kỳ báo cáo: {from:dd/MM/yyyy} — {to.AddDays(-1):dd/MM/yyyy} | Nhóm theo: {(groupBy == "month" ? "Tháng" : groupBy == "week" ? "Tuần" : "Ngày")}";
             ws1.Cells[2, 1, 2, 4].Merge = true;
@@ -389,7 +423,10 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
                 double pct = totalRevenue > 0 ? (double)(byPayment[i].Total / totalRevenue * 100) : 0;
                 ws1.Cells[r, 4].Value = Math.Round(pct, 1);
                 ws1.Cells[r, 4].Style.Numberformat.Format = "0.0\"%\"";
-                if (i % 2 == 1) ExcelSetStripedRow(ws1, r, 4);
+                if (i % 2 == 1)
+                {
+                    ExcelSetStripedRow(ws1, r, 4);
+                }
             }
 
             // Revenue over time
@@ -409,20 +446,24 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
                     .Select(g => (g.Key.ToString("dd/MM/yyyy"), g.Count(), g.Sum(o => o.TotalAmount)))
             };
             int ti = 0;
-            foreach (var (label, count, rev) in timeData)
+            foreach ((string? label, int count, decimal rev) in timeData)
             {
                 ws1.Cells[r, 1].Value = label;
                 ws1.Cells[r, 2].Value = count;
                 ws1.Cells[r, 3].Value = (double)rev;
                 ws1.Cells[r, 3].Style.Numberformat.Format = "#,##0";
-                if (ti % 2 == 1) ExcelSetStripedRow(ws1, r, 3);
+                if (ti % 2 == 1)
+                {
+                    ExcelSetStripedRow(ws1, r, 3);
+                }
+
                 r++; ti++;
             }
 
             ws1.Cells[ws1.Dimension.Address].AutoFitColumns(14, 50);
 
             // ── Sheet 2: Chi tiết đơn hàng ──
-            var ws2 = package.Workbook.Worksheets.Add("Chi tiết đơn hàng");
+            ExcelWorksheet ws2 = package.Workbook.Worksheets.Add("Chi tiết đơn hàng");
             ExcelSetTitle(ws2, "CHI TIẾT ĐƠN HÀNG HOÀN THÀNH", 1, 7);
             ws2.Cells[2, 1].Value = $"Kỳ báo cáo: {from:dd/MM/yyyy} — {to.AddDays(-1):dd/MM/yyyy}";
             ws2.Cells[2, 1, 2, 7].Merge = true;
@@ -432,7 +473,7 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
             r = 4;
             ExcelSetHeaderRow(ws2, r, ["Mã đơn", "Khách hàng", "Email", "Ngày đặt", "Phương thức TT", "Giảm giá (₫)", "Tổng tiền (₫)"]);
             r++;
-            var detailOrders = orders.OrderByDescending(o => o.Created).ToList();
+            List<Order> detailOrders = orders.OrderByDescending(o => o.Created).ToList();
             for (int i = 0; i < detailOrders.Count; i++, r++)
             {
                 string pm = detailOrders[i].PaymentMethod switch
@@ -452,7 +493,10 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
                 ws2.Cells[r, 6].Style.Numberformat.Format = "#,##0";
                 ws2.Cells[r, 7].Value = (double)detailOrders[i].TotalAmount;
                 ws2.Cells[r, 7].Style.Numberformat.Format = "#,##0";
-                if (i % 2 == 1) ExcelSetStripedRow(ws2, r, 7);
+                if (i % 2 == 1)
+                {
+                    ExcelSetStripedRow(ws2, r, 7);
+                }
             }
             // Total row
             ws2.Cells[r, 6].Value = "TỔNG";
@@ -465,7 +509,7 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
 
             ws2.Cells[ws2.Dimension.Address].AutoFitColumns(12, 50);
 
-            var stream = new MemoryStream();
+            MemoryStream stream = new();
             package.SaveAs(stream);
             stream.Position = 0;
             return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -474,16 +518,27 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
 
         public async Task<IActionResult> ExportInventory(Guid? categoryId, Guid? brandId, string? search, string sortBy = "name")
         {
-            var query = _context.Products
+            IQueryable<Product> query = _context.Products
                 .Include(p => p.Category)
                 .Include(p => p.Brand)
                 .Where(p => p.Status == StatusEntity.Approved);
 
-            if (categoryId.HasValue) query = query.Where(p => p.CategoryId == categoryId.Value);
-            if (brandId.HasValue) query = query.Where(p => p.BrandId == brandId.Value);
-            if (!string.IsNullOrEmpty(search)) query = query.Where(p => p.Name.Contains(search));
+            if (categoryId.HasValue)
+            {
+                query = query.Where(p => p.CategoryId == categoryId.Value);
+            }
 
-            var products = sortBy switch
+            if (brandId.HasValue)
+            {
+                query = query.Where(p => p.BrandId == brandId.Value);
+            }
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                query = query.Where(p => p.Name.Contains(search));
+            }
+
+            List<Product> products = sortBy switch
             {
                 "stock_asc" => await query.OrderBy(p => p.StockQuantity).ToListAsync(),
                 "stock_desc" => await query.OrderByDescending(p => p.StockQuantity).ToListAsync(),
@@ -492,10 +547,10 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
                 _ => await query.OrderBy(p => p.Name).ToListAsync()
             };
 
-            using var package = new ExcelPackage();
+            using ExcelPackage package = new();
 
             // ── Sheet 1: Tổng hợp ──
-            var ws1 = package.Workbook.Worksheets.Add("Tổng hợp");
+            ExcelWorksheet ws1 = package.Workbook.Worksheets.Add("Tổng hợp");
             ExcelSetTitle(ws1, "BÁO CÁO TỒN KHO", 1, 4);
             ws1.Cells[2, 1].Value = $"Xuất lúc: {DateTime.Now:dd/MM/yyyy HH:mm}";
             ws1.Cells[2, 1, 2, 4].Merge = true;
@@ -508,7 +563,7 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
             string[,] invStats = {
                 { "Tổng sản phẩm", products.Count.ToString("N0"), "Tổng tồn kho", products.Sum(p => p.StockQuantity).ToString("N0") + " sản phẩm" },
                 { "Tổng giá trị tồn kho", $"{products.Sum(p => p.Price * p.StockQuantity):N0} ₫", "Hết hàng", products.Count(p => p.StockQuantity == 0).ToString("N0") + " sản phẩm" },
-                { "Sắp hết hàng (≤5)", products.Count(p => p.StockQuantity > 0 && p.StockQuantity <= 5).ToString("N0") + " sản phẩm", "", "" }
+                { "Sắp hết hàng (≤5)", products.Count(p => p.StockQuantity is > 0 and <= 5).ToString("N0") + " sản phẩm", "", "" }
             };
             for (int i = 0; i < invStats.GetLength(0); i++, r++)
             {
@@ -531,7 +586,10 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
                 ws1.Cells[r, 3].Value = byCategory[i].Stock;
                 ws1.Cells[r, 4].Value = (double)byCategory[i].Value;
                 ws1.Cells[r, 4].Style.Numberformat.Format = "#,##0";
-                if (i % 2 == 1) ExcelSetStripedRow(ws1, r, 4);
+                if (i % 2 == 1)
+                {
+                    ExcelSetStripedRow(ws1, r, 4);
+                }
             }
 
             // By brand
@@ -550,13 +608,16 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
                 ws1.Cells[r, 3].Value = byBrand[i].Stock;
                 ws1.Cells[r, 4].Value = (double)byBrand[i].Value;
                 ws1.Cells[r, 4].Style.Numberformat.Format = "#,##0";
-                if (i % 2 == 1) ExcelSetStripedRow(ws1, r, 4);
+                if (i % 2 == 1)
+                {
+                    ExcelSetStripedRow(ws1, r, 4);
+                }
             }
 
             ws1.Cells[ws1.Dimension.Address].AutoFitColumns(14, 50);
 
             // ── Sheet 2: Chi tiết tồn kho ──
-            var ws2 = package.Workbook.Worksheets.Add("Chi tiết tồn kho");
+            ExcelWorksheet ws2 = package.Workbook.Worksheets.Add("Chi tiết tồn kho");
             ExcelSetTitle(ws2, "CHI TIẾT TỒN KHO", 1, 8);
             ws2.Cells[2, 1].Value = $"Xuất lúc: {DateTime.Now:dd/MM/yyyy HH:mm}";
             ws2.Cells[2, 1, 2, 8].Merge = true;
@@ -587,13 +648,16 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
                         : Color.FromArgb(220, 252, 231);
                 ws2.Cells[r, 8].Style.Fill.PatternType = ExcelFillStyle.Solid;
                 ws2.Cells[r, 8].Style.Fill.BackgroundColor.SetColor(statusColor);
-                if (i % 2 == 1) ExcelSetStripedRow(ws2, r, 7);
+                if (i % 2 == 1)
+                {
+                    ExcelSetStripedRow(ws2, r, 7);
+                }
             }
 
             ws2.Cells[ws2.Dimension.Address].AutoFitColumns(10, 50);
             ws2.Column(2).Width = 40;
 
-            var stream = new MemoryStream();
+            MemoryStream stream = new();
             package.SaveAs(stream);
             stream.Position = 0;
             return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -664,12 +728,12 @@ namespace WebsiteSellLaptop.Areas.Admin.Controllers
         private static IEnumerable<(string Label, int Count, decimal Revenue)> GetWeeklyData(
             List<WebsiteSellLaptop.Models.Entities.Order> orders, DateTime from, DateTime to)
         {
-            var result = new List<(string, int, decimal)>();
-            var start = from;
+            List<(string, int, decimal)> result = [];
+            DateTime start = from;
             while (start < to)
             {
-                var end = start.AddDays(7) < to ? start.AddDays(7) : to;
-                var week = orders.Where(o => o.Created >= start && o.Created < end).ToList();
+                DateTime end = start.AddDays(7) < to ? start.AddDays(7) : to;
+                List<Order> week = orders.Where(o => o.Created >= start && o.Created < end).ToList();
                 result.Add(($"{start:dd/MM} - {end.AddDays(-1):dd/MM}", week.Count, week.Sum(o => o.TotalAmount)));
                 start = end;
             }

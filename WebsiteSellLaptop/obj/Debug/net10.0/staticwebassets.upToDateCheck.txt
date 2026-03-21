@@ -77,10 +77,10 @@ wwwroot\uploads\partners\176790f0-41f6-49c0-8774-8f5e53a98a02.jpg
 wwwroot\uploads\products\31a44819-54be-4a90-8916-18237df6b912.webp
 wwwroot\uploads\products\55a92fdb-6106-4992-bdce-f24ea879d499.webp
 wwwroot\uploads\products\6afe3e23-c7ef-4435-9563-ea2baaf5342e.webp
+wwwroot\uploads\products\9b9c5512-1666-427b-86ba-ae52687096cb.webp
+wwwroot\uploads\products\a7cca34a-b293-41bd-876e-e5e3515f2c5b.webp
 wwwroot\uploads\products\d5a28411-2499-49a6-9593-95d17fc52d43.webp
 wwwroot\uploads\products\d6e038d7-2635-4cee-ad19-0ed974bea9b2.png
-wwwroot\uploads\products\a7cca34a-b293-41bd-876e-e5e3515f2c5b.webp
-wwwroot\uploads\products\9b9c5512-1666-427b-86ba-ae52687096cb.webp
 C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\css\site.css
 C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\favicon.ico
 C:\Dự án\SellLaptop\WebsiteSellLaptop\wwwroot\js\site.js

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using WebsiteSellLaptop.Data;
 using WebsiteSellLaptop.Models.Entities;
 using WebsiteSellLaptop.Models.Enums;
@@ -13,6 +14,23 @@ namespace WebsiteSellLaptop.Controllers
         public ProductController(AppDbContext context)
         {
             _context = context;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Suggest(string q)
+        {
+            if (string.IsNullOrWhiteSpace(q)) return Json(Array.Empty<object>());
+            q = q.Trim();
+
+            var results = await _context.Products
+                .Where(p => p.Status == StatusEntity.Approved && (p.Name.Contains(q) || (p.Description != null && p.Description.Contains(q))))
+                .OrderByDescending(p => p.IsFeatured)
+                .ThenByDescending(p => p.Created)
+                .Take(10)
+                .Select(p => new { p.Id, p.Name, p.ThumbnailUrl, p.Price, p.IsAccessory })
+                .ToListAsync();
+
+            return Json(results);
         }
 
         public async Task<IActionResult> Index(

@@ -1,0 +1,741 @@
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using OfficeOpenXml;
+using OfficeOpenXml.Style;
+using System.Drawing;
+using WebsiteSellLaptop.Data;
+using WebsiteSellLaptop.Models.Entities;
+using WebsiteSellLaptop.Models.Enums;
+
+namespace WebsiteSellLaptop.Areas.Admin.Controllers
+{
+    [Area("Admin")]
+    [Authorize(Roles = "Admin")]
+    public class ReportController : Controller
+    {
+        private readonly AppDbContext _context;
+        private readonly ILogger<ReportController> _logger;
+
+        public ReportController(AppDbContext context, ILogger<ReportController> logger)
+        {
+            _context = context;
+            _logger = logger;
+        }
+
+        public async Task<IActionResult> Index(DateTime? fromDate, DateTime? toDate)
+        {
+            DateTime to = toDate?.Date.AddDays(1) ?? DateTime.Now.Date.AddDays(1);
+            DateTime from = fromDate?.Date ?? to.AddDays(-30);
+
+            ViewBag.FromDate = from;
+            ViewBag.ToDate = to.AddDays(-1);
+
+            // Thống kê trong khoảng thời gian
+            ViewBag.TotalOrders = await _context.Orders
+                .Where(o => o.Created >= from && o.Created < to)
+                .CountAsync();
+            ViewBag.TotalRevenue = await _context.Orders
+                .Where(o => o.Created >= from && o.Created < to && o.OrderStatus == OrderStatus.Completed)
+                .SumAsync(o => o.TotalAmount);
+            ViewBag.CompletedOrders = await _context.Orders
+                .Where(o => o.Created >= from && o.Created < to && o.OrderStatus == OrderStatus.Completed)
+                .CountAsync();
+            ViewBag.CancelledOrders = await _context.Orders
+                .Where(o => o.Created >= from && o.Created < to && o.OrderStatus == OrderStatus.Cancelled)
+                .CountAsync();
+
+            // Trạng thái đơn hàng trong khoảng
+            ViewBag.PendingOrders = await _context.Orders.Where(o => o.Created >= from && o.Created < to && o.OrderStatus == OrderStatus.Pending).CountAsync();
+            ViewBag.ConfirmedOrders = await _context.Orders.Where(o => o.Created >= from && o.Created < to && o.OrderStatus == OrderStatus.Confirmed).CountAsync();
+            ViewBag.ShippingOrders = await _context.Orders.Where(o => o.Created >= from && o.Created < to && o.OrderStatus == OrderStatus.Shipping).CountAsync();
+
+            // Top sản phẩm bán chạy trong khoảng
+            var topProducts = await _context.OrderDetails
+                .Include(od => od.Order)
+                .Include(od => od.Product)
+                .Where(od => od.Order != null && od.Order.Created >= from && od.Order.Created < to
+                    && od.Order.OrderStatus == OrderStatus.Completed
+                    && od.Product != null)
+                .GroupBy(od => new { od.ProductId, od.Product!.Name, od.Product.ThumbnailUrl })
+                .Select(g => new
+                {
+                    g.Key.ProductId,
+                    g.Key.Name,
+                    g.Key.ThumbnailUrl,
+                    TotalQuantity = g.Sum(od => od.Quantity),
+                    TotalRevenue = g.Sum(od => od.TotalPrice)
+                })
+                .OrderByDescending(x => x.TotalQuantity)
+                .Take(10)
+                .ToListAsync();
+            ViewBag.TopProducts = topProducts;
+
+            // Doanh thu theo ngày trong khoảng (cho biểu đồ)
+            List<string> chartLabels = [];
+            List<decimal> chartValues = [];
+            List<int> chartOrders = [];
+
+            int totalDays = (to - from).Days;
+            if (totalDays <= 31)
+            {
+                DateTime currentDate = from;
+                while (currentDate < to)
+                {
+                    DateTime nextDate = currentDate.AddDays(1);
+                    List<Order> dayOrders = await _context.Orders
+                        .Where(o => o.Created >= currentDate && o.Created < nextDate && o.OrderStatus == OrderStatus.Completed)
+                        .ToListAsync();
+                    chartLabels.Add(currentDate.ToString("dd/MM"));
+                    chartValues.Add(dayOrders.Sum(o => o.TotalAmount));
+                    chartOrders.Add(dayOrders.Count);
+                    currentDate = nextDate;
+                }
+            }
+            else
+            {
+                DateTime currentDate = from;
+                while (currentDate < to)
+                {
+                    DateTime monthEnd = new DateTime(currentDate.Year, currentDate.Month, 1).AddMonths(1);
+                    if (monthEnd > to)
+                    {
+                        monthEnd = to;
+                    }
+
+                    List<Order> monthOrders = await _context.Orders
+                        .Where(o => o.Created >= currentDate && o.Created < monthEnd && o.OrderStatus == OrderStatus.Completed)
+                        .ToListAsync();
+                    chartLabels.Add(currentDate.ToString("MM/yyyy"));
+                    chartValues.Add(monthOrders.Sum(o => o.TotalAmount));
+                    chartOrders.Add(monthOrders.Count);
+                    currentDate = monthEnd;
+                }
+            }
+
+            ViewBag.ChartLabels = chartLabels;
+            ViewBag.ChartValues = chartValues;
+            ViewBag.ChartOrders = chartOrders;
+
+            return View();
+        }
+
+        public async Task<IActionResult> Revenue(DateTime? fromDate, DateTime? toDate, string groupBy = "day")
+        {
+            DateTime to = toDate?.Date.AddDays(1) ?? DateTime.Now.Date.AddDays(1);
+            DateTime from = fromDate?.Date ?? to.AddDays(-30);
+
+            ViewBag.FromDate = from;
+            ViewBag.ToDate = to.AddDays(-1);
+            ViewBag.GroupBy = groupBy;
+
+            List<Order> orders = await _context.Orders
+                .Where(o => o.Created >= from && o.Created < to && o.OrderStatus == OrderStatus.Completed)
+                .OrderBy(o => o.Created)
+                .ToListAsync();
+
+            ViewBag.TotalRevenue = orders.Sum(o => o.TotalAmount);
+            ViewBag.TotalOrders = orders.Count;
+            ViewBag.AvgOrderValue = orders.Count > 0 ? orders.Average(o => o.TotalAmount) : 0m;
+            ViewBag.MaxOrder = orders.Count > 0 ? orders.Max(o => o.TotalAmount) : 0m;
+
+            List<string> labels = [];
+            List<decimal> values = [];
+            List<int> orderCounts = [];
+
+            if (groupBy == "month")
+            {
+                var grouped = orders.GroupBy(o => new { o.Created.Year, o.Created.Month })
+                    .OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Month);
+                foreach (var g in grouped)
+                {
+                    labels.Add($"{g.Key.Month:D2}/{g.Key.Year}");
+                    values.Add(g.Sum(o => o.TotalAmount));
+                    orderCounts.Add(g.Count());
+                }
+            }
+            else if (groupBy == "week")
+            {
+                DateTime startDate = from;
+                while (startDate < to)
+                {
+                    DateTime weekEnd = startDate.AddDays(7) < to ? startDate.AddDays(7) : to;
+                    IEnumerable<Order> weekOrders = orders.Where(o => o.Created >= startDate && o.Created < weekEnd);
+                    labels.Add($"{startDate:dd/MM} - {weekEnd.AddDays(-1):dd/MM}");
+                    values.Add(weekOrders.Sum(o => o.TotalAmount));
+                    orderCounts.Add(weekOrders.Count());
+                    startDate = weekEnd;
+                }
+            }
+            else
+            {
+                DateTime currentDate = from;
+                while (currentDate < to)
+                {
+                    DateTime nextDate = currentDate.AddDays(1);
+                    IEnumerable<Order> dayOrders = orders.Where(o => o.Created >= currentDate && o.Created < nextDate);
+                    labels.Add(currentDate.ToString("dd/MM"));
+                    values.Add(dayOrders.Sum(o => o.TotalAmount));
+                    orderCounts.Add(dayOrders.Count());
+                    currentDate = nextDate;
+                }
+            }
+
+            ViewBag.Labels = labels;
+            ViewBag.Values = values;
+            ViewBag.OrderCounts = orderCounts;
+
+            // Doanh thu theo phương thức thanh toán
+            ViewBag.RevenueByPayment = orders
+                .GroupBy(o => o.PaymentMethod)
+                .Select(g => new { Method = g.Key.ToString(), Total = g.Sum(o => o.TotalAmount), Count = g.Count() })
+                .OrderByDescending(x => x.Total)
+                .ToList();
+
+            // Chi tiết đơn hàng
+            ViewBag.RevenueDetails = orders.OrderByDescending(o => o.Created).ToList();
+
+            return View();
+        }
+
+        public async Task<IActionResult> Inventory(Guid? categoryId, Guid? brandId, string? search, string sortBy = "name")
+        {
+            ViewBag.CategoryId = categoryId;
+            ViewBag.BrandId = brandId;
+            ViewBag.Search = search;
+            ViewBag.SortBy = sortBy;
+
+            IQueryable<Product> query = _context.Products
+                .Include(p => p.Category)
+                .Include(p => p.Brand)
+                .Where(p => p.Status == StatusEntity.Approved);
+
+            if (categoryId.HasValue)
+            {
+                query = query.Where(p => p.CategoryId == categoryId.Value);
+            }
+
+            if (brandId.HasValue)
+            {
+                query = query.Where(p => p.BrandId == brandId.Value);
+            }
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                query = query.Where(p => p.Name.Contains(search));
+            }
+
+            List<Product> products = sortBy switch
+            {
+                "stock_asc" => await query.OrderBy(p => p.StockQuantity).ToListAsync(),
+                "stock_desc" => await query.OrderByDescending(p => p.StockQuantity).ToListAsync(),
+                "price_asc" => await query.OrderBy(p => p.Price).ToListAsync(),
+                "price_desc" => await query.OrderByDescending(p => p.Price).ToListAsync(),
+                _ => await query.OrderBy(p => p.Name).ToListAsync()
+            };
+
+            ViewBag.Products = products;
+            ViewBag.TotalProducts = products.Count;
+            ViewBag.TotalStockValue = products.Sum(p => p.Price * p.StockQuantity);
+            ViewBag.TotalStockQuantity = products.Sum(p => p.StockQuantity);
+            ViewBag.OutOfStock = products.Count(p => p.StockQuantity == 0);
+            ViewBag.LowStock = products.Count(p => p.StockQuantity is > 0 and <= 5);
+
+            ViewBag.Categories = await _context.Categories.Where(c => c.Status == StatusEntity.Approved).OrderBy(c => c.Name).ToListAsync();
+            ViewBag.Brands = await _context.Brands.Where(b => b.Status == StatusEntity.Approved).OrderBy(b => b.Name).ToListAsync();
+
+            // Tồn kho theo danh mục
+            var stockByCategory = products
+                .GroupBy(p => p.Category?.Name ?? "Không phân loại")
+                .Select(g => new { Category = g.Key, TotalStock = g.Sum(p => p.StockQuantity), Count = g.Count() })
+                .OrderByDescending(x => x.TotalStock)
+                .ToList();
+
+            // Tồn kho theo thương hiệu
+            var stockByBrand = products
+                .GroupBy(p => p.Brand?.Name ?? "Không phân loại")
+                .Select(g => new { Brand = g.Key, TotalStock = g.Sum(p => p.StockQuantity), Count = g.Count() })
+                .OrderByDescending(x => x.TotalStock)
+                .ToList();
+
+            ViewBag.StockByCategory = stockByCategory;
+            ViewBag.StockByBrand = stockByBrand;
+
+            // Log for debugging counts
+            try
+            {
+                _logger.LogInformation("Inventory report generated: products={count}, stockByCategory={catCount}, stockByBrand={brandCount}", products.Count, stockByCategory.Count, stockByBrand.Count);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error logging inventory report counts");
+            }
+
+            return View();
+        }
+
+        // ──────────────────────────────────────────
+        // EXCEL EXPORT
+        // ──────────────────────────────────────────
+
+        public async Task<IActionResult> ExportOverview(DateTime? fromDate, DateTime? toDate)
+        {
+            DateTime to = toDate?.Date.AddDays(1) ?? DateTime.Now.Date.AddDays(1);
+            DateTime from = fromDate?.Date ?? to.AddDays(-30);
+
+            int totalOrders = await _context.Orders.Where(o => o.Created >= from && o.Created < to).CountAsync();
+            int completedOrders = await _context.Orders.Where(o => o.Created >= from && o.Created < to && o.OrderStatus == OrderStatus.Completed).CountAsync();
+            int cancelledOrders = await _context.Orders.Where(o => o.Created >= from && o.Created < to && o.OrderStatus == OrderStatus.Cancelled).CountAsync();
+            int pendingOrders = await _context.Orders.Where(o => o.Created >= from && o.Created < to && o.OrderStatus == OrderStatus.Pending).CountAsync();
+            int confirmedOrders = await _context.Orders.Where(o => o.Created >= from && o.Created < to && o.OrderStatus == OrderStatus.Confirmed).CountAsync();
+            int shippingOrders = await _context.Orders.Where(o => o.Created >= from && o.Created < to && o.OrderStatus == OrderStatus.Shipping).CountAsync();
+            decimal totalRevenue = await _context.Orders.Where(o => o.Created >= from && o.Created < to && o.OrderStatus == OrderStatus.Completed).SumAsync(o => o.TotalAmount);
+
+            var topProducts = await _context.OrderDetails
+                .Include(od => od.Order)
+                .Include(od => od.Product)
+                .Where(od => od.Order != null && od.Order.Created >= from && od.Order.Created < to
+                    && od.Order.OrderStatus == OrderStatus.Completed && od.Product != null)
+                .GroupBy(od => new { od.ProductId, od.Product!.Name })
+                .Select(g => new { g.Key.Name, TotalQuantity = g.Sum(od => od.Quantity), TotalRevenue = g.Sum(od => od.TotalPrice) })
+                .OrderByDescending(x => x.TotalQuantity)
+                .Take(10)
+                .ToListAsync();
+
+            using ExcelPackage package = new();
+            ExcelWorksheet ws = package.Workbook.Worksheets.Add("Tổng quan");
+
+            // ── Title ──
+            ExcelSetTitle(ws, "BÁO CÁO TỔNG QUAN", 1, 4);
+            ws.Cells[2, 1].Value = $"Kỳ báo cáo: {from:dd/MM/yyyy} — {to.AddDays(-1):dd/MM/yyyy}";
+            ws.Cells[2, 1, 2, 4].Merge = true;
+            ws.Cells[2, 1].Style.Font.Italic = true;
+            ws.Cells[2, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+            ws.Cells[3, 1].Value = $"Xuất lúc: {DateTime.Now:dd/MM/yyyy HH:mm}";
+            ws.Cells[3, 1, 3, 4].Merge = true;
+            ws.Cells[3, 1].Style.Font.Italic = true;
+            ws.Cells[3, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+
+            // ── Stats ──
+            int r = 5;
+            ExcelSetSectionHeader(ws, "THỐNG KÊ CHUNG", r, 4);
+            r++;
+            string[,] stats = {
+                { "Tổng đơn hàng", totalOrders.ToString("N0"), "Đơn hoàn thành", completedOrders.ToString("N0") },
+                { "Tổng doanh thu", $"{totalRevenue:N0} ₫", "Đơn đã hủy", cancelledOrders.ToString("N0") },
+                { "Chờ xác nhận", pendingOrders.ToString("N0"), "Đã xác nhận", confirmedOrders.ToString("N0") },
+                { "Đang giao", shippingOrders.ToString("N0"), "", "" }
+            };
+            for (int i = 0; i < stats.GetLength(0); i++, r++)
+            {
+                ExcelSetStatRow(ws, r, stats[i, 0], stats[i, 1], stats[i, 2], stats[i, 3]);
+            }
+
+            // ── Top Products ──
+            r += 1;
+            ExcelSetSectionHeader(ws, "TOP 10 SẢN PHẨM BÁN CHẠY", r, 4);
+            r++;
+            ExcelSetHeaderRow(ws, r, ["STT", "Tên sản phẩm", "Số lượng đã bán", "Doanh thu (₫)"]);
+            r++;
+            for (int i = 0; i < topProducts.Count; i++, r++)
+            {
+                ws.Cells[r, 1].Value = i + 1;
+                ws.Cells[r, 2].Value = topProducts[i].Name;
+                ws.Cells[r, 3].Value = topProducts[i].TotalQuantity;
+                ws.Cells[r, 4].Value = (double)topProducts[i].TotalRevenue;
+                ws.Cells[r, 4].Style.Numberformat.Format = "#,##0";
+                if (i % 2 == 1)
+                {
+                    ExcelSetStripedRow(ws, r, 4);
+                }
+            }
+
+            ws.Cells[ws.Dimension.Address].AutoFitColumns(12, 60);
+            ws.Column(2).Width = 40;
+
+            MemoryStream stream = new();
+            package.SaveAs(stream);
+            stream.Position = 0;
+            return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                $"BaoCaoTongQuan_{from:yyyyMMdd}_{to.AddDays(-1):yyyyMMdd}.xlsx");
+        }
+
+        public async Task<IActionResult> ExportRevenue(DateTime? fromDate, DateTime? toDate, string groupBy = "day")
+        {
+            DateTime to = toDate?.Date.AddDays(1) ?? DateTime.Now.Date.AddDays(1);
+            DateTime from = fromDate?.Date ?? to.AddDays(-30);
+
+            List<Order> orders = await _context.Orders
+                .Where(o => o.Created >= from && o.Created < to && o.OrderStatus == OrderStatus.Completed)
+                .OrderBy(o => o.Created)
+                .ToListAsync();
+
+            using ExcelPackage package = new();
+
+            // ── Sheet 1: Tóm tắt ──
+            ExcelWorksheet ws1 = package.Workbook.Worksheets.Add("Tóm tắt");
+            ExcelSetTitle(ws1, "BÁO CÁO DOANH THU", 1, 4);
+            ws1.Cells[2, 1].Value = $"Kỳ báo cáo: {from:dd/MM/yyyy} — {to.AddDays(-1):dd/MM/yyyy} | Nhóm theo: {(groupBy == "month" ? "Tháng" : groupBy == "week" ? "Tuần" : "Ngày")}";
+            ws1.Cells[2, 1, 2, 4].Merge = true;
+            ws1.Cells[2, 1].Style.Font.Italic = true;
+            ws1.Cells[2, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+
+            int r = 4;
+            ExcelSetSectionHeader(ws1, "THỐNG KÊ DOANH THU", r, 4);
+            r++;
+            decimal totalRevenue = orders.Sum(o => o.TotalAmount);
+            decimal avgOrder = orders.Count > 0 ? orders.Average(o => o.TotalAmount) : 0m;
+            decimal maxOrder = orders.Count > 0 ? orders.Max(o => o.TotalAmount) : 0m;
+            string[,] revStats = {
+                { "Tổng doanh thu", $"{totalRevenue:N0} ₫", "Số đơn hoàn thành", orders.Count.ToString("N0") },
+                { "Giá trị TB/đơn", $"{avgOrder:N0} ₫", "Đơn cao nhất", $"{maxOrder:N0} ₫" }
+            };
+            for (int i = 0; i < revStats.GetLength(0); i++, r++)
+            {
+                ExcelSetStatRow(ws1, r, revStats[i, 0], revStats[i, 1], revStats[i, 2], revStats[i, 3]);
+            }
+
+            // Payment breakdown
+            r += 1;
+            ExcelSetSectionHeader(ws1, "DOANH THU THEO PHƯƠNG THỨC THANH TOÁN", r, 4);
+            r++;
+            ExcelSetHeaderRow(ws1, r, ["Phương thức", "Số đơn", "Doanh thu (₫)", "Tỷ lệ (%)"]);
+            r++;
+            var byPayment = orders.GroupBy(o => o.PaymentMethod)
+                .Select(g => new { Method = g.Key, Total = g.Sum(o => o.TotalAmount), Count = g.Count() })
+                .OrderByDescending(x => x.Total).ToList();
+            for (int i = 0; i < byPayment.Count; i++, r++)
+            {
+                string label = byPayment[i].Method switch
+                {
+                    PaymentMethod.COD => "Thanh toán khi nhận hàng",
+                    PaymentMethod.BankTransfer => "Chuyển khoản ngân hàng",
+                    PaymentMethod.CreditCard => "Thẻ tín dụng",
+                    PaymentMethod.EWallet => "Ví điện tử",
+                    _ => byPayment[i].Method.ToString()
+                };
+                ws1.Cells[r, 1].Value = label;
+                ws1.Cells[r, 2].Value = byPayment[i].Count;
+                ws1.Cells[r, 3].Value = (double)byPayment[i].Total;
+                ws1.Cells[r, 3].Style.Numberformat.Format = "#,##0";
+                double pct = totalRevenue > 0 ? (double)(byPayment[i].Total / totalRevenue * 100) : 0;
+                ws1.Cells[r, 4].Value = Math.Round(pct, 1);
+                ws1.Cells[r, 4].Style.Numberformat.Format = "0.0\"%\"";
+                if (i % 2 == 1)
+                {
+                    ExcelSetStripedRow(ws1, r, 4);
+                }
+            }
+
+            // Revenue over time
+            r += 1;
+            ExcelSetSectionHeader(ws1, "DOANH THU THEO THỜI GIAN", r, 3);
+            r++;
+            ExcelSetHeaderRow(ws1, r, ["Kỳ", "Số đơn", "Doanh thu (₫)"]);
+            r++;
+            IEnumerable<(string Label, int Count, decimal Revenue)> timeData = groupBy switch
+            {
+                "month" => orders.GroupBy(o => new { o.Created.Year, o.Created.Month })
+                    .OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Month)
+                    .Select(g => ($"{g.Key.Month:D2}/{g.Key.Year}", g.Count(), g.Sum(o => o.TotalAmount))),
+                "week" => GetWeeklyData(orders, from, to),
+                _ => orders.GroupBy(o => o.Created.Date)
+                    .OrderBy(g => g.Key)
+                    .Select(g => (g.Key.ToString("dd/MM/yyyy"), g.Count(), g.Sum(o => o.TotalAmount)))
+            };
+            int ti = 0;
+            foreach ((string? label, int count, decimal rev) in timeData)
+            {
+                ws1.Cells[r, 1].Value = label;
+                ws1.Cells[r, 2].Value = count;
+                ws1.Cells[r, 3].Value = (double)rev;
+                ws1.Cells[r, 3].Style.Numberformat.Format = "#,##0";
+                if (ti % 2 == 1)
+                {
+                    ExcelSetStripedRow(ws1, r, 3);
+                }
+
+                r++; ti++;
+            }
+
+            ws1.Cells[ws1.Dimension.Address].AutoFitColumns(14, 50);
+
+            // ── Sheet 2: Chi tiết đơn hàng ──
+            ExcelWorksheet ws2 = package.Workbook.Worksheets.Add("Chi tiết đơn hàng");
+            ExcelSetTitle(ws2, "CHI TIẾT ĐƠN HÀNG HOÀN THÀNH", 1, 7);
+            ws2.Cells[2, 1].Value = $"Kỳ báo cáo: {from:dd/MM/yyyy} — {to.AddDays(-1):dd/MM/yyyy}";
+            ws2.Cells[2, 1, 2, 7].Merge = true;
+            ws2.Cells[2, 1].Style.Font.Italic = true;
+            ws2.Cells[2, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+
+            r = 4;
+            ExcelSetHeaderRow(ws2, r, ["Mã đơn", "Khách hàng", "Email", "Ngày đặt", "Phương thức TT", "Giảm giá (₫)", "Tổng tiền (₫)"]);
+            r++;
+            List<Order> detailOrders = orders.OrderByDescending(o => o.Created).ToList();
+            for (int i = 0; i < detailOrders.Count; i++, r++)
+            {
+                string pm = detailOrders[i].PaymentMethod switch
+                {
+                    PaymentMethod.COD => "COD",
+                    PaymentMethod.BankTransfer => "Chuyển khoản",
+                    PaymentMethod.CreditCard => "Thẻ tín dụng",
+                    PaymentMethod.EWallet => "Ví điện tử",
+                    _ => detailOrders[i].PaymentMethod.ToString()
+                };
+                ws2.Cells[r, 1].Value = detailOrders[i].OrderCode;
+                ws2.Cells[r, 2].Value = detailOrders[i].FullName;
+                ws2.Cells[r, 3].Value = detailOrders[i].Email;
+                ws2.Cells[r, 4].Value = detailOrders[i].Created.ToString("dd/MM/yyyy HH:mm");
+                ws2.Cells[r, 5].Value = pm;
+                ws2.Cells[r, 6].Value = (double)(detailOrders[i].DiscountAmount ?? 0);
+                ws2.Cells[r, 6].Style.Numberformat.Format = "#,##0";
+                ws2.Cells[r, 7].Value = (double)detailOrders[i].TotalAmount;
+                ws2.Cells[r, 7].Style.Numberformat.Format = "#,##0";
+                if (i % 2 == 1)
+                {
+                    ExcelSetStripedRow(ws2, r, 7);
+                }
+            }
+            // Total row
+            ws2.Cells[r, 6].Value = "TỔNG";
+            ws2.Cells[r, 6].Style.Font.Bold = true;
+            ws2.Cells[r, 7].Value = (double)totalRevenue;
+            ws2.Cells[r, 7].Style.Numberformat.Format = "#,##0";
+            ws2.Cells[r, 7].Style.Font.Bold = true;
+            ws2.Cells[r, 7].Style.Fill.PatternType = ExcelFillStyle.Solid;
+            ws2.Cells[r, 7].Style.Fill.BackgroundColor.SetColor(Color.FromArgb(220, 252, 231));
+
+            ws2.Cells[ws2.Dimension.Address].AutoFitColumns(12, 50);
+
+            MemoryStream stream = new();
+            package.SaveAs(stream);
+            stream.Position = 0;
+            return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                $"BaoCaoDoanhThu_{from:yyyyMMdd}_{to.AddDays(-1):yyyyMMdd}.xlsx");
+        }
+
+        public async Task<IActionResult> ExportInventory(Guid? categoryId, Guid? brandId, string? search, string sortBy = "name")
+        {
+            IQueryable<Product> query = _context.Products
+                .Include(p => p.Category)
+                .Include(p => p.Brand)
+                .Where(p => p.Status == StatusEntity.Approved);
+
+            if (categoryId.HasValue)
+            {
+                query = query.Where(p => p.CategoryId == categoryId.Value);
+            }
+
+            if (brandId.HasValue)
+            {
+                query = query.Where(p => p.BrandId == brandId.Value);
+            }
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                query = query.Where(p => p.Name.Contains(search));
+            }
+
+            List<Product> products = sortBy switch
+            {
+                "stock_asc" => await query.OrderBy(p => p.StockQuantity).ToListAsync(),
+                "stock_desc" => await query.OrderByDescending(p => p.StockQuantity).ToListAsync(),
+                "price_asc" => await query.OrderBy(p => p.Price).ToListAsync(),
+                "price_desc" => await query.OrderByDescending(p => p.Price).ToListAsync(),
+                _ => await query.OrderBy(p => p.Name).ToListAsync()
+            };
+
+            using ExcelPackage package = new();
+
+            // ── Sheet 1: Tổng hợp ──
+            ExcelWorksheet ws1 = package.Workbook.Worksheets.Add("Tổng hợp");
+            ExcelSetTitle(ws1, "BÁO CÁO TỒN KHO", 1, 4);
+            ws1.Cells[2, 1].Value = $"Xuất lúc: {DateTime.Now:dd/MM/yyyy HH:mm}";
+            ws1.Cells[2, 1, 2, 4].Merge = true;
+            ws1.Cells[2, 1].Style.Font.Italic = true;
+            ws1.Cells[2, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+
+            int r = 4;
+            ExcelSetSectionHeader(ws1, "THỐNG KÊ TỔNG HỢP", r, 4);
+            r++;
+            string[,] invStats = {
+                { "Tổng sản phẩm", products.Count.ToString("N0"), "Tổng tồn kho", products.Sum(p => p.StockQuantity).ToString("N0") + " sản phẩm" },
+                { "Tổng giá trị tồn kho", $"{products.Sum(p => p.Price * p.StockQuantity):N0} ₫", "Hết hàng", products.Count(p => p.StockQuantity == 0).ToString("N0") + " sản phẩm" },
+                { "Sắp hết hàng (≤5)", products.Count(p => p.StockQuantity is > 0 and <= 5).ToString("N0") + " sản phẩm", "", "" }
+            };
+            for (int i = 0; i < invStats.GetLength(0); i++, r++)
+            {
+                ExcelSetStatRow(ws1, r, invStats[i, 0], invStats[i, 1], invStats[i, 2], invStats[i, 3]);
+            }
+
+            // By category
+            r += 1;
+            ExcelSetSectionHeader(ws1, "TỒN KHO THEO DANH MỤC", r, 4);
+            r++;
+            ExcelSetHeaderRow(ws1, r, ["Danh mục", "Số sản phẩm", "Tổng tồn kho", "Giá trị tồn kho (₫)"]);
+            r++;
+            var byCategory = products.GroupBy(p => p.Category?.Name ?? "Không phân loại")
+                .Select(g => new { Name = g.Key, Count = g.Count(), Stock = g.Sum(p => p.StockQuantity), Value = g.Sum(p => p.Price * p.StockQuantity) })
+                .OrderByDescending(x => x.Stock).ToList();
+            for (int i = 0; i < byCategory.Count; i++, r++)
+            {
+                ws1.Cells[r, 1].Value = byCategory[i].Name;
+                ws1.Cells[r, 2].Value = byCategory[i].Count;
+                ws1.Cells[r, 3].Value = byCategory[i].Stock;
+                ws1.Cells[r, 4].Value = (double)byCategory[i].Value;
+                ws1.Cells[r, 4].Style.Numberformat.Format = "#,##0";
+                if (i % 2 == 1)
+                {
+                    ExcelSetStripedRow(ws1, r, 4);
+                }
+            }
+
+            // By brand
+            r += 1;
+            ExcelSetSectionHeader(ws1, "TỒN KHO THEO THƯƠNG HIỆU", r, 4);
+            r++;
+            ExcelSetHeaderRow(ws1, r, ["Thương hiệu", "Số sản phẩm", "Tổng tồn kho", "Giá trị tồn kho (₫)"]);
+            r++;
+            var byBrand = products.GroupBy(p => p.Brand?.Name ?? "Không phân loại")
+                .Select(g => new { Name = g.Key, Count = g.Count(), Stock = g.Sum(p => p.StockQuantity), Value = g.Sum(p => p.Price * p.StockQuantity) })
+                .OrderByDescending(x => x.Stock).ToList();
+            for (int i = 0; i < byBrand.Count; i++, r++)
+            {
+                ws1.Cells[r, 1].Value = byBrand[i].Name;
+                ws1.Cells[r, 2].Value = byBrand[i].Count;
+                ws1.Cells[r, 3].Value = byBrand[i].Stock;
+                ws1.Cells[r, 4].Value = (double)byBrand[i].Value;
+                ws1.Cells[r, 4].Style.Numberformat.Format = "#,##0";
+                if (i % 2 == 1)
+                {
+                    ExcelSetStripedRow(ws1, r, 4);
+                }
+            }
+
+            ws1.Cells[ws1.Dimension.Address].AutoFitColumns(14, 50);
+
+            // ── Sheet 2: Chi tiết tồn kho ──
+            ExcelWorksheet ws2 = package.Workbook.Worksheets.Add("Chi tiết tồn kho");
+            ExcelSetTitle(ws2, "CHI TIẾT TỒN KHO", 1, 8);
+            ws2.Cells[2, 1].Value = $"Xuất lúc: {DateTime.Now:dd/MM/yyyy HH:mm}";
+            ws2.Cells[2, 1, 2, 8].Merge = true;
+            ws2.Cells[2, 1].Style.Font.Italic = true;
+            ws2.Cells[2, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+
+            r = 4;
+            ExcelSetHeaderRow(ws2, r, ["STT", "Tên sản phẩm", "Danh mục", "Thương hiệu", "Giá bán (₫)", "Tồn kho", "Giá trị tồn (₫)", "Trạng thái"]);
+            r++;
+            for (int i = 0; i < products.Count; i++, r++)
+            {
+                string status = products[i].StockQuantity == 0 ? "Hết hàng" : products[i].StockQuantity <= 5 ? "Sắp hết" : "Còn hàng";
+                ws2.Cells[r, 1].Value = i + 1;
+                ws2.Cells[r, 2].Value = products[i].Name;
+                ws2.Cells[r, 3].Value = products[i].Category?.Name ?? "—";
+                ws2.Cells[r, 4].Value = products[i].Brand?.Name ?? "—";
+                ws2.Cells[r, 5].Value = (double)products[i].Price;
+                ws2.Cells[r, 5].Style.Numberformat.Format = "#,##0";
+                ws2.Cells[r, 6].Value = products[i].StockQuantity;
+                ws2.Cells[r, 7].Value = (double)(products[i].Price * products[i].StockQuantity);
+                ws2.Cells[r, 7].Style.Numberformat.Format = "#,##0";
+                ws2.Cells[r, 8].Value = status;
+                // Color status cell
+                Color statusColor = products[i].StockQuantity == 0
+                    ? Color.FromArgb(254, 226, 226)
+                    : products[i].StockQuantity <= 5
+                        ? Color.FromArgb(254, 243, 199)
+                        : Color.FromArgb(220, 252, 231);
+                ws2.Cells[r, 8].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                ws2.Cells[r, 8].Style.Fill.BackgroundColor.SetColor(statusColor);
+                if (i % 2 == 1)
+                {
+                    ExcelSetStripedRow(ws2, r, 7);
+                }
+            }
+
+            ws2.Cells[ws2.Dimension.Address].AutoFitColumns(10, 50);
+            ws2.Column(2).Width = 40;
+
+            MemoryStream stream = new();
+            package.SaveAs(stream);
+            stream.Position = 0;
+            return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                $"BaoCaoTonKho_{DateTime.Now:yyyyMMdd_HHmm}.xlsx");
+        }
+
+        // ── Excel helper methods ──
+
+        private static void ExcelSetTitle(ExcelWorksheet ws, string title, int row, int colSpan)
+        {
+            ws.Cells[row, 1, row, colSpan].Merge = true;
+            ws.Cells[row, 1].Value = title;
+            ws.Cells[row, 1].Style.Font.Bold = true;
+            ws.Cells[row, 1].Style.Font.Size = 16;
+            ws.Cells[row, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+            ws.Cells[row, 1].Style.Fill.PatternType = ExcelFillStyle.Solid;
+            ws.Cells[row, 1].Style.Fill.BackgroundColor.SetColor(Color.FromArgb(14, 165, 233));
+            ws.Cells[row, 1].Style.Font.Color.SetColor(Color.White);
+            ws.Row(row).Height = 28;
+        }
+
+        private static void ExcelSetSectionHeader(ExcelWorksheet ws, string title, int row, int colSpan)
+        {
+            ws.Cells[row, 1, row, colSpan].Merge = true;
+            ws.Cells[row, 1].Value = title;
+            ws.Cells[row, 1].Style.Font.Bold = true;
+            ws.Cells[row, 1].Style.Font.Size = 11;
+            ws.Cells[row, 1].Style.Fill.PatternType = ExcelFillStyle.Solid;
+            ws.Cells[row, 1].Style.Fill.BackgroundColor.SetColor(Color.FromArgb(30, 41, 59));
+            ws.Cells[row, 1].Style.Font.Color.SetColor(Color.White);
+            ws.Row(row).Height = 22;
+        }
+
+        private static void ExcelSetHeaderRow(ExcelWorksheet ws, int row, string[] headers)
+        {
+            for (int c = 0; c < headers.Length; c++)
+            {
+                ws.Cells[row, c + 1].Value = headers[c];
+                ws.Cells[row, c + 1].Style.Font.Bold = true;
+                ws.Cells[row, c + 1].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                ws.Cells[row, c + 1].Style.Fill.BackgroundColor.SetColor(Color.FromArgb(241, 245, 249));
+                ws.Cells[row, c + 1].Style.Border.Bottom.Style = ExcelBorderStyle.Medium;
+                ws.Cells[row, c + 1].Style.Border.Bottom.Color.SetColor(Color.FromArgb(14, 165, 233));
+            }
+            ws.Row(row).Height = 20;
+        }
+
+        private static void ExcelSetStatRow(ExcelWorksheet ws, int row, string lbl1, string val1, string lbl2, string val2)
+        {
+            ws.Cells[row, 1].Value = lbl1;
+            ws.Cells[row, 1].Style.Font.Bold = true;
+            ws.Cells[row, 2].Value = val1;
+            if (!string.IsNullOrEmpty(lbl2))
+            {
+                ws.Cells[row, 3].Value = lbl2;
+                ws.Cells[row, 3].Style.Font.Bold = true;
+                ws.Cells[row, 4].Value = val2;
+            }
+            ws.Row(row).Height = 18;
+        }
+
+        private static void ExcelSetStripedRow(ExcelWorksheet ws, int row, int colCount)
+        {
+            ws.Cells[row, 1, row, colCount].Style.Fill.PatternType = ExcelFillStyle.Solid;
+            ws.Cells[row, 1, row, colCount].Style.Fill.BackgroundColor.SetColor(Color.FromArgb(248, 250, 252));
+        }
+
+        private static IEnumerable<(string Label, int Count, decimal Revenue)> GetWeeklyData(
+            List<WebsiteSellLaptop.Models.Entities.Order> orders, DateTime from, DateTime to)
+        {
+            List<(string, int, decimal)> result = [];
+            DateTime start = from;
+            while (start < to)
+            {
+                DateTime end = start.AddDays(7) < to ? start.AddDays(7) : to;
+                List<Order> week = orders.Where(o => o.Created >= start && o.Created < end).ToList();
+                result.Add(($"{start:dd/MM} - {end.AddDays(-1):dd/MM}", week.Count, week.Sum(o => o.TotalAmount)));
+                start = end;
+            }
+            return result;
+        }
+    }
+}
