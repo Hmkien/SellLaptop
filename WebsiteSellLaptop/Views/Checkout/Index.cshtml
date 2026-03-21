@@ -6,37 +6,208 @@
 }
 
 @section Styles {
-<style>
-    .checkout-steps{display:flex;justify-content:center;gap:0;margin-bottom:32px}
-    .step{display:flex;align-items:center;gap:8px;padding:12px 20px;font-size:14px;font-weight:600;color:var(--muted)}
-    .step.active{color:var(--brand)}
-    .step.done{color:#16a34a}
-    .step-num{width:32px;height:32px;border-radius:50%;border:2px solid #e5e7eb;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
-    .step.active .step-num{border-color:var(--brand);background:var(--brand);color:#fff}
-    .step.done .step-num{border-color:#16a34a;background:#16a34a;color:#fff}
-    .step-line{width:40px;height:2px;background:#e5e7eb;align-self:center}
-    .step-line.done{background:#16a34a}
-    .section-card{background:#fff;border-radius:16px;border:1px solid #e5e7eb;padding:24px;margin-bottom:16px}
-    .section-card h6{font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
-    .section-card h6 i{color:var(--brand)}
-    .payment-option{border:2px solid #e5e7eb;border-radius:14px;padding:16px 20px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:12px;margin-bottom:12px}
-    .payment-option:hover{border-color:#cbd5e1}
-    .payment-option.selected{border-color:var(--brand);background:#eef2ff}
-    .payment-option input[type="radio"]{accent-color:var(--brand);width:18px;height:18px}
-    .payment-icon{width:40px;height:40px;border-radius:10px;background:#f8fafc;display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--brand)}
-    .order-summary{background:#fff;border-radius:16px;border:1px solid #e5e7eb;padding:24px;position:sticky;top:100px}
-    .order-summary h6{font-weight:700;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #e5e7eb}
-    .order-item{display:flex;gap:12px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #f1f3f7}
-    .order-item:last-of-type{border-bottom:0;margin-bottom:16px}
-    .order-item img{width:60px;height:60px;border-radius:10px;object-fit:cover;border:1px solid #e5e7eb}
-    .order-item-name{font-weight:600;font-size:13px}
-    .order-item-qty{color:var(--muted);font-size:12px}
-    .order-item-price{font-weight:700;font-size:13px;color:var(--brand)}
-    .summary-row{display:flex;justify-content:space-between;margin-bottom:10px;font-size:14px}
-    .summary-row.total{font-size:18px;font-weight:800;border-top:2px solid #e5e7eb;padding-top:14px;margin-top:14px;margin-bottom:0}
-    .summary-row.total .total-price{color:var(--brand)}
-    .btn-place-order{width:100%;padding:14px;border-radius:12px;font-weight:700;font-size:16px;margin-top:16px}
-</style>
+    <style>
+        .checkout-steps {
+            display: flex;
+            justify-content: center;
+            gap: 0;
+            margin-bottom: 32px
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--muted)
+        }
+
+            .step.active {
+                color: var(--brand)
+            }
+
+            .step.done {
+                color: #16a34a
+            }
+
+        .step-num {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 700
+        }
+
+        .step.active .step-num {
+            border-color: var(--brand);
+            background: var(--brand);
+            color: #fff
+        }
+
+        .step.done .step-num {
+            border-color: #16a34a;
+            background: #16a34a;
+            color: #fff
+        }
+
+        .step-line {
+            width: 40px;
+            height: 2px;
+            background: #e5e7eb;
+            align-self: center
+        }
+
+            .step-line.done {
+                background: #16a34a
+            }
+
+        .section-card {
+            background: #fff;
+            border-radius: 16px;
+            border: 1px solid #e5e7eb;
+            padding: 24px;
+            margin-bottom: 16px
+        }
+
+            .section-card h6 {
+                font-weight: 700;
+                margin-bottom: 16px;
+                display: flex;
+                align-items: center;
+                gap: 8px
+            }
+
+                .section-card h6 i {
+                    color: var(--brand)
+                }
+
+        .payment-option {
+            border: 2px solid #e5e7eb;
+            border-radius: 14px;
+            padding: 16px 20px;
+            cursor: pointer;
+            transition: all .15s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px
+        }
+
+            .payment-option:hover {
+                border-color: #cbd5e1
+            }
+
+            .payment-option.selected {
+                border-color: var(--brand);
+                background: #eef2ff
+            }
+
+            .payment-option input[type="radio"] {
+                accent-color: var(--brand);
+                width: 18px;
+                height: 18px
+            }
+
+        .payment-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: var(--brand)
+        }
+
+        .order-summary {
+            background: #fff;
+            border-radius: 16px;
+            border: 1px solid #e5e7eb;
+            padding: 24px;
+            position: sticky;
+            top: 100px
+        }
+
+            .order-summary h6 {
+                font-weight: 700;
+                margin-bottom: 16px;
+                padding-bottom: 12px;
+                border-bottom: 1px solid #e5e7eb
+            }
+
+        .order-item {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 14px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid #f1f3f7
+        }
+
+            .order-item:last-of-type {
+                border-bottom: 0;
+                margin-bottom: 16px
+            }
+
+            .order-item img {
+                width: 60px;
+                height: 60px;
+                border-radius: 10px;
+                object-fit: cover;
+                border: 1px solid #e5e7eb
+            }
+
+        .order-item-name {
+            font-weight: 600;
+            font-size: 13px
+        }
+
+        .order-item-qty {
+            color: var(--muted);
+            font-size: 12px
+        }
+
+        .order-item-price {
+            font-weight: 700;
+            font-size: 13px;
+            color: var(--brand)
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px
+        }
+
+            .summary-row.total {
+                font-size: 18px;
+                font-weight: 800;
+                border-top: 2px solid #e5e7eb;
+                padding-top: 14px;
+                margin-top: 14px;
+                margin-bottom: 0
+            }
+
+                .summary-row.total .total-price {
+                    color: var(--brand)
+                }
+
+        .btn-place-order {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 16px;
+            margin-top: 16px
+        }
+    </style>
 }
 
 <div class="container mt-4">
@@ -61,7 +232,6 @@
     <form id="checkoutForm">
         <div class="row g-4">
             <div class="col-lg-7">
-                <!-- Shipping Info -->
                 <div class="section-card">
                     <h6><i class="bi bi-geo-alt-fill"></i> Thông tin giao hàng</h6>
                     <div class="row g-3">
@@ -79,29 +249,20 @@
                         </div>
                         <div class="col-md-4">
                             <label class="form-label fw-semibold small">Tỉnh/Thành phố <span class="text-danger">*</span></label>
-                            <select name="Province" class="form-select" required>
-                                <option value="">Chọn tỉnh/thành</option>
-                                <option value="TP. Hồ Chí Minh">TP. Hồ Chí Minh</option>
-                                <option value="Hà Nội">Hà Nội</option>
-                                <option value="Đà Nẵng">Đà Nẵng</option>
-                                <option value="Cần Thơ">Cần Thơ</option>
+                            <select id="provinceSelect" name="Province" class="form-select" required>
+                                <option value="">Đang tải...</option>
                             </select>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label fw-semibold small">Quận/Huyện <span class="text-danger">*</span></label>
-                            <select name="District" class="form-select" required>
+                            <select id="districtSelect" name="District" class="form-select" required>
                                 <option value="">Chọn quận/huyện</option>
-                                <option value="Quận 1">Quận 1</option>
-                                <option value="Quận 3">Quận 3</option>
-                                <option value="Quận 7">Quận 7</option>
                             </select>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label fw-semibold small">Phường/Xã <span class="text-danger">*</span></label>
-                            <select name="Ward" class="form-select" required>
+                            <select id="wardSelect" name="Ward" class="form-select" required>
                                 <option value="">Chọn phường/xã</option>
-                                <option value="Phường Bến Nghé">Phường Bến Nghé</option>
-                                <option value="Phường Bến Thành">Phường Bến Thành</option>
                             </select>
                         </div>
                         <div class="col-12">
@@ -115,7 +276,6 @@
                     </div>
                 </div>
 
-                <!-- Payment Method -->
                 <div class="section-card">
                     <h6><i class="bi bi-credit-card-fill"></i> Phương thức thanh toán</h6>
                     <label class="payment-option selected">
@@ -145,49 +305,51 @@
                 </div>
             </div>
 
-            <!-- Order Summary -->
             <div class="col-lg-5">
                 <div class="order-summary">
                     <h6><i class="bi bi-receipt me-2"></i>Đơn hàng của bạn</h6>
 
-                    @foreach (var item in Model.Items)
+                    @if (Model?.Items != null)
                     {
-                        <div class="order-item">
-                            @if (!string.IsNullOrEmpty(item.ThumbnailUrl))
-                            {
-                                <img src="@item.ThumbnailUrl" alt="@item.ProductName">
-                            }
-                            else
-                            {
-                                <img src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=120&q=80" alt="@item.ProductName">
-                            }
-                            <div class="flex-grow-1">
-                                <div class="order-item-name">@item.ProductName</div>
-                                <div class="order-item-qty">x@item.Quantity</div>
+                        @foreach (var item in Model.Items)
+                        {
+                            <div class="order-item">
+                                @if (!string.IsNullOrEmpty(item.ThumbnailUrl))
+                                {
+                                    <img src="@item.ThumbnailUrl" alt="@item.ProductName">
+                                }
+                                else
+                                {
+                                    <img src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=120&q=80" alt="@item.ProductName">
+                                }
+                                <div class="flex-grow-1">
+                                    <div class="order-item-name">@item.ProductName</div>
+                                    <div class="order-item-qty">x@item.Quantity</div>
+                                </div>
+                                <div class="order-item-price">@item.Subtotal.ToString("N0")₫</div>
                             </div>
-                            <div class="order-item-price">@item.Subtotal.ToString("N0")₫</div>
-                        </div>
-                    }
+                        }
 
-                    <div class="summary-row">
-                        <span class="text-muted">Tạm tính (@Model.TotalItems sp)</span>
-                        <span class="fw-semibold">@Model.TotalAmount.ToString("N0")₫</span>
-                    </div>
-                    <div class="summary-row">
-                        <span class="text-muted">Phí vận chuyển</span>
-                        <span class="fw-semibold text-success">Miễn phí</span>
-                    </div>
-                    @if (Model.DiscountAmount > 0)
-                    {
                         <div class="summary-row">
-                            <span class="text-muted">Giảm giá</span>
-                            <span class="fw-semibold text-danger">-@Model.DiscountAmount.ToString("N0")₫</span>
+                            <span class="text-muted">Tạm tính (@Model.TotalItems sp)</span>
+                            <span class="fw-semibold">@Model.TotalAmount.ToString("N0")₫</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="text-muted">Phí vận chuyển</span>
+                            <span class="fw-semibold text-success">Miễn phí</span>
+                        </div>
+                        @if (Model.DiscountAmount > 0)
+                        {
+                            <div class="summary-row">
+                                <span class="text-muted">Giảm giá</span>
+                                <span class="fw-semibold text-danger">-@Model.DiscountAmount.ToString("N0")₫</span>
+                            </div>
+                        }
+                        <div class="summary-row total">
+                            <span>Tổng cộng</span>
+                            <span class="total-price">@Model.FinalAmount.ToString("N0")₫</span>
                         </div>
                     }
-                    <div class="summary-row total">
-                        <span>Tổng cộng</span>
-                        <span class="total-price">@Model.FinalAmount.ToString("N0")₫</span>
-                    </div>
 
                     <button type="submit" class="btn btn-brand btn-place-order">
                         Đặt hàng <i class="bi bi-arrow-right ms-2"></i>
@@ -203,37 +365,124 @@
 </main>
 
 @section Scripts {
-<script>
-    $(document).ready(function() {
-        // Payment option selection
-        $('.payment-option').click(function() {
-            $('.payment-option').removeClass('selected');
-            $(this).addClass('selected');
-            $(this).find('input[type="radio"]').prop('checked', true);
-        });
+    <script>
+        $(document).ready(function() {
+            // Xử lý UI phương thức thanh toán
+            $('.payment-option').click(function() {
+                $('.payment-option').removeClass('selected');
+                $(this).addClass('selected');
+                $(this).find('input[type="radio"]').prop('checked', true);
+            });
 
-        // Form submission
-        $('#checkoutForm').submit(function(e) {
-            e.preventDefault();
-            
-            const formData = $(this).serialize();
-            
-            $.post('@Url.Action("PlaceOrder", "Checkout")', formData, function(response) {
-                if (response.success) {
-                    if (response.paymentUrl) {
-                        // Redirect to VNPay
-                        window.location.href = response.paymentUrl;
-                    } else if (response.redirectUrl) {
-                        // Redirect to success page
-                        window.location.href = response.redirectUrl;
+            // --- CỤM XỬ LÝ LẤY ĐỊA CHỈ TỪ API PUBLIC ESGOO ---
+            let isInitialLoad = true;
+            const userProv = '@Html.Raw(ViewBag.UserProvince ?? "")';
+            const userDist = '@Html.Raw(ViewBag.UserDistrict ?? "")';
+            const userWard = '@Html.Raw(ViewBag.UserWard ?? "")';
+
+            // Hàm điền dữ liệu vào Select: Lưu TÊN vào value (để submit form lên C#), lưu ID ngầm vào data-id để fetch cấp tiếp theo
+            function populateSelect($select, items, placeholder) {
+                $select.empty().append($('<option>').val('').text(placeholder));
+                items.forEach(it => {
+                    $select.append($('<option>').val(it.full_name).data('id', it.id).text(it.full_name));
+                });
+            }
+
+            // 1. Tải Tỉnh/Thành
+            fetch('https://esgoo.net/api-tinhthanh/1/0.htm')
+                .then(response => response.json())
+                .then(result => {
+                    if (result.error === 0) {
+                        populateSelect($('#provinceSelect'), result.data, 'Chọn tỉnh/thành');
+                        if (userProv) {
+                            $('#provinceSelect').val(userProv).trigger('change');
+                        }
                     }
-                } else {
-                    alert(response.message || 'Có lỗi xảy ra, vui lòng thử lại');
+                })
+                .catch(() => $('#provinceSelect').empty().append($('<option>').val('').text('Tải thất bại')));
+
+            // 2. Tải Quận/Huyện khi đổi Tỉnh
+            $('#provinceSelect').on('change', function() {
+                const provId = $(this).find(':selected').data('id'); // Lấy ID ngầm từ thẻ option đang chọn
+
+                if (!provId) {
+                    $('#districtSelect').empty().append($('<option>').val('').text('Chọn quận/huyện'));
+                    $('#wardSelect').empty().append($('<option>').val('').text('Chọn phường/xã'));
+                    return;
                 }
-            }).fail(function() {
-                alert('Có lỗi xảy ra, vui lòng thử lại');
+
+                fetch(`https://esgoo.net/api-tinhthanh/2/${provId}.htm`)
+                    .then(response => response.json())
+                    .then(result => {
+                        if (result.error === 0) {
+                            populateSelect($('#districtSelect'), result.data, 'Chọn quận/huyện');
+                            $('#wardSelect').empty().append($('<option>').val('').text('Chọn phường/xã'));
+
+                            if (isInitialLoad && userDist) {
+                                $('#districtSelect').val(userDist).trigger('change');
+                            }
+                        }
+                    })
+                    .catch(() => $('#districtSelect').empty().append($('<option>').val('').text('Tải thất bại')));
+            });
+
+            // 3. Tải Phường/Xã khi đổi Quận/Huyện
+            $('#districtSelect').on('change', function() {
+                const distId = $(this).find(':selected').data('id'); // Lấy ID ngầm
+
+                if (!distId) {
+                    $('#wardSelect').empty().append($('<option>').val('').text('Chọn phường/xã'));
+                    return;
+                }
+
+                fetch(`https://esgoo.net/api-tinhthanh/3/${distId}.htm`)
+                    .then(response => response.json())
+                    .then(result => {
+                        if (result.error === 0) {
+                            populateSelect($('#wardSelect'), result.data, 'Chọn phường/xã');
+
+                            if (isInitialLoad && userWard) {
+                                $('#wardSelect').val(userWard);
+                                isInitialLoad = false;
+                            }
+                        }
+                    })
+                    .catch(() => $('#wardSelect').empty().append($('<option>').val('').text('Tải thất bại')));
+            });
+
+            // Hủy cờ initial load nếu người dùng chủ động chọn bằng chuột
+            $('#provinceSelect, #districtSelect').on('change', function(e) {
+                if (e.originalEvent) {
+                    isInitialLoad = false;
+                }
+            });
+
+            // --- CỤM XỬ LÝ SUBMIT FORM ---
+            $('#checkoutForm').submit(function(e) {
+                e.preventDefault();
+
+                const formData = $(this).serialize();
+                const $btn = $('.btn-place-order');
+                const originalHtml = $btn.html();
+
+                $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Đang xử lý...');
+
+                $.post('@Url.Action("PlaceOrder", "Checkout")', formData, function(response) {
+                    if (response.success) {
+                        if (response.paymentUrl) {
+                            window.location.href = response.paymentUrl; // Chuyển sang trang VNPay/Momo
+                        } else if (response.redirectUrl) {
+                            window.location.href = response.redirectUrl; // Về trang Success
+                        }
+                    } else {
+                        alert(response.message || 'Có lỗi xảy ra trong quá trình đặt hàng, vui lòng thử lại.');
+                        $btn.prop('disabled', false).html(originalHtml);
+                    }
+                }).fail(function() {
+                    alert('Có lỗi xảy ra, vui lòng kiểm tra kết nối mạng và thử lại.');
+                    $btn.prop('disabled', false).html(originalHtml);
+                });
             });
         });
-    });
-</script>
+    </script>
 }

@@ -15,7 +15,7 @@
     var labels = ViewBag.Labels as List<string> ?? new List<string>();
     var values = ViewBag.Values as List<decimal> ?? new List<decimal>();
     var orderCounts = ViewBag.OrderCounts as List<int> ?? new List<int>();
-    var revenueByPayment = ViewBag.RevenueByPayment as List<dynamic> ?? new List<dynamic>();
+    var revenueByPayment = ViewBag.RevenueByPayment as IEnumerable<dynamic> ?? new List<dynamic>();
     var revenueDetails = ViewBag.RevenueDetails as List<Order> ?? new List<Order>();
 }
 
@@ -186,6 +186,9 @@
             {
                 <div class="text-center text-muted py-4">Chưa có dữ liệu</div>
             }
+            <div style="margin-top:16px">
+                <canvas id="paymentChart" height="160"></canvas>
+            </div>
         </div>
     </div>
     <div class="col-md-7">
@@ -305,5 +308,51 @@
             scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
         }
     });
+
+           // Payment chart (doughnut)
+        (function() {
+            // Serialize trực tiếp ViewBag để tránh lỗi LINQ trên dynamic
+            var payments = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.RevenueByPayment));
+            if (!payments || payments.length === 0) return;
+
+            var labels = payments.map(p => {
+                // Hỗ trợ cả property viết hoa hoặc viết thường tuỳ theo config serializer
+                var method = p.Method || p.method;
+                switch(method) {
+                    case 'COD': return 'Thanh toán khi nhận hàng';
+                    case 'BankTransfer': return 'Chuyển khoản';
+                    case 'CreditCard': return 'Thẻ tín dụng';
+                    case 'EWallet': return 'Ví điện tử';
+                    default: return method;
+                }
+            });
+
+            // Map dữ liệu (ép kiểu an toàn)
+            var data = payments.map(p => Number(p.Total || p.total));
+            var colors = ['#667eea','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4'];
+
+            var paymentCtx = document.getElementById('paymentChart').getContext('2d');
+            new Chart(paymentCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{ data: data, backgroundColor: colors.slice(0, labels.length) }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx){
+                                    return ctx.label + ': ' + ctx.parsed.toLocaleString() + '₫';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        })();
 </script>
 }

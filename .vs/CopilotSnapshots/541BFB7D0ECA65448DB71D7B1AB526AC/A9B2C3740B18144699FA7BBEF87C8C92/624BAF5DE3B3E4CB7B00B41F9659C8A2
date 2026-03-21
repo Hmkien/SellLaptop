@@ -1,0 +1,239 @@
+﻿@using WebsiteSellLaptop.Models.ViewModels
+@using WebsiteSellLaptop.Models.Enums
+@model CartViewModel
+@{
+    ViewData["Title"] = "Thanh toán";
+}
+
+@section Styles {
+<style>
+    .checkout-steps{display:flex;justify-content:center;gap:0;margin-bottom:32px}
+    .step{display:flex;align-items:center;gap:8px;padding:12px 20px;font-size:14px;font-weight:600;color:var(--muted)}
+    .step.active{color:var(--brand)}
+    .step.done{color:#16a34a}
+    .step-num{width:32px;height:32px;border-radius:50%;border:2px solid #e5e7eb;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
+    .step.active .step-num{border-color:var(--brand);background:var(--brand);color:#fff}
+    .step.done .step-num{border-color:#16a34a;background:#16a34a;color:#fff}
+    .step-line{width:40px;height:2px;background:#e5e7eb;align-self:center}
+    .step-line.done{background:#16a34a}
+    .section-card{background:#fff;border-radius:16px;border:1px solid #e5e7eb;padding:24px;margin-bottom:16px}
+    .section-card h6{font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+    .section-card h6 i{color:var(--brand)}
+    .payment-option{border:2px solid #e5e7eb;border-radius:14px;padding:16px 20px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:12px;margin-bottom:12px}
+    .payment-option:hover{border-color:#cbd5e1}
+    .payment-option.selected{border-color:var(--brand);background:#eef2ff}
+    .payment-option input[type="radio"]{accent-color:var(--brand);width:18px;height:18px}
+    .payment-icon{width:40px;height:40px;border-radius:10px;background:#f8fafc;display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--brand)}
+    .order-summary{background:#fff;border-radius:16px;border:1px solid #e5e7eb;padding:24px;position:sticky;top:100px}
+    .order-summary h6{font-weight:700;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #e5e7eb}
+    .order-item{display:flex;gap:12px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #f1f3f7}
+    .order-item:last-of-type{border-bottom:0;margin-bottom:16px}
+    .order-item img{width:60px;height:60px;border-radius:10px;object-fit:cover;border:1px solid #e5e7eb}
+    .order-item-name{font-weight:600;font-size:13px}
+    .order-item-qty{color:var(--muted);font-size:12px}
+    .order-item-price{font-weight:700;font-size:13px;color:var(--brand)}
+    .summary-row{display:flex;justify-content:space-between;margin-bottom:10px;font-size:14px}
+    .summary-row.total{font-size:18px;font-weight:800;border-top:2px solid #e5e7eb;padding-top:14px;margin-top:14px;margin-bottom:0}
+    .summary-row.total .total-price{color:var(--brand)}
+    .btn-place-order{width:100%;padding:14px;border-radius:12px;font-weight:700;font-size:16px;margin-top:16px}
+</style>
+}
+
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a asp-controller="Cart" asp-action="Index">Giỏ hàng</a></li>
+            <li class="breadcrumb-item active">Thanh toán</li>
+        </ol>
+    </nav>
+</div>
+
+<main class="container mb-5">
+    <div class="checkout-steps">
+        <div class="step done"><span class="step-num"><i class="bi bi-check"></i></span> Giỏ hàng</div>
+        <div class="step-line done"></div>
+        <div class="step active"><span class="step-num">2</span> Thanh toán</div>
+        <div class="step-line"></div>
+        <div class="step"><span class="step-num">3</span> Hoàn tất</div>
+    </div>
+
+    <form id="checkoutForm">
+        <div class="row g-4">
+            <div class="col-lg-7">
+                <!-- Shipping Info -->
+                <div class="section-card">
+                    <h6><i class="bi bi-geo-alt-fill"></i> Thông tin giao hàng</h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Họ và tên <span class="text-danger">*</span></label>
+                            <input name="FullName" class="form-control" placeholder="Nguyễn Văn A" value="@ViewBag.UserFullName" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Số điện thoại <span class="text-danger">*</span></label>
+                            <input name="Phone" class="form-control" placeholder="0987 654 321" value="@ViewBag.UserPhone" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold small">Email <span class="text-danger">*</span></label>
+                            <input name="Email" type="email" class="form-control" placeholder="email@example.com" value="@ViewBag.UserEmail" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small">Tỉnh/Thành phố <span class="text-danger">*</span></label>
+                            <select name="Province" class="form-select" required>
+                                <option value="">Chọn tỉnh/thành</option>
+                                <option value="TP. Hồ Chí Minh">TP. Hồ Chí Minh</option>
+                                <option value="Hà Nội">Hà Nội</option>
+                                <option value="Đà Nẵng">Đà Nẵng</option>
+                                <option value="Cần Thơ">Cần Thơ</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small">Quận/Huyện <span class="text-danger">*</span></label>
+                            <select name="District" class="form-select" required>
+                                <option value="">Chọn quận/huyện</option>
+                                <option value="Quận 1">Quận 1</option>
+                                <option value="Quận 3">Quận 3</option>
+                                <option value="Quận 7">Quận 7</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small">Phường/Xã <span class="text-danger">*</span></label>
+                            <select name="Ward" class="form-select" required>
+                                <option value="">Chọn phường/xã</option>
+                                <option value="Phường Bến Nghé">Phường Bến Nghé</option>
+                                <option value="Phường Bến Thành">Phường Bến Thành</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold small">Địa chỉ chi tiết <span class="text-danger">*</span></label>
+                            <input name="AddressDetail" class="form-control" placeholder="Số nhà, tên đường..." value="@ViewBag.UserAddress" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold small">Ghi chú</label>
+                            <textarea name="Note" class="form-control" rows="2" placeholder="Ghi chú cho đơn hàng (tùy chọn)"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Method -->
+                <div class="section-card">
+                    <h6><i class="bi bi-credit-card-fill"></i> Phương thức thanh toán</h6>
+                    <label class="payment-option selected">
+                        <input type="radio" name="PaymentMethod" value="@((int)PaymentMethod.COD)" checked>
+                        <div class="payment-icon"><i class="bi bi-cash-stack"></i></div>
+                        <div>
+                            <div class="fw-semibold">Thanh toán khi nhận hàng (COD)</div>
+                            <div class="text-muted small">Thanh toán bằng tiền mặt khi nhận hàng</div>
+                        </div>
+                    </label>
+                    <label class="payment-option">
+                        <input type="radio" name="PaymentMethod" value="@((int)PaymentMethod.BankTransfer)">
+                        <div class="payment-icon"><i class="bi bi-bank"></i></div>
+                        <div>
+                            <div class="fw-semibold">Chuyển khoản ngân hàng</div>
+                            <div class="text-muted small">Chuyển khoản qua tài khoản ngân hàng</div>
+                        </div>
+                    </label>
+                    <label class="payment-option">
+                        <input type="radio" name="PaymentMethod" value="@((int)PaymentMethod.EWallet)">
+                        <div class="payment-icon"><i class="bi bi-wallet2"></i></div>
+                        <div>
+                            <div class="fw-semibold">VNPay</div>
+                            <div class="text-muted small">Thanh toán qua cổng VNPay</div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="col-lg-5">
+                <div class="order-summary">
+                    <h6><i class="bi bi-receipt me-2"></i>Đơn hàng của bạn</h6>
+
+                    @foreach (var item in Model.Items)
+                    {
+                        <div class="order-item">
+                            @if (!string.IsNullOrEmpty(item.ThumbnailUrl))
+                            {
+                                <img src="@item.ThumbnailUrl" alt="@item.ProductName">
+                            }
+                            else
+                            {
+                                <img src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=120&q=80" alt="@item.ProductName">
+                            }
+                            <div class="flex-grow-1">
+                                <div class="order-item-name">@item.ProductName</div>
+                                <div class="order-item-qty">x@item.Quantity</div>
+                            </div>
+                            <div class="order-item-price">@item.Subtotal.ToString("N0")₫</div>
+                        </div>
+                    }
+
+                    <div class="summary-row">
+                        <span class="text-muted">Tạm tính (@Model.TotalItems sp)</span>
+                        <span class="fw-semibold">@Model.TotalAmount.ToString("N0")₫</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="text-muted">Phí vận chuyển</span>
+                        <span class="fw-semibold text-success">Miễn phí</span>
+                    </div>
+                    @if (Model.DiscountAmount > 0)
+                    {
+                        <div class="summary-row">
+                            <span class="text-muted">Giảm giá</span>
+                            <span class="fw-semibold text-danger">-@Model.DiscountAmount.ToString("N0")₫</span>
+                        </div>
+                    }
+                    <div class="summary-row total">
+                        <span>Tổng cộng</span>
+                        <span class="total-price">@Model.FinalAmount.ToString("N0")₫</span>
+                    </div>
+
+                    <button type="submit" class="btn btn-brand btn-place-order">
+                        Đặt hàng <i class="bi bi-arrow-right ms-2"></i>
+                    </button>
+                    <div class="text-center mt-3 text-muted small">
+                        <i class="bi bi-shield-check text-success"></i>
+                        Thông tin của bạn được bảo mật
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</main>
+
+@section Scripts {
+<script>
+    $(document).ready(function() {
+        // Payment option selection
+        $('.payment-option').click(function() {
+            $('.payment-option').removeClass('selected');
+            $(this).addClass('selected');
+            $(this).find('input[type="radio"]').prop('checked', true);
+        });
+
+        // Form submission
+        $('#checkoutForm').submit(function(e) {
+            e.preventDefault();
+            
+            const formData = $(this).serialize();
+            
+            $.post('@Url.Action("PlaceOrder", "Checkout")', formData, function(response) {
+                if (response.success) {
+                    if (response.paymentUrl) {
+                        // Redirect to VNPay
+                        window.location.href = response.paymentUrl;
+                    } else if (response.redirectUrl) {
+                        // Redirect to success page
+                        window.location.href = response.redirectUrl;
+                    }
+                } else {
+                    alert(response.message || 'Có lỗi xảy ra, vui lòng thử lại');
+                }
+            }).fail(function() {
+                alert('Có lỗi xảy ra, vui lòng thử lại');
+            });
+        });
+    });
+</script>
+}

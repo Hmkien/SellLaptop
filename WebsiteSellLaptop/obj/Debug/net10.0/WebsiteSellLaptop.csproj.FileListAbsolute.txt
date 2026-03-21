@@ -344,7 +344,6 @@ D:\Dự án\WebsiteSellComputer\SellLaptop\WebsiteSellLaptop\bin\Debug\net10.0\M
 D:\Dự án\WebsiteSellComputer\SellLaptop\WebsiteSellLaptop\bin\Debug\net10.0\Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.dll
 D:\Dự án\WebsiteSellComputer\SellLaptop\WebsiteSellLaptop\bin\Debug\net10.0\Microsoft.AspNetCore.Razor.Language.dll
 D:\Dự án\WebsiteSellComputer\SellLaptop\WebsiteSellLaptop\bin\Debug\net10.0\Microsoft.Bcl.AsyncInterfaces.dll
-D:\Dự án\WebsiteSellComputer\SellLaptop\WebsiteSellLaptop\bin\Debug\net10.0\Microsoft.Bcl.Cryptography.dll
 D:\Dự án\WebsiteSellComputer\SellLaptop\WebsiteSellLaptop\bin\Debug\net10.0\Microsoft.Build.dll
 D:\Dự án\WebsiteSellComputer\SellLaptop\WebsiteSellLaptop\bin\Debug\net10.0\Microsoft.Build.Framework.dll
 D:\Dự án\WebsiteSellComputer\SellLaptop\WebsiteSellLaptop\bin\Debug\net10.0\Microsoft.CodeAnalysis.dll

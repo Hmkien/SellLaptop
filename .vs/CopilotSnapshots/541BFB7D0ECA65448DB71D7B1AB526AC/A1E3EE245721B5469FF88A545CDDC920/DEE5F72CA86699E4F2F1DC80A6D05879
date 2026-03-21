@@ -1,0 +1,68 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using WebsiteSellLaptop.Data;
+
+namespace WebsiteSellLaptop.Areas.Admin.Controllers
+{
+    [Area("Admin")]
+    [Route("api/locations")]
+    public class LocationsApiController : Controller
+    {
+        private readonly AppDbContext _context;
+        public LocationsApiController(AppDbContext context)
+        {
+            _context = context;
+        }
+
+        [HttpGet("provinces")]
+        public async Task<IActionResult> Provinces()
+        {
+            // If you have a Provinces table, return it. Otherwise return a static list.
+            var provinces = await _context.Categories.Select(c => new { code = c.Id.ToString(), name = c.Name }).Take(0).ToListAsync();
+            // fallback static
+            if (!provinces.Any())
+            {
+                provinces = new[] {
+                    new { code = "TPHCM", name = "TP. Hồ Chí Minh" },
+                    new { code = "HANOI", name = "Hà Nội" },
+                    new { code = "DANANG", name = "Đà Nẵng" },
+                    new { code = "CANTHO", name = "Cần Thơ" }
+                }.ToList();
+            }
+            return Json(provinces);
+        }
+
+        [HttpGet("districts")]
+        public IActionResult Districts(string province)
+        {
+            // Static map for demo — replace with real dataset or DB table
+            var map = new Dictionary<string, List<object>>() {
+                { "TPHCM", new List<object> { new { code = "Q1", name = "Quận 1" }, new { code = "Q3", name = "Quận 3" }, new { code = "Q7", name = "Quận 7" } } },
+                { "HANOI", new List<object> { new { code = "HN-TB", name = "Hoàn Kiếm" }, new { code = "HN-DT", name = "Đống Đa" } } },
+                { "DANANG", new List<object> { new { code = "DN-HN", name = "Hải Châu" } } },
+                { "CANTHO", new List<object> { new { code = "CT-NB", name = "Ninh Kiều" } } }
+            };
+
+            if (map.ContainsKey(province)) return Json(map[province]);
+            // Try matching by name
+            var byName = map.FirstOrDefault(kv => kv.Key.Equals(province, StringComparison.OrdinalIgnoreCase) || kv.Value.Any(v => v.GetType().GetProperty("name").GetValue(v).ToString().Equals(province, StringComparison.OrdinalIgnoreCase)));
+            if (byName.Key != null) return Json(byName.Value);
+            return Json(new List<object>());
+        }
+
+        [HttpGet("wards")]
+        public IActionResult Wards(string district)
+        {
+            var map = new Dictionary<string, List<object>>() {
+                { "Q1", new List<object> { new { code = "PBN", name = "Phường Bến Nghé" }, new { code = "PBT", name = "Phường Bến Thành" } } },
+                { "Q3", new List<object> { new { code = "P3-1", name = "Phường 3-1" } } },
+                { "Q7", new List<object> { new { code = "P7-1", name = "Phường 7-1" } } }
+            };
+
+            if (map.ContainsKey(district)) return Json(map[district]);
+            var byName = map.FirstOrDefault(kv => kv.Key.Equals(district, StringComparison.OrdinalIgnoreCase) || kv.Value.Any(v => v.GetType().GetProperty("name").GetValue(v).ToString().Equals(district, StringComparison.OrdinalIgnoreCase)));
+            if (byName.Key != null) return Json(byName.Value);
+            return Json(new List<object>());
+        }
+    }
+}

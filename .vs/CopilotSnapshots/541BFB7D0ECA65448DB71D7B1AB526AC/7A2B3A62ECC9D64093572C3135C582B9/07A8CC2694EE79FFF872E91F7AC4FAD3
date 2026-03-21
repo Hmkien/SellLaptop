@@ -1,0 +1,148 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
+using System.Text.Json;
+using WebsiteSellLaptop.Data;
+
+namespace WebsiteSellLaptop.Areas.Admin.Controllers
+{
+    [ApiController]
+    [Route("/api/locations")]
+    public class LocationsApiController : ControllerBase
+    {
+        private readonly AppDbContext _context;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IMemoryCache _cache;
+        private readonly IConfiguration _config;
+        private readonly ILogger<LocationsApiController> _logger;
+
+        public LocationsApiController(AppDbContext context, IHttpClientFactory httpClientFactory, IMemoryCache cache, IConfiguration config, ILogger<LocationsApiController> logger)
+        {
+            _context = context;
+            _httpClientFactory = httpClientFactory;
+            _cache = cache;
+            _config = config;
+            _logger = logger;
+        }
+
+        private async Task<List<object>> FetchExternalAsync(string url)
+        {
+            try
+            {
+                var client = _httpClientFactory.CreateClient();
+                using var resp = await client.GetAsync(url);
+                if (!resp.IsSuccessStatusCode)
+                {
+                    _logger.LogWarning("External locations API returned {Status} for {Url}", resp.StatusCode, url);
+                    return new List<object>();
+                }
+
+                var stream = await resp.Content.ReadAsStreamAsync();
+                var json = await System.Text.Json.JsonSerializer.DeserializeAsync<List<JsonElement>>(stream);
+                if (json == null) return new List<object>();
+                var list = json.Select(j => (object)j).ToList();
+                return list;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error calling external locations API: {Url}", url);
+                return new List<object>();
+            }
+        }
+
+        [HttpGet("provinces")]
+        public async Task<IActionResult> Provinces()
+        {
+            // Try cache first
+            if (_cache.TryGetValue("locations:provinces", out List<object> cached))
+            {
+                return Ok(cached);
+            }
+
+            // External base URL and paths configurable in appsettings
+            var baseUrl = _config["ExternalLocations:BaseUrl"];
+            var provincesPath = _config["ExternalLocations:ProvincesPath"] ?? "/provinces";
+
+            List<object> result = new();
+            if (!string.IsNullOrEmpty(baseUrl))
+            {
+                var url = baseUrl.TrimEnd('/') + provincesPath;
+                result = await FetchExternalAsync(url);
+            }
+
+            // Fallback small static list if external not configured or returned empty
+            if (result == null || result.Count == 0)
+            {
+                result = new List<object> {
+                    new { code = "TPHCM", name = "TP. Hồ Chí Minh" },
+                    new { code = "HANOI", name = "Hà Nội" },
+                    new { code = "DANANG", name = "Đà Nẵng" }
+                }.Select(o => (object)o).ToList();
+            }
+
+            // Cache for 24 hours
+            _cache.Set("locations:provinces", result, TimeSpan.FromHours(24));
+            return Ok(result);
+        }
+
+        [HttpGet("districts")]
+        public async Task<IActionResult> Districts(string province)
+        {
+            if (string.IsNullOrEmpty(province)) return Ok(new List<object>());
+            var key = $"locations:districts:{province}";
+            if (_cache.TryGetValue(key, out List<object> cached)) return Ok(cached);
+
+            var baseUrl = _config["ExternalLocations:BaseUrl"];
+            var districtsPath = _config["ExternalLocations:DistrictsPath"] ?? "/districts";
+            List<object> result = new();
+
+            if (!string.IsNullOrEmpty(baseUrl))
+            {
+                var url = baseUrl.TrimEnd('/') + districtsPath + "?province=" + Uri.EscapeDataString(province);
+                result = await FetchExternalAsync(url);
+            }
+
+            if (result == null || result.Count == 0)
+            {
+                // basic static map as fallback
+                var map = new Dictionary<string, List<object>>() {
+                    { "TPHCM", new List<object> { new { code = "Q1", name = "Quận 1" }, new { code = "Q3", name = "Quận 3" }, new { code = "Q7", name = "Quận 7" } } },
+                    { "HANOI", new List<object> { new { code = "HN-TB", name = "Hoàn Kiếm" }, new { code = "HN-DT", name = "Đống Đa" } } }
+                };
+                if (map.ContainsKey(province)) result = map[province].Select(o => (object)o).ToList();
+            }
+
+            _cache.Set(key, result, TimeSpan.FromHours(24));
+            return Ok(result);
+        }
+
+        [HttpGet("wards")]
+        public async Task<IActionResult> Wards(string district)
+        {
+            if (string.IsNullOrEmpty(district)) return Ok(new List<object>());
+            var key = $"locations:wards:{district}";
+            if (_cache.TryGetValue(key, out List<object> cached)) return Ok(cached);
+
+            var baseUrl = _config["ExternalLocations:BaseUrl"];
+            var wardsPath = _config["ExternalLocations:WardsPath"] ?? "/wards";
+            List<object> result = new();
+
+            if (!string.IsNullOrEmpty(baseUrl))
+            {
+                var url = baseUrl.TrimEnd('/') + wardsPath + "?district=" + Uri.EscapeDataString(district);
+                result = await FetchExternalAsync(url);
+            }
+
+            if (result == null || result.Count == 0)
+            {
+                var map = new Dictionary<string, List<object>>() {
+                    { "Q1", new List<object> { new { code = "PBN", name = "Phường Bến Nghé" }, new { code = "PBT", name = "Phường Bến Thành" } } },
+                    { "Q3", new List<object> { new { code = "P3-1", name = "Phường 3-1" } } }
+                };
+                if (map.ContainsKey(district)) result = map[district].Select(o => (object)o).ToList();
+            }
+
+            _cache.Set(key, result, TimeSpan.FromHours(24));
+            return Ok(result);
+        }
+    }
+}
